@@ -6,8 +6,8 @@ export default function SocialHubLogo(){
             <Image 
             src = '/images/Logo-Social-Hub.png'
             alt = 'social hub logo'
-            width={360}
-            height={50}
+            width={500}
+            height={100}
             />
         </div>
     );
