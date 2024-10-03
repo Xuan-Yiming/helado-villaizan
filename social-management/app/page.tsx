@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import SocialHubLogo from "@/app/ui/icons/social-hub-logo"
-import Logo from "@/app/ui/logo";
+import Logo from '@/app/ui/icons/logo';
 
 export default function Home() {
   return (
