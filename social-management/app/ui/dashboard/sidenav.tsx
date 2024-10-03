@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import NavLinks from '@/app/ui/dashboard/nav-links';
-import SocialHubLogo from '../social-hub-logo';
-import Logo from '../logo';
+import SocialHubLogo from '../icons/social-hub-logo';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import {ArrowRightIcon} from '@heroicons/react/24/solid';
 
 export default function SideNav() {
   return (
-    <div className="flex h-full flex-col bg-[#BD181E]">
+    <div className="flex h-full flex-col bg-[#BD181E] text-white">
         <Link
         className="mb-2 flex h-10 items-end justify-start bg-[#BD181E] p-4 md:h-20"
         href="/dashboard"
