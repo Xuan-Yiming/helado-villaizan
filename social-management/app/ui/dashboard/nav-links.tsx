@@ -1,8 +1,4 @@
 import {
-    UserGroupIcon,
-    HomeIcon,
-    DocumentDuplicateIcon,
-
     RectangleGroupIcon,
     InboxArrowDownIcon,
     PaperAirplaneIcon,
