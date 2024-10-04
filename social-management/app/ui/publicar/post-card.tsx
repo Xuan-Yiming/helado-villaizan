@@ -1,4 +1,6 @@
 import React from 'react';
+import Image from 'next/image';
+
 import { 
     HeartIcon as SolidHeartIcon, 
     StarIcon as SolidStarIcon, 
@@ -11,17 +13,19 @@ import {
 } 
 from '@heroicons/react/24/outline'; 
 
-interface MessgaeCardProps {
+interface PostCardProps {
     userName: string;
     postTime: string;
+    image: string;
     comment: string;
     content: string;
     socialIcon?: React.ReactNode;
     liked?: boolean;
     saved?: boolean;
+
 }
 
-const MessgaeCard: React.FC<MessgaeCardProps> = ({ userName, postTime, comment, content, socialIcon, liked, saved }) => (
+const PostCard: React.FC<PostCardProps> = ({ userName, postTime,image , comment, content, socialIcon, liked, saved }) => (
     <div
         className="border rounded border-gray-300 p-4 mb-4 rounded-2xl bg-white max-w-sm mx-auto flex flex-col justify-between"
     >
@@ -35,6 +39,13 @@ const MessgaeCard: React.FC<MessgaeCardProps> = ({ userName, postTime, comment, 
             <div className="bg-gray-200 rounded-full p-2 text-xs text-gray-700 post-time">{postTime}</div>
         </div>
         <p className="text-sm mt-2 text-gray-600">{comment}</p>
+        <Image 
+            src={image} 
+            alt="Post image" 
+            className="mt-4" 
+            width={500}
+            height={500}
+        />
         <p className="mt-6 mb-6 space-x-4">{content}</p>
 
         <div className="flex justify-end mt-auto">
@@ -54,4 +65,4 @@ const MessgaeCard: React.FC<MessgaeCardProps> = ({ userName, postTime, comment, 
     </div>
 );
 
-export default MessgaeCard;
+export default PostCard;
