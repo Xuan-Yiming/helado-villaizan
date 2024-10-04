@@ -13,8 +13,8 @@ import FacebookLogo from '@/app/ui/icons/facebook';
 import TiktokLogo from '@/app/ui/icons/tiktok';
 import InstagramLogo from '@/app/ui/icons/instagram';
 
-import FilterSelect from '@/app/ui/dashboard/mensajes/filter-select';
-import MessageCard from '@/app/ui/dashboard/mensajes/message-card';
+import FilterSelect from '@/app/ui/mensajes/filter-select';
+import MessageCard from '@/app/ui/mensajes/message-card';
 
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
