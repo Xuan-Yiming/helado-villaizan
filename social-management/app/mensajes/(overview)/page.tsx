@@ -8,8 +8,13 @@ import {
     HeartIcon,
     StarIcon
 } from '@heroicons/react/24/solid';
-import FilterSelect from '@/app/ui/Mensajes/filter-select';
+
 import FacebookLogo from '@/app/ui/icons/facebook';
+import TiktokLogo from '@/app/ui/icons/tiktok';
+import InstagramLogo from '@/app/ui/icons/instagram';
+
+import FilterSelect from '@/app/ui/mensajes/filter-select';
+import MessageCard from '@/app/ui/mensajes/message-card';
 
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -106,43 +111,35 @@ const Page = () => {
                 </div>
             )}
             {/* Post */}
-            <div className="mt-6">
-                <div>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                     {/* Example Post */}
-                    <div
-                        className="border rounded border-gray-300 p-4 mb-4 rounded bg-white max-w-xl mx-auto"
-                        style={{ borderRadius: '20px' }}
-                    >
-                        {/* Header */}
-                        <div className="flex justify-between">
-                            <div className="flex items-center">
-                                <div className="w-10 text-black md:w-10">
-                                    <FacebookLogo />
-                                </div>
-                                <h3 className="font-bold">User Name</h3>
-                            </div>
-                            <div className="bg-gray-200 rounded p-2 text-xs text-gray-700" style={{ borderRadius: '20px' }}>Hace 15 min</div>
-                        </div>
-                        <p className="text-sm text-gray-600">Commanted by User on Date</p>
-                        <p className="mt-2">This is an example of a Facebook-like post. It can contain text, images, videos, etc.</p>
-
-                        <div className="flex justify-end mt-4 space-x-4">
-                            <button className="flex items-center text-red-500 hover:text-red-700">
-                                <HeartIcon className="h-5 w-5 mr-1" />
-                                <span>Like</span>
-                            </button>
-                            <button className="flex items-center text-yellow-500 hover:text-yellow-700">
-                                <StarIcon className="h-5 w-5 mr-1" />
-                                <span>Guardar</span>
-                            </button>
-                            <button className="flex items-center text-blue-500 hover:text-blue-700">
-                                <ArrowTopRightOnSquareIcon className="h-5 w-5 mr-1" />
-                                <span>Abrir</span>
-                            </button>
-                        </div>
-                    </div>
-                    {/* Add more posts as needed */}
-                </div>
+                    <MessageCard
+                        userName="John Doe"
+                        postTime="Hace 2 horas"
+                        comment="Este es un comentario de ejemplo"
+                        content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "
+                        socialIcon={<FacebookLogo/>}
+                        liked={false}
+                        saved={false}
+                    />
+                    <MessageCard
+                        userName="John Doe"
+                        postTime="Hace 2 horas"
+                        comment="Este es un comentario de ejemplo"
+                        content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis."
+                        socialIcon={<InstagramLogo/>}
+                        liked={true}
+                        saved={false}
+                    />
+                    <MessageCard
+                        userName="John Doe"
+                        postTime="Hace 2 horas"
+                        comment="Este es un comentario de ejemplo"
+                        content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "
+                        socialIcon={<TiktokLogo/>}
+                        liked={false}
+                        saved={true}
+                    />
             </div>
         </div>
     );
