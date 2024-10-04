@@ -117,7 +117,7 @@ const Page = () => {
                         userName="John Doe"
                         postTime="Hace 2 horas"
                         comment="Este es un comentario de ejemplo"
-                        content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "
+                        content="Cual es el precio?"
                         socialIcon={<FacebookLogo/>}
                         liked={false}
                         saved={false}
@@ -126,7 +126,7 @@ const Page = () => {
                         userName="John Doe"
                         postTime="Hace 2 horas"
                         comment="Este es un comentario de ejemplo"
-                        content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis."
+                        content="Que rico!"
                         socialIcon={<InstagramLogo/>}
                         liked={true}
                         saved={false}
@@ -135,7 +135,7 @@ const Page = () => {
                         userName="John Doe"
                         postTime="Hace 2 horas"
                         comment="Este es un comentario de ejemplo"
-                        content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "
+                        content="Buenisimo!"
                         socialIcon={<TiktokLogo/>}
                         liked={false}
                         saved={true}
