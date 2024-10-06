@@ -1,5 +1,10 @@
+'use client';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+
 import VincularCuenta from "@/app/ui/cuentas/vincular-cuenta"
 import { ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/solid"
+
 
 var accounts = [
     {
@@ -21,6 +26,12 @@ var accounts = [
 ]
 
 export default async function Page(){
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await axios.get('/api/auth/logout');
+        router.push('/login');
+    };
 
     return (
         <main>
@@ -38,9 +49,13 @@ export default async function Page(){
                 <h2 className="font-bold text-2xl">Configuraciones</h2>
                 <p>En esta sección podrás configurar tu perfil y tus preferencias.</p>
                 <div className="flex justify-end"> {/* Added div with flex justify-end */}
-                    <button className="flex bg-[#BD181E] text-white px-4 py-2 rounded-md mt-4 font-bold">
+                    <button 
+                        className="flex bg-[#BD181E] text-white px-4 py-2 rounded-md mt-4 font-bold"
+                        onClick={handleLogout}
+                    >
                         <ArrowRightEndOnRectangleIcon className="h-5 w-5 mr-2" />
-                        Cerrar sesión</button>
+                        Cerrar sesión
+                    </button>
                 </div> {/* Added closing div */}
             </div>
 
