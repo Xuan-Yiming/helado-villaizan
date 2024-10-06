@@ -40,7 +40,14 @@ export default function PublicarPage() {
   const handleRemoveMedia = (id: string) => {
     // Eliminamos el archivo basado en su ID único
     setMediaFiles(mediaFiles.filter(file => file.id !== id));
+  
+    // Reseteamos el valor del input para permitir re-subir el mismo archivo
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = ''; // Limpiamos el valor del input
+    }
   };
+  
 
   const handleUserSelect = (id: number, network: NetworkType) => {
     if (selectedUsers.includes(id)) {
