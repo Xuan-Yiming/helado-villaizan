@@ -3,48 +3,106 @@ import { HandThumbUpIcon, ChatBubbleOvalLeftIcon, PaperAirplaneIcon, BookmarkIco
 
 type PreviewProps = {
   text: string;
-  media: string | null;
-  mediaType: 'image' | 'video' | null;  // Añadido para diferenciar el tipo de media
+  media: string[]; // URLs de los medios (imágenes/videos)
+  mediaType: 'image' | 'video' | null;
   selectedNetwork: 'facebook' | 'instagram' | 'tiktok';
 };
 
 export default function Preview({ text, media, mediaType, selectedNetwork }: PreviewProps) {
+  
+  const renderMediaForFacebook = () => {
+    if (media.length === 1) {
+      return (
+        <div className="w-full h-auto bg-gray-200 flex items-center justify-center mb-2">
+          <img src={media[0]} alt="Media" className="w-full h-full object-cover" />
+        </div>
+      );
+    }
+
+    if (media.length === 2) {
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          {media.slice(0, 2).map((item, index) => (
+            <img key={index} src={item} alt={`Media ${index}`} className="w-full h-full object-cover" />
+          ))}
+        </div>
+      );
+    }
+
+    if (media.length === 3) {
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          <img src={media[0]} alt="Media 0" className="col-span-2 w-full h-full object-cover" />
+          <img src={media[1]} alt="Media 1" className="w-full h-full object-cover" />
+          <img src={media[2]} alt="Media 2" className="w-full h-full object-cover" />
+        </div>
+      );
+    }
+
+    if (media.length === 4) {
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          {media.slice(0, 4).map((item, index) => (
+            <img key={index} src={item} alt={`Media ${index}`} className="w-full h-full object-cover" />
+          ))}
+        </div>
+      );
+    }
+
+    if (media.length === 5) {
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          {/* Primera fila con dos imágenes */}
+          <div className="grid grid-cols-2 gap-2 col-span-2">
+            <img src={media[0]} alt="Media 0" className="w-full h-60 object-cover" />
+            <img src={media[1]} alt="Media 1" className="w-full h-60 object-cover" />
+          </div>
+          {/* Segunda fila con tres imágenes */}
+          <div className="grid grid-cols-3 gap-2 col-span-2">
+            {media.slice(2, 5).map((item, index) => (
+              <img key={index} src={item} alt={`Media ${index + 2}`} className="w-full h-40 object-cover" />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (media.length > 5) {
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          {/* Primera fila con dos imágenes */}
+          <div className="grid grid-cols-2 gap-2 col-span-2">
+            <img src={media[0]} alt="Media 0" className="w-full h-60 object-cover" />
+            <img src={media[1]} alt="Media 1" className="w-full h-60 object-cover" />
+          </div>
+          {/* Segunda fila con tres imágenes */}
+          <div className="grid grid-cols-3 gap-2 col-span-2">
+            {media.slice(2, 4).map((item, index) => (
+              <img key={index} src={item} alt={`Media ${index + 2}`} className="w-full h-40 object-cover" />
+            ))}
+            {/* Última imagen con el contador */}
+            <div className="relative w-full h-40 bg-gray-300">
+              <img src={media[4]} alt="Media 4" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-3xl font-bold">
+                +{media.length - 5}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <div>
       <h3 className="font-semibold mb-2 text-black">
         Vista previa en {selectedNetwork.charAt(0).toUpperCase() + selectedNetwork.slice(1)}:
       </h3>
 
-      {/* Vista previa para Facebook */}
+      {/* Renderizado de la media para Facebook */}
       {selectedNetwork === 'facebook' && (
         <div className="facebook-preview border p-4 rounded bg-white max-h-[600px] overflow-y-auto">
-          <div className="flex items-center mb-4">
-            <img src="https://via.placeholder.com/40" alt="Profile" className="w-10 h-10 rounded-full mr-3" />
-            <div>
-              <span className="font-semibold text-black">Heladería Villaizan</span>
-              <p className="text-sm text-gray-500">Just now</p>
-            </div>
-          </div>
-          <p className="text-black mb-4" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-            {text || 'Escribe algo para ver la vista previa...'}
-          </p>
-
-          {/* Renderiza imagen o video según el tipo de media */}
-          {media && mediaType === 'image' && (
-            <div className="w-full bg-gray-100 flex items-center justify-center">
-              <img src={media} alt="Media" className="w-full h-auto object-contain" />
-            </div>
-          )}
-
-
-
-
-          {media && mediaType === 'video' && (
-            <video controls className="w-full h-64 object-contain">
-              <source src={media} type="video/mp4" />
-              Tu navegador no soporta video.
-            </video>
-          )}
+          {renderMediaForFacebook()}
 
           {/* Parte inferior - Me gusta, Comentar, Compartir */}
           <div className="flex justify-around items-center border-t pt-4 mt-4 text-gray-500">
@@ -64,7 +122,7 @@ export default function Preview({ text, media, mediaType, selectedNetwork }: Pre
         </div>
       )}
 
-      {/* Vista previa para Instagram */}
+      {/* Renderizado de la media para Instagram */}
       {selectedNetwork === 'instagram' && (
         <div className="instagram-preview border p-4 rounded bg-white max-h-[600px] overflow-y-auto">
           <div className="flex items-center mb-2">
@@ -75,13 +133,13 @@ export default function Preview({ text, media, mediaType, selectedNetwork }: Pre
           </div>
 
           {/* Renderiza imagen o video según el tipo de media */}
-          {media && mediaType === 'image' && (
-            <img src={media} alt="Media" className="w-full object-contain" />
+          {mediaType === 'image' && (
+            <img src={media[0]} alt="Media" className="w-full object-contain" />
           )}
 
-          {media && mediaType === 'video' && (
+          {mediaType === 'video' && (
             <video controls className="w-full h-64 object-contain">
-              <source src={media} type="video/mp4" />
+              <source src={media[0]} type="video/mp4" />
               Tu navegador no soporta video.
             </video>
           )}

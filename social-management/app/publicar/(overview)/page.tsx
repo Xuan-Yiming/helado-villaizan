@@ -1,32 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { inter } from '../../ui/fonts';
-import Preview from '../../ui/publicar/preview';  // Importa el componente Preview
+import Preview from '../../ui/publicar/preview';
 
 type NetworkType = 'facebook' | 'instagram' | 'tiktok';
 
 export default function PublicarPage() {
   const [isScheduled, setIsScheduled] = useState(false);
   const [postText, setPostText] = useState('');
-  const [media, setMedia] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);  // Variable para diferenciar el tipo de media
+  const [mediaFiles, setMediaFiles] = useState<Array<{ id: string; url: string; type: 'image' | 'video'; name: string }>>([]);
   const [users] = useState([
     { id: 1, name: 'Facebook - Heladería Villaizan', network: 'facebook' as NetworkType },
     { id: 2, name: 'Instagram - @villaizanpaletasartesanales', network: 'instagram' as NetworkType },
     { id: 3, name: 'TikTok - @heladeriavillaizan', network: 'tiktok' as NetworkType },
   ]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>('facebook');  // Red seleccionada
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>('facebook');
 
-  const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const fileType = file.type.split('/')[0];  // 'image' o 'video'
-      setMediaType(fileType as 'image' | 'video');  // Establece si es imagen o video
-      setMedia(URL.createObjectURL(file));  // Crea una URL temporal del archivo
+  // Función para generar un identificador único para cada archivo
+  const generateUniqueID = () => {
+    return `${Date.now()}-${Math.random()}`;
+  };
+
+  const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>, mediaType: 'image' | 'video') => {
+    const files = event.target.files;
+    if (files) {
+      const newFiles = Array.from(files).map(file => ({
+        id: generateUniqueID(),  // Asignamos un ID único
+        url: URL.createObjectURL(file),
+        type: mediaType,
+        name: file.name
+      }));
+      setMediaFiles([...mediaFiles, ...newFiles]);
     }
+  };
+
+  const handleRemoveMedia = (id: string) => {
+    // Eliminamos el archivo basado en su ID único
+    setMediaFiles(mediaFiles.filter(file => file.id !== id));
   };
 
   const handleUserSelect = (id: number, network: NetworkType) => {
@@ -44,9 +57,7 @@ export default function PublicarPage() {
 
   return (
     <div className={`${inter.className} flex justify-center p-2 h-full w-full`}>
-      <div className="w-full max-w-9xl bg-white rounded-lg shadow-lg p-8 flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-8 overflow-hidden"> {/* Aumenta el max-w para ampliar el contenedor */}
-        
-        {/* Bloque izquierdo - Configuración de la publicación */}
+      <div className="w-full max-w-9xl bg-white rounded-lg shadow-lg p-8 flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-8 overflow-hidden">
         <div className="w-full lg:w-3/5 flex flex-col space-y-4">
           <h1 className="text-2xl font-bold text-black">Publicar</h1>
 
@@ -79,14 +90,32 @@ export default function PublicarPage() {
               placeholder="Escribe algo aquí..."
               className="w-full h-32 p-2 border rounded placeholder-gray-500 text-black"
             />
+
+            {/* Mostrar cola de archivos multimedia */}
+            <div className="flex items-center space-x-4 mt-4">
+              {mediaFiles.map((file) => (
+                <div key={file.id} className="relative">
+                  {file.type === 'image' ? (
+                    <img src={file.url} alt={file.name} className="w-16 h-16 object-cover rounded" />
+                  ) : (
+                    <video src={file.url} className="w-16 h-16 object-cover rounded" />
+                  )}
+                  <button onClick={() => handleRemoveMedia(file.id)} className="absolute top-0 right-0 text-red-500">
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Botones para subir archivos */}
             <div className="flex items-center space-x-4 mt-4">
               <label className="flex items-center cursor-pointer">
                 <CameraIcon className="h-6 w-6 text-gray-500" />
-                <input type="file" accept="image/*" className="hidden" onChange={handleMediaUpload} />
+                <input type="file" accept="image/*" className="hidden" multiple onChange={(e) => handleMediaUpload(e, 'image')} />
               </label>
               <label className="flex items-center cursor-pointer">
                 <VideoCameraIcon className="h-6 w-6 text-gray-500" />
-                <input type="file" accept="video/*" className="hidden" onChange={handleMediaUpload} />
+                <input type="file" accept="video/*" className="hidden" multiple onChange={(e) => handleMediaUpload(e, 'video')} />
               </label>
             </div>
           </div>
@@ -127,17 +156,16 @@ export default function PublicarPage() {
           </div>
           <div className="flex justify-end space-x-4 mt-4">
             <button className="bg-gray-500 text-white px-4 py-2 rounded">
-            Guardar borrador
+              Guardar borrador
             </button>
             <button className="bg-red-500 text-white px-4 py-2 rounded">
-            Publicar
+              Publicar
             </button>
           </div>
         </div>
 
         {/* Bloque derecho - Vista previa con el componente Preview */}
         <div className="w-full lg:w-2/5 p-4 border rounded bg-gray-50 overflow-hidden">
-          {/* Selector de redes sociales */}
           <div className="flex space-x-4 mb-4">
             <button
               onClick={() => handleNetworkChange('facebook')}
@@ -160,7 +188,12 @@ export default function PublicarPage() {
           </div>
 
           {/* Componente de vista previa */}
-          <Preview text={postText} media={media} mediaType={mediaType} selectedNetwork={selectedNetwork} />
+          <Preview
+            text={postText}
+            media={mediaFiles.map(file => file.url)} // Solo las URLs
+            mediaType={mediaFiles.length > 0 ? mediaFiles[0].type : null} // Primer tipo de archivo
+            selectedNetwork={selectedNetwork}
+          />
         </div>
       </div>
     </div>
