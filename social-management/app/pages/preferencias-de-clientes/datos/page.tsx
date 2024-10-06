@@ -1,7 +1,7 @@
 export default async function Page(){
     return (
         <main>
-            Audencia
+            Analisis
         </main>
     )
 }
