@@ -11,6 +11,7 @@ export default function PublicarPage() {
   const [isScheduled, setIsScheduled] = useState(false);
   const [postText, setPostText] = useState('');
   const [media, setMedia] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);  // Variable para diferenciar el tipo de media
   const [users] = useState([
     { id: 1, name: 'Facebook - Heladería Villaizan', network: 'facebook' as NetworkType },
     { id: 2, name: 'Instagram - @villaizanpaletasartesanales', network: 'instagram' as NetworkType },
@@ -22,7 +23,9 @@ export default function PublicarPage() {
   const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setMedia(URL.createObjectURL(file));
+      const fileType = file.type.split('/')[0];  // 'image' o 'video'
+      setMediaType(fileType as 'image' | 'video');  // Establece si es imagen o video
+      setMedia(URL.createObjectURL(file));  // Crea una URL temporal del archivo
     }
   };
 
@@ -129,7 +132,7 @@ export default function PublicarPage() {
             <button className="bg-red-500 text-white px-4 py-2 rounded">
             Publicar
             </button>
-            </div>
+          </div>
         </div>
 
         {/* Bloque derecho - Vista previa con el componente Preview */}
@@ -157,9 +160,8 @@ export default function PublicarPage() {
           </div>
 
           {/* Componente de vista previa */}
-          <Preview text={postText} media={media} selectedNetwork={selectedNetwork} />
+          <Preview text={postText} media={media} mediaType={mediaType} selectedNetwork={selectedNetwork} />
         </div>
-            
       </div>
     </div>
   );
