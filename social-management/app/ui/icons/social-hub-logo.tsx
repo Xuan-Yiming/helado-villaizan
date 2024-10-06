@@ -1,15 +1,19 @@
 import Image from "next/image";
 
-export default function SocialHubLogo(){
-    return(
+interface SocialHubLogoProps {
+    width: number;
+    height: number;
+}
+
+export default function SocialHubLogo({ width = 300, height = 300 }: SocialHubLogoProps) {
+    return (
         <div>
-            <Image 
-            src = '/images/Logo-Social-Hub.png'
-            alt = 'social hub logo'
-            width={500}
-            height={100}
+            <Image
+                src="/images/Logo-Social-Hub.png"
+                alt="social hub logo"
+                width={width}
+                height={height}
             />
         </div>
     );
 }
-
