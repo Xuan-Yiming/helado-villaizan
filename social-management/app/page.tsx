@@ -4,9 +4,6 @@ import SocialHubLogo from '@/app/ui/icons/social-hub-logo';
 export default function Home() {
   return (
     <div className="flex flex-col">
-      <div className="bg-[#BD181E] text-white py-2 px-4">
-        <SocialHubLogo />
-      </div>
       <div className="flex justify-center items-center h-screen">
         <div>
           <h1 className="font-bold text-8xl mb-4">Gestión de</h1>
