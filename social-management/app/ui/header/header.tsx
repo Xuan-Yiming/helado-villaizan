@@ -29,7 +29,7 @@ const Header = () => {
           <div
             className="flex flex-row space-x-3 items-center justify-center md:hidden"
           >
-            <SocialHubLogo height={100} width={300} />
+            <SocialHubLogo height={100} width={200} />
           </div>
         </div>
 

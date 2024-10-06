@@ -5,7 +5,7 @@ interface SocialHubLogoProps {
     height: number;
 }
 
-export default function SocialHubLogo({ width, height }: SocialHubLogoProps) {
+export default function SocialHubLogo({ width = 300, height = 300 }: SocialHubLogoProps) {
     return (
         <div>
             <Image
