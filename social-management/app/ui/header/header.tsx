@@ -1,12 +1,9 @@
 'use client';
 
 import React from 'react';
-
 import Link from 'next/link';
 import { useSelectedLayoutSegment } from 'next/navigation';
-
 import SocialHubLogo from '../icons/social-hub-logo';
-
 import useScroll from '@/app/hooks/use-scroll';
 import { cn } from '@/app/lib/utils';
 
@@ -19,8 +16,9 @@ const Header = () => {
       className={cn(
         `sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-gray-200`,
         {
-          'border-b border-gray-200 bg-[#BD181E]/75 backdrop-blur-lg': scrolled,
-          'border-b border-gray-200 bg-[#BD181E]': selectedLayout,
+          // Cambié el color de fondo a transparente o al color que prefieras
+          'border-b border-gray-200 bg-transparent backdrop-blur-lg': scrolled, // fondo transparente cuando se hace scroll
+          'border-b border-gray-200 bg-transparent': selectedLayout, // fondo transparente o color personalizado
         },
       )}
     >

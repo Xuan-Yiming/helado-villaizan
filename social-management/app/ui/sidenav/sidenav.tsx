@@ -17,22 +17,30 @@ import SocialHubLogo from '../icons/social-hub-logo';
 const SideNav = () => {
   return (
     <div className="md:w-60 bg-white h-screen flex-1 fixed border-r border-zinc-200 hidden md:flex">
-      <div className="flex flex-col space-y-6 w-full">
-        <div
-          className="flex flex-row space-x-3 items-center justify-center md:justify-start md:px-6 border-b border-zinc-200 h-12 w-full bg-[#BD181E]"
-        >
+      <div className="flex flex-col w-full h-full"> {/* Asegurarse que use h-full */}
+        {/* Logo y otros elementos */}
+        <div className="flex flex-row space-x-3 items-center justify-center md:justify-start md:px-6 border-b border-zinc-200 h-20 w-full bg-[#BD181E]">
           <SocialHubLogo height={100} width={300} />
         </div>
 
-        <div className="flex flex-col space-y-2  md:px-6 ">
-          {SIDENAV_ITEMS.map((item, idx) => {
+        {/* Elementos del menú */}
+        <div className="flex flex-col space-y-2 md:px-6 flex-grow mt-8"> {/* flex-grow permite que los elementos crezcan */}
+          {SIDENAV_ITEMS.slice(0, -1).map((item, idx) => { // Renderiza todos los elementos excepto "Cuentas"
             return <MenuItem key={idx} item={item} />;
           })}
+        </div>
+
+        {/* Cuentas al fondo */}
+        <div className="mt-auto md:px-6 mb-4"> {/* mt-auto empuja este div hacia el fondo */}
+          <MenuItem item={SIDENAV_ITEMS[SIDENAV_ITEMS.length - 1]} /> {/* Cuentas */}
         </div>
       </div>
     </div>
   );
 };
+
+
+
 
 export default SideNav;
 
