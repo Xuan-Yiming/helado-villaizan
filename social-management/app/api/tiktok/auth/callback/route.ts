@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     const state = searchParams.get('state');
-    
+    console.log('TikTok get callback');
     // Make sure the 'code' exists
     if (!code) {
         return NextResponse.json({ error: 'TikTok authentication failed.' }, { status: 400 });
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
             client_secret: process.env.TIKTOK_CLIENT_SECRET,
             code: code, // Authorization code from the TikTok redirect
             grant_type: 'authorization_code',
-            redirect_uri: 'http://localhost:3000/api/tiktok/access-token/callback'
+            redirect_uri: 'https://helado-villaizan.vercel.app/api/tiktok/access-token/callback'
         });
 
         const { access_token, open_id } = response.data.data;
