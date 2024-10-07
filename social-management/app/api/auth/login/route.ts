@@ -6,12 +6,12 @@ export async function POST(request: Request) {
     // para pruebas
     const test = true;
     // Replace with your external API URL for authentication
-    const externalAuthApiUrl = 'https://mocki.io/v1/469ff47e-8d39-4adb-a6c8-5ac5ec21ec75';
+    const externalAuthApiUrl = process.env.API_URL+'/auth/login';
 
     try {
         if (test) {
             // Call the external API to get the auth_token
-            const response = await axios.get(externalAuthApiUrl);
+            const response = await axios.get('https://mocki.io/v1/469ff47e-8d39-4adb-a6c8-5ac5ec21ec75');
             const auth_token = response.data.auth_token;
             console.log('Token:', auth_token);
             console.log('Response:', response.status);
