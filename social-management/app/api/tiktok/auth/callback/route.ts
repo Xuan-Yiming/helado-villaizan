@@ -23,7 +23,8 @@ export async function GET(request: Request) {
             redirect_uri: 'https://helado-villaizan.vercel.app/api/tiktok/access-token/callback'
         });
 
-        const { access_token, open_id } = response.data.data;
+        const access_token = response.data.access_token;
+        const open_id = response.data.open_id;
 
         if (access_token) {
             // You can now link the user's TikTok account in your database or session
