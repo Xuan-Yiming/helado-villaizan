@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     const tiktokOauthUrl = process.env.TIKTOK_AUTH_API_URL 
     +`?`
     +`client_key=${clientKey}`
-    +`&scope=${scope.join('%2')}`
+    +`&scope=${scope.join(',')}`
     +`&response_type=code`
     +`&redirect_uri=${redirectUri}`;
      +`&state=${state}`;
