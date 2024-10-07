@@ -1,5 +1,4 @@
 import Image from "next/image";
-import SocialHubLogo from '@/app/ui/icons/social-hub-logo';
 
 export default function Home() {
   return (
