@@ -24,14 +24,14 @@ const SideNav = () => {
         </div>
 
         {/* Elementos del menú */}
-        <div className="flex flex-col space-y-2 md:px-6 flex-grow mt-8"> {/* flex-grow permite que los elementos crezcan */}
+        <div className="flex flex-col space-y-2 md:px-6 flex-grow mt-8 text-[#515E5F]"> {/* flex-grow permite que los elementos crezcan */}
           {SIDENAV_ITEMS.slice(0, -1).map((item, idx) => { // Renderiza todos los elementos excepto "Cuentas"
             return <MenuItem key={idx} item={item} />;
           })}
         </div>
 
         {/* Cuentas al fondo */}
-        <div className="mt-auto md:px-6 mb-4"> {/* mt-auto empuja este div hacia el fondo */}
+        <div className="mt-auto md:px-6 mb-4 text-[#515E5F]"> {/* mt-auto empuja este div hacia el fondo */}
           <MenuItem item={SIDENAV_ITEMS[SIDENAV_ITEMS.length - 1]} /> {/* Cuentas */}
         </div>
       </div>
