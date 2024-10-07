@@ -100,7 +100,7 @@ export default function Page(){
                             onClick={async () => {
                                 const link = handleLink(account.name, account.linked);
                                 if (link) {
-                                    await axios.get(link);
+                                    window.location.href = link;
                                     router.push('/pages/cuentas-configuraciones');
                                 }
                             }}
