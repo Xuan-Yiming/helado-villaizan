@@ -77,7 +77,7 @@ const Page = () => {
                         onChange={setTagsFilter}
                     />
                     <FilterSelect
-                        label="Rede Social"
+                        label="Red Social"
                         id="social-network-filter"
                         options={[
                             { value: 'all', label: 'Ver todo' },
@@ -89,7 +89,7 @@ const Page = () => {
                         onChange={setSocialNetworkFilter}
                     />
                     <FilterSelect
-                        label="Tipo de publicacion"
+                        label="Tipo de Publicación"
                         id="post-type-filter"
                         options={[
                             { value: 'all', label: 'Ver todo' },
@@ -99,15 +99,15 @@ const Page = () => {
                         value={postTypeFilter}
                         onChange={setPostTypeFilter}
                     />
-                    <div className="flex-1 border border-gray-300 h-15 mx-1 flex justify-center items-center">
-                        <button
-                            className="flex items-center text-[#BD181E] underline px-4 py-2 hover:text-black"
-                            onClick={resetFilters}
-                        >
-                            <XMarkIcon className="h-5 w-5 mr-2" />
-                            <div>Limpiar Todo</div>
-                        </button>
-                    </div>
+                <div className="flex-1 h-15 mx-1 flex justify-center items-center">
+                <button
+                    className="flex items-center text-[#BD181E] underline px-4 py-2 hover:text-black border-none"
+                    onClick={resetFilters}
+                >
+                    {/* <XMarkIcon className="h-5 w-5 mr-2" /> */}
+                    <div>Limpiar Todo</div>
+                </button>
+                </div>
                 </div>
             )}
             {/* Post */}

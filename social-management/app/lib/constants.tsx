@@ -45,7 +45,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
       { title: 'Principal', path: '/pages/analisis-reporte' },
       { title: 'Engagement', path: '/pages/analisis-reporte/engagement' },
       { title: 'Seguidores', path: '/pages/analisis-reporte/seguidores' },
-      { title: 'ventas', path: '/pages/analisis-reporte/ventas' },
+      { title: 'Ventas', path: '/pages/analisis-reporte/ventas' },
     ],
   },
   {
