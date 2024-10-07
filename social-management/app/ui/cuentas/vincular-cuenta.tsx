@@ -16,6 +16,27 @@ interface VincularCuentaProps {
 }
 
 const VincularCuenta: React.FC<VincularCuentaProps> = ({ accounts }) => {
+    // Función para redirigir a la autenticación de cada red social
+    const handleVincular = (accountName: string) => {
+        switch (accountName) {
+            case 'Facebook':
+                window.location.href = `https://www.facebook.com/v12.0/dialog/oauth?client_id=TU_CLIENT_ID&redirect_uri=TU_REDIRECT_URI&scope=email,public_profile`;
+                break;
+            case 'Google':
+                window.location.href = `https://accounts.google.com/o/oauth2/auth?client_id=TU_CLIENT_ID&redirect_uri=TU_REDIRECT_URI&scope=email profile&response_type=code`;
+                break;
+            case 'Instagram':
+                window.location.href = `https://api.instagram.com/oauth/authorize?client_id=TU_CLIENT_ID&redirect_uri=TU_REDIRECT_URI&scope=user_profile,user_media&response_type=code`;
+                break;
+            case 'Tiktok':
+                window.location.href = `https://www.tiktok.com/auth/authorize?client_key=TU_CLIENT_KEY&redirect_uri=TU_REDIRECT_URI&scope=user.info.basic&response_type=code`;
+                break;
+            default:
+                break;
+        }
+    };
+
+    // Función para obtener el logo de cada red social
     const getLogo = (name: string) => {
         switch (name) {
             case 'Facebook':
@@ -43,7 +64,8 @@ const VincularCuenta: React.FC<VincularCuentaProps> = ({ accounts }) => {
                     </div>
                     <div className="">
                         <button 
-                            className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${account.linked ? 'bg-[#BD181E] text-white' : ' text-[#BD181E] bg-white-0'}`}
+                            className={`flex px-4 py-1 rounded-md font-bold border-[#BD181E] border-2 ${account.linked ? 'bg-[#BD181E] text-white' : ' text-[#BD181E] bg-white-0'}`}
+                            onClick={() => handleVincular(account.name)} // Aquí rediriges a la autenticación
                         >
                             {account.linked ? <LinkSlashIcon className="mr-5 h-5 w-5" /> : <LinkIcon className="mr-12 h-5 w-5" />}
                             {account.linked ? 'Desvincular' : 'Vincular'}
