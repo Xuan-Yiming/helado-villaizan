@@ -39,6 +39,6 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ error: 'Failed to retrieve TikTok access token.' }, { status: 400 });
     } catch (error) {
-        return NextResponse.json({ error: 'Error during TikTok OAuth process.' }, { status: 500 });
+        return NextResponse.json({ error: `Error during TikTok OAuth process. Message: ${error}`  }, { status: 500 });
     }
 }
