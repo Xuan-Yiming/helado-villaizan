@@ -104,20 +104,24 @@ export default function Page() {
         }
     };
 
-    const handleLink = async (name: string, linked: boolean) => {
+    const handleLink = (name: string, linked: boolean) => {
         if (linked) {
-            // Lógica para desvincular la cuenta
             switch (name) {
+                case 'Tiktok':
+                    return '/api/tiktok/logout';
                 case 'Facebook':
                     return '/api/facebook/logout';
-                default:
-                    return '';
+                case 'Instagram':
+                    return '/api/instagram/logout';
+                case 'Google':
+                    return '/api/google/logout';
             }
         } else {
-            // Lógica para vincular la cuenta
             switch (name) {
+                case 'Tiktok':
+                    return '/api/tiktok/login';
                 case 'Facebook':
-                    // Inicia el proceso de vinculación con Facebook
+                    // Iniciar el proceso de vinculación con Facebook
                     window.FB.login(function (response: any) {
                         if (response.authResponse) {
                             const userAccessToken = response.authResponse.accessToken;
@@ -129,8 +133,15 @@ export default function Page() {
                                 const pages = response.data;
                                 if (pages.length > 0) {
                                     const pageAccessToken = pages[0].access_token;
+                                    const pageId = pages[0].id;
+
                                     setFacebookAccessToken(pageAccessToken);
                                     console.log('Facebook Page Access Token:', pageAccessToken);
+                                    console.log('Facebook Page ID:', pageId);
+
+                                    // Guardar el accessToken y el pageId en Local Storage
+                                    localStorage.setItem('facebookAccessToken', pageAccessToken);
+                                    localStorage.setItem('facebookPageId', pageId);
 
                                     // Actualizar el estado para mostrar que Facebook está vinculado
                                     const updatedAccounts = accountsState.map((account) =>
@@ -149,10 +160,13 @@ export default function Page() {
                         }
                     }, { scope: 'pages_manage_posts,pages_read_engagement,pages_show_list' });
                     break;
-                default:
-                    return '';
+                case 'Instagram':
+                    return '/api/instagram/login';
+                case 'Google':
+                    return '/api/google/login';
             }
         }
+        return '';
     };
 
     return (
@@ -174,9 +188,10 @@ export default function Page() {
                             <div className="">
                                 <button 
                                     onClick={async () => {
-                                        const link = await handleLink(account.name, account.linked);
+                                        const link = handleLink(account.name, account.linked);
                                         if (link) {
                                             window.location.href = link;
+                                            router.push('/pages/cuentas-configuraciones');
                                         }
                                     }}
                                     className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${account.linked ? 'bg-[#BD181E] text-white' : ' text-[#BD181E] bg-white-0'}`}

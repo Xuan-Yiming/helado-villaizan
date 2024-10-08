@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { inter } from '../../../ui/fonts';
 import Preview from '../../../ui/publicar/preview';
@@ -10,7 +10,8 @@ type NetworkType = 'facebook' | 'instagram' | 'tiktok';
 export default function PublicarPage() {
   const [isScheduled, setIsScheduled] = useState(false);
   const [postText, setPostText] = useState('');
-  const [mediaFiles, setMediaFiles] = useState<Array<{ id: string; url: string; type: 'image' | 'video'; name: string }>>([]);
+  const [mediaFiles, setMediaFiles] = useState<Array<{ id: string; file: File; url: string; type: 'image' | 'video'; name: string }>>([]);
+  const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
   const [users] = useState([
     { id: 1, name: 'Facebook - Heladería Villaizan', network: 'facebook' as NetworkType },
     { id: 2, name: 'Instagram - @villaizanpaletasartesanales', network: 'instagram' as NetworkType },
@@ -18,8 +19,23 @@ export default function PublicarPage() {
   ]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>('facebook');
+  const [postStatus, setPostStatus] = useState<string>('');
 
-  // Función para generar un identificador único para cada archivo
+  // Cargar el token de acceso y el ID de la página desde el Local Storage al cargar la página
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [pageId, setPageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedAccessToken = localStorage.getItem('facebookAccessToken');
+    const storedPageId = localStorage.getItem('facebookPageId');
+    if (storedAccessToken) {
+      setAccessToken(storedAccessToken);
+    }
+    if (storedPageId) {
+      setPageId(storedPageId);
+    }
+  }, []);
+
   const generateUniqueID = () => {
     return `${Date.now()}-${Math.random()}`;
   };
@@ -28,23 +44,91 @@ export default function PublicarPage() {
     const files = event.target.files;
     if (files) {
       const newFiles = Array.from(files).map(file => ({
-        id: generateUniqueID(),  // Asignamos un ID único
+        id: generateUniqueID(),
+        file,
         url: URL.createObjectURL(file),
         type: mediaType,
-        name: file.name
+        name: file.name,
       }));
       setMediaFiles([...mediaFiles, ...newFiles]);
     }
   };
 
   const handleRemoveMedia = (id: string) => {
-    // Eliminamos el archivo basado en su ID único
     setMediaFiles(mediaFiles.filter(file => file.id !== id));
-  
-    // Reseteamos el valor del input para permitir re-subir el mismo archivo
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = ''; // Limpiamos el valor del input
+      fileInput.value = '';
+    }
+  };
+
+  const handlePost = async () => {
+    if (!postText && mediaFiles.length === 0) {
+      setPostStatus('Completa la publicación');
+      return;
+    }
+  
+    if (accessToken && pageId) {
+      setLoading(true); // Activar el estado de carga
+      const formData = new FormData();
+      let endpoint = '';
+  
+      try {
+        // Si hay archivos en el arreglo `mediaFiles`, los añadimos al FormData
+        if (mediaFiles.length > 0) {
+          // Subir cada archivo por separado si es necesario
+          for (const fileData of mediaFiles) {
+            const fileFormData = new FormData();
+            fileFormData.append('source', fileData.file);
+            fileFormData.append('message', postText); // Añadir el mensaje al post si existe
+            const isVideo = fileData.type === 'video';
+            endpoint = isVideo
+              ? `https://graph.facebook.com/${pageId}/videos?access_token=${accessToken}`
+              : `https://graph.facebook.com/${pageId}/photos?access_token=${accessToken}`;
+  
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              body: fileFormData,
+            });
+  
+            const data = await response.json();
+  
+            if (!response.ok || !data.id) {
+              throw new Error(data.error.message || 'Error desconocido al subir el archivo');
+            }
+          }
+          setPostStatus('¡La publicación se ha realizado con éxito!');
+        } else {
+          // Si no hay archivo, pero hay mensaje, usar el endpoint de solo texto
+          formData.append('message', postText); // Añadir mensaje al post
+          endpoint = `https://graph.facebook.com/${pageId}/feed?access_token=${accessToken}`;
+  
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData,
+          });
+  
+          const data = await response.json();
+  
+          if (response.ok && data.id) {
+            setPostStatus('¡La publicación se ha realizado con éxito!');
+          } else {
+            throw new Error(data.error.message || 'Error desconocido al publicar texto');
+          }
+        }
+      } catch (error) {
+        console.error('Error al intentar realizar la publicación:', error);
+        if (error instanceof Error) {
+          setPostStatus(`Ocurrió un error al publicar en Facebook: ${error.message}`);
+        } else {
+          setPostStatus('Ocurrió un error desconocido al intentar realizar la publicación.');
+        }
+      } finally {
+        setLoading(false); // Desactivar el estado de carga
+      }
+    } else {
+      console.log('No access token or page ID available.');
+      setPostStatus('No access token or page ID available.');
     }
   };
   
@@ -133,42 +217,38 @@ export default function PublicarPage() {
             <div className="mt-4 flex space-x-4">
               <button
                 onClick={() => setIsScheduled(false)}
-                className={`${
-                  !isScheduled ? 'bg-blue-500' : 'bg-gray-300'
-                } text-white px-4 py-2 rounded flex items-center`}
+                className={`${!isScheduled ? 'bg-blue-500' : 'bg-gray-300'} text-white px-4 py-2 rounded flex items-center`}
               >
                 <PaperAirplaneIcon className="h-5 w-5 mr-2" />
                 Ahora
               </button>
               <button
                 onClick={() => setIsScheduled(true)}
-                className={`${
-                  isScheduled ? 'bg-blue-500' : 'bg-gray-300'
-                } text-white px-4 py-2 rounded flex items-center`}
+                className={`${isScheduled ? 'bg-blue-500' : 'bg-gray-300'} text-white px-4 py-2 rounded flex items-center`}
               >
                 <ClockIcon className="h-5 w-5 mr-2" />
                 Programar
               </button>
             </div>
-            {isScheduled && (
-              <div className="mt-4">
-                <label htmlFor="date" className="block text-sm font-medium text-black">Fecha y hora:</label>
-                <input
-                  type="datetime-local"
-                  id="date"
-                  className="p-2 border rounded w-full text-black"
-                />
-              </div>
-            )}
           </div>
+
           <div className="flex justify-end space-x-4 mt-4">
-            <button className="bg-gray-500 text-white px-4 py-2 rounded">
-              Guardar borrador
-            </button>
-            <button className="bg-red-500 text-white px-4 py-2 rounded">
-              Publicar
+            <button className="bg-gray-500 text-white px-4 py-2 rounded">Guardar borrador</button>
+            <button
+                onClick={handlePost}
+                disabled={loading} // Deshabilitar el botón si está cargando
+                className={`bg-red-500 text-white px-4 py-2 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                {loading ? 'Publicando...' : 'Publicar'}
             </button>
           </div>
+
+          {/* Mostrar el mensaje de estado de la publicación */}
+          {postStatus && (
+            <div className="mt-4">
+              <p className={`text-sm ${postStatus.includes('éxito') ? 'text-green-600' : 'text-red-600'}`}>{postStatus}</p>
+            </div>
+          )}
         </div>
 
         {/* Bloque derecho - Vista previa con el componente Preview */}
@@ -197,8 +277,8 @@ export default function PublicarPage() {
           {/* Componente de vista previa */}
           <Preview
             text={postText}
-            media={mediaFiles.map(file => file.url)} // Solo las URLs
-            mediaType={mediaFiles.length > 0 ? mediaFiles[0].type : null} // Primer tipo de archivo
+            media={mediaFiles.map(file => file.url)}
+            mediaType={mediaFiles.length > 0 ? mediaFiles[0].type : null}
             selectedNetwork={selectedNetwork}
           />
         </div>
