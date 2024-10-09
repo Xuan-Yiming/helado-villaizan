@@ -23,6 +23,8 @@ export async function GET(request: Request) {
             redirect_uri: 'https://helado-villaizan.vercel.app/api/tiktok/access-token/callback'
         });
 
+        console.log('TikTok OAuth Response:', response.data);
+
         const access_token = response.data.access_token;
         const open_id = response.data.open_id;
 
@@ -38,7 +40,7 @@ export async function GET(request: Request) {
             return res;
         }
 
-        return NextResponse.json({ error: `Failed to retrieve TikTok access token. Content: ${response.data}` }, { status: 400 });
+        return NextResponse.json({ error: `Failed to retrieve TikTok access token.` }, { status: 400 });
     } catch (error) {
         return NextResponse.json({ error: `Error during TikTok OAuth process. Message: ${error}`  }, { status: 500 });
     }
