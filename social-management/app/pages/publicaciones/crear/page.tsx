@@ -23,7 +23,7 @@ export default function PublicarPage() {
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>('facebook');
   const [postStatus, setPostStatus] = useState<string>('');
 
-  // Cargar el token de acceso y el ID de la página desde el Local Storage al cargar la página
+  // Cargar el token de acceso y el ID de la página desde el Local Storage al cargar la página - ESTO DEBE SER DESDE LA BD
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [pageId, setPageId] = useState<string | null>(null);
 
@@ -67,9 +67,6 @@ export default function PublicarPage() {
     }
 };
 
-  
-  
-
   const handleRemoveMedia = (id: string) => {
     const fileToRemove = mediaFiles.find(file => file.id === id);
     if (fileToRemove) {
@@ -91,8 +88,6 @@ export default function PublicarPage() {
       fileInput.value = ''; // Esto resetea el valor del input
     }
   };
-  
-  
 
   const handlePost = async () => {
     // Verificar que al menos uno de los dos campos esté completo
@@ -219,10 +214,6 @@ export default function PublicarPage() {
       setPostStatus('No access token or page ID available.');
     }
   };
-  
-  
-
-
 
   const handleUserSelect = (id: number, network: NetworkType) => {
     if (selectedUsers.includes(id)) {

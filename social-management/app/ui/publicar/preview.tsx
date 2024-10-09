@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HandThumbUpIcon, ChatBubbleOvalLeftIcon, PaperAirplaneIcon, BookmarkIcon, HeartIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { ArrowRightCircleIcon, ArrowLeftCircleIcon } from '@heroicons/react/24/solid';
+import Logo from '../../ui/icons/logo-red';
 
 type PreviewProps = {
   text: string;
@@ -94,7 +95,9 @@ export default function Preview({ text, media, mediaType, selectedNetwork }: Pre
       {selectedNetwork === 'facebook' && (
         <div className="facebook-preview border p-4 rounded bg-white max-h-[600px] overflow-y-auto">
           <div className="flex items-center mb-4">
-            <img src="https://via.placeholder.com/40" alt="Profile" className="w-10 h-10 rounded-full mr-3" />
+            <div className="w-10 h-10 rounded-full mr-3 flex items-center justify-center overflow-hidden bg-white">
+              <Logo />
+            </div>
             <div>
               <span className="font-semibold text-black">Heladería Villaizan</span>
               <p className="text-sm text-gray-500">Just now</p>
@@ -127,7 +130,9 @@ export default function Preview({ text, media, mediaType, selectedNetwork }: Pre
       {selectedNetwork === 'instagram' && (
         <div className="instagram-preview border p-4 rounded bg-white max-h-[600px] overflow-y-auto relative">
           <div className="flex items-center mb-2">
-            <img src="https://via.placeholder.com/40" alt="Profile" className="w-10 h-10 rounded-full mr-3" />
+            <div className="w-10 h-10 rounded-full mr-3 flex items-center justify-center overflow-hidden bg-white">
+              <Logo />
+            </div>
             <div>
               <span className="font-semibold text-black">villaizanpaletasartesanales</span>
             </div>
