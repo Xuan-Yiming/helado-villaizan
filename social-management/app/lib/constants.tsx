@@ -37,7 +37,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     ],
   },
   {
-    title: 'Analisis',
+    title: 'Análisis',
     path: '/pages/analisis-reporte',
     icon: <PresentationChartLineIcon className='w-6' />,
     submenu: true,
