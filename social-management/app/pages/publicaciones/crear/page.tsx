@@ -105,9 +105,9 @@ export default function PublicarPage() {
         await handleFacebookPost(postText, mediaFiles, setPostStatus);
       }
       if (selectedUsers.includes(2)) {
-        // Aquí se podría agregar la lógica para Instagram
-        
-      }
+        // Publicar en Instagram
+        await handleInstagramPost(postText, mediaFiles, setPostStatus);
+      }      
       if (selectedUsers.includes(3)) {
         // Aquí se podría agregar la lógica para TikTok
       }

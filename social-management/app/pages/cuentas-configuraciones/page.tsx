@@ -147,11 +147,15 @@ export default function Page() {
                                     if (pages.length > 0) {
                                         const pageAccessToken = pages[0].access_token;
                                         const pageId = pages[0].id;
-    
+                            
                                         setFacebookAccessToken(pageAccessToken);
                                         console.log('Facebook Page Access Token:', pageAccessToken);
                                         console.log('Facebook Page ID:', pageId);
-    
+                            
+                                        // Guardar el token de acceso y el ID de la página en el Local Storage
+                                        localStorage.setItem('facebookAccessToken', pageAccessToken); // Asegúrate de que se esté guardando aquí
+                                        localStorage.setItem('facebookPageId', pageId);
+                            
                                         // Consultar si hay una cuenta de Instagram asociada a la página de Facebook
                                         window.FB.api(
                                             `/${pageId}?fields=instagram_business_account`,
@@ -161,36 +165,31 @@ export default function Page() {
                                                 if (instaResponse && instaResponse.instagram_business_account) {
                                                     const instagramAccountId = instaResponse.instagram_business_account.id;
                                                     console.log('Instagram Business Account ID:', instagramAccountId);
-    
+                            
+                                                    // Guardar el Instagram Business Account ID en el Local Storage
+                                                    localStorage.setItem('instagramAccountId', instagramAccountId);
+                            
                                                     // Actualizar el estado para mostrar que Facebook e Instagram están vinculados
                                                     const updatedAccounts = accountsState.map((account) =>
                                                         account.name === 'Facebook e Instagram' ? { ...account, linked: true } : account
                                                     );
                                                     setAccountsState(updatedAccounts);
-    
+                            
                                                     // Guardar el estado actualizado en Local Storage
                                                     localStorage.setItem('accountsState', JSON.stringify(updatedAccounts));
                                                 } else {
+                                                    console.error('Error obteniendo la cuenta de Instagram:', instaResponse);
                                                     console.log('No se encontró una cuenta de Instagram asociada.');
                                                 }
                                             }
                                         );
-    
-                                        // Actualizar el estado para mostrar que Facebook está vinculado
-                                        const updatedAccounts = accountsState.map((account) =>
-                                            account.name === 'Facebook e Instagram' ? { ...account, linked: true } : account
-                                        );
-                                        setAccountsState(updatedAccounts);
-    
-                                        // Guardar el estado actualizado en Local Storage
-                                        localStorage.setItem('accountsState', JSON.stringify(updatedAccounts));
                                     } else {
                                         console.log('No se encontraron páginas administradas por el usuario.');
                                     }
                                 } else {
                                     console.error('Error obteniendo páginas del usuario:', response.error);
                                 }
-                            });
+                            });                            
                         } else {
                             console.log('User cancelled login or did not fully authorize.');
                         }

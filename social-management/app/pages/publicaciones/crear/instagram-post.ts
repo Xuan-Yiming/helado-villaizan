@@ -1,107 +1,67 @@
-
 export const handleInstagramPost = async (
   postText: string,
   mediaFiles: Array<{ id: string; file: File; url: string; type: 'image' | 'video'; name: string }>,
-  setPostStatus: (status: string) => void,
-  setLoading: (loading: boolean) => void,
-  accessToken: string | null
+  setPostStatus: (status: string) => void
 ) => {
-  if (!accessToken) {
-    setPostStatus('No se encontró el token de acceso para Instagram.');
-    return;
+  const accessToken = localStorage.getItem('facebookAccessToken'); // Token de acceso de la página de Facebook
+  const instagramAccountId = localStorage.getItem('instagramAccountId'); // Instagram Business Account ID
+
+  if (!accessToken || !instagramAccountId) {
+      console.log('Access Token:' + accessToken);
+      console.log('Instagram id' + instagramAccountId);
+      setPostStatus('No se encontró la cuenta de Instagram vinculada o el token de acceso.');
+      return;
   }
 
-  setLoading(true); // Activar el estado de carga
   try {
-    if (mediaFiles.length > 0) {
-      const isVideoPost = mediaFiles.some(file => file.type === 'video');
-      const isImagePost = mediaFiles.every(file => file.type === 'image');
+      if (mediaFiles.length > 0) {
+          const isImagePost = mediaFiles.every(file => file.type === 'image');
+          
+          if (isImagePost) {
+              // Subir las imágenes al contenedor de medios de Instagram
+              const uploadedMedia = [];
+              for (const fileData of mediaFiles) {
+                  const fileFormData = new FormData();
+                  fileFormData.append('image_url', fileData.url); // Usar la URL del archivo para subir la imagen
+                  fileFormData.append('access_token', accessToken);
+                  fileFormData.append('caption', postText);
 
-      if (isVideoPost && !isImagePost) {
-        // Solo un video, no se permiten imágenes junto con videos
-        const videoFile = mediaFiles.find(file => file.type === 'video');
-        if (videoFile) {
-          const fileFormData = new FormData();
-          fileFormData.append('source', videoFile.file);
-          if (postText) {
-            fileFormData.append('caption', postText); // Añadir la descripción del video
-          }
+                  const endpoint = `https://graph.facebook.com/v15.0/${instagramAccountId}/media`;
+                  const response = await fetch(endpoint, { method: 'POST', body: fileFormData });
+                  const data = await response.json();
 
-          const endpoint = `https://graph.instagram.com/me/media?access_token=${accessToken}`;
+                  if (response.ok && data.id) {
+                      uploadedMedia.push(data.id); // Almacenar el ID de cada imagen subida
+                  } else {
+                      console.error('Error al subir la imagen a Instagram:', data);
+                      setPostStatus(`Error al subir la imagen a Instagram: ${data.error.message}`);
+                  }
+              }
 
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            body: fileFormData,
-          });
+              // Crear una publicación en Instagram con las imágenes subidas
+              const createPostEndpoint = `https://graph.facebook.com/v15.0/${instagramAccountId}/media_publish?access_token=${accessToken}`;
+              const postResponse = await fetch(createPostEndpoint, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ creation_id: uploadedMedia[0] }), // Usar la primera imagen para la publicación
+              });
 
-          const data = await response.json();
-
-          if (response.ok && data.id) {
-            setPostStatus('¡El video se ha publicado en Instagram con éxito!');
+              const postResult = await postResponse.json();
+              if (postResponse.ok && postResult.id) {
+                  setPostStatus('¡Las fotos se han publicado con éxito en Instagram!');
+              } else {
+                  console.error('Error al crear la publicación en Instagram:', postResult);
+                  setPostStatus(`Error al crear la publicación en Instagram: ${postResult.error.message}`);
+              }
           } else {
-            console.error('Error en la respuesta de Instagram:', data);
-            setPostStatus(`Error al publicar en Instagram: ${data.error.message}`);
+              setPostStatus('Instagram solo admite publicaciones con imágenes.');
           }
-        }
-      } else if (isImagePost) {
-        // Múltiples imágenes pero ningún video
-        const uploadedMedia = [];
-
-        for (const fileData of mediaFiles) {
-          const fileFormData = new FormData();
-          fileFormData.append('source', fileData.file);
-          const endpoint = `https://graph.instagram.com/me/media?access_token=${accessToken}&published=false`;
-
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            body: fileFormData,
-          });
-
-          const data = await response.json();
-
-          if (response.ok && data.id) {
-            uploadedMedia.push({ media_fbid: data.id });
-          } else {
-            console.error('Error en la respuesta de Instagram:', data);
-            setPostStatus(`Error al publicar en Instagram: ${data.error.message}`);
-            throw new Error(data.error.message);
-          }
-        }
-
-        // Crear la publicación en el feed usando los archivos subidos
-        const createPostEndpoint = `https://graph.instagram.com/me/media?access_token=${accessToken}`;
-        const postResponse = await fetch(createPostEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            attached_media: uploadedMedia,
-            caption: postText,
-          }),
-        });
-
-        const postResult = await postResponse.json();
-        if (postResponse.ok && postResult.id) {
-          setPostStatus('¡Las fotos se han publicado en Instagram con éxito!');
-        } else {
-          console.error('Error al crear la publicación en Instagram:', postResult);
-          setPostStatus(`Error al crear la publicación en Instagram: ${postResult.error.message}`);
-        }
       } else {
-        setPostStatus("No se puede mezclar imágenes y videos en una sola publicación en Instagram.");
+          // Publicación solo con texto (Instagram no permite solo texto, así que mostramos un error)
+          setPostStatus('Instagram no permite publicaciones que solo contengan texto.');
       }
-    } else {
-      setPostStatus('No se encontró contenido para publicar.');
-    }
   } catch (error) {
-    console.error('Error al intentar realizar la publicación en Instagram:', error);
-    if (error instanceof Error) {
-      setPostStatus(`Ocurrió un error al publicar en Instagram: ${error.message}`);
-    } else {
-      setPostStatus('Ocurrió un error desconocido al intentar realizar la publicación en Instagram.');
-    }
-  } finally {
-    setLoading(false); // Desactivar el estado de carga
+      console.error('Error al intentar publicar en Instagram:', error);
+      setPostStatus('Ocurrió un error desconocido al intentar publicar en Instagram.');
   }
 };
