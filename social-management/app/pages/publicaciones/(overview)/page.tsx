@@ -114,7 +114,7 @@ const Page = () => {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                     {/* Example Post */}
                     <MessageCard
-                        userName="John Doe"
+                        userName="Juan Cruz"
                         postTime="Hace 2 horas"
                         comment="Este es un comentario de ejemplo"
                         content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "
@@ -124,7 +124,7 @@ const Page = () => {
                         image='/images/images.jpeg'
                     />
                     <MessageCard
-                        userName="John Doe"
+                        userName="Jorge Cruz"
                         postTime="Hace 2 horas"
                         comment="Este es un comentario de ejemplo"
                         content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis."
@@ -134,7 +134,7 @@ const Page = () => {
                         image='/images/images.jpeg'
                     />
                     <MessageCard
-                        userName="John Doe"
+                        userName="Juliana Cruz"
                         postTime="Hace 2 horas"
                         comment="Este es un comentario de ejemplo"
                         content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "

@@ -73,19 +73,17 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
 
           {subMenuOpen && (
             <div className="my-2 ml-12 flex flex-col space-y-4">
-              {item.subMenuItems?.map((subItem, idx) => {
-                return (
-                  <Link
-                    key={idx}
-                    href={subItem.path}
-                    className={`${
-                      subItem.path === pathname ? 'font-bold text-[#BD181E]' : ''
-                    }`}
-                  >
-                    <span>{subItem.title}</span>
-                  </Link>
-                );
-              })}
+              {item.subMenuItems?.map((subItem, idx) => (
+                <Link
+                  key={idx}
+                  href={subItem.path}
+                  className={`${
+                    subItem.path === pathname ? 'font-bold text-[#BD181E]' : ''
+                  } hover:text-[#BD181E]`} // 
+                >
+                  <span>{subItem.title}</span>
+                </Link>
+              ))}
             </div>
           )}
         </>
