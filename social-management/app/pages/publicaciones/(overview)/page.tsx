@@ -121,7 +121,7 @@ const Page = () => {
                         socialIcon={<FacebookLogo/>}
                         liked={false}
                         saved={false}
-                        image='/images/images.jpeg'
+                        image='/images/Logo-red.png'
                     />
                     <MessageCard
                         userName="Jorge Cruz"
@@ -131,7 +131,7 @@ const Page = () => {
                         socialIcon={<InstagramLogo/>}
                         liked={true}
                         saved={false}
-                        image='/images/images.jpeg'
+                        image='/images/Logo-red.png'
                     />
                     <MessageCard
                         userName="Juliana Cruz"
@@ -141,7 +141,7 @@ const Page = () => {
                         socialIcon={<TiktokLogo/>}
                         liked={false}
                         saved={true}
-                        image='/images/images.jpeg'
+                        image='/images/Logo-red.png'
                     />
             </div>
         </div>
