@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSelectedLayoutSegment } from 'next/navigation';
 import SocialHubLogo from '../icons/social-hub-logo';
 import useScroll from '@/app/hooks/use-scroll';
-import { cn } from '@/app/lib/utils';
 
 const Header = () => {
   const scrolled = useScroll(5);
@@ -13,15 +12,9 @@ const Header = () => {
 
   return (
     <div
-      className={cn(
-        `sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-gray-200`,
-        {
-          // Cambié el color de fondo a #BD181E
-          'bg-[#BD181E] backdrop-blur-lg': scrolled, // color #BD181E cuando se hace scroll
-          'bg-[#BD181E]': selectedLayout, // color #BD181E fijo
-        }
-      )}
-      style={{ marginTop: 0, paddingTop: 0 }} // Eliminar márgenes o padding extras
+      className={`sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-gray-200 ${
+        scrolled ? 'border-b border-gray-200 bg-[#BD181E]/75 backdrop-blur-lg' : ''
+      } ${selectedLayout ? 'border-b border-gray-200 bg-[#BD181E]' : ''}`}
     >
       <div className="flex h-[79px] items-center justify-between px-4">
         <div className="flex items-center space-x-4">

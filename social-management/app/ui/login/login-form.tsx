@@ -38,7 +38,7 @@ export default function LoginForm() {
     <form className="space-y-3" onSubmit={handleSubmit} >
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
         <h1 className={`${inter.className} mb-3 text-2xl`}>
-          Por favor inicia sesión
+          Iniciar sesión
         </h1>
         <div className="w-full">
           <div>
