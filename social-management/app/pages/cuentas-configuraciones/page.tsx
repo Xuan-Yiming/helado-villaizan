@@ -193,7 +193,7 @@ export default function Page() {
                         } else {
                             console.log('User cancelled login or did not fully authorize.');
                         }
-                    }, { scope: 'pages_manage_posts,pages_read_engagement,pages_show_list,pages_manage_metadata,business_management,instagram_basic,instagram_manage_insights' });
+                    }, { scope: 'pages_manage_posts,pages_read_engagement,pages_show_list,pages_manage_metadata,business_management,instagram_basic,instagram_manage_insights,instagram_content_publish' });
                     break;
                 case 'Tiktok':
                     return '/api/tiktok/login';
