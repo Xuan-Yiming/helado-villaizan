@@ -112,13 +112,26 @@ export default function Page() {
         if (linked) {
             switch (name) {
                 case 'Facebook e Instagram':
-                    return '/api/facebook/logout'; // Desvincula tanto Facebook como Instagram
+                    // Desvincular tanto Facebook como Instagram
+                    // Eliminar tokens del Local Storage y actualizar el estado de la cuenta
+                    localStorage.removeItem('facebookAccessToken');
+                    localStorage.removeItem('facebookPageId');
+        
+                    // Actualizar el estado para reflejar que las cuentas están desvinculadas
+                    const updatedAccounts = accountsState.map((account) =>
+                        account.name === 'Facebook e Instagram' ? { ...account, linked: false } : account
+                    );
+                    setAccountsState(updatedAccounts);
+                    localStorage.setItem('accountsState', JSON.stringify(updatedAccounts));
+                    console.log('Facebook e Instagram desvinculados correctamente.');
+        
+                    break;
                 case 'Tiktok':
                     return '/api/tiktok/logout';
                 case 'Google':
                     return '/api/google/logout';
             }
-        } else {
+        }   else {
             switch (name) {
                 case 'Facebook e Instagram':
                     // Iniciar el proceso de vinculación con Facebook e Instagram
