@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { inter } from '../../../ui/fonts';
 import Preview from '../../../ui/publicar/preview';
+import { handleFacebookPost } from './facebook-post'; // Importar la función para manejar publicaciones en Facebook
+import { handleInstagramPost } from './instagram-post'; // Importar la función para manejar publicaciones en Instagram
+// import { handleTiktokPost } from './tiktok-post'; // Importar la función para manejar publicaciones en TikTok
 
 type NetworkType = 'facebook' | 'instagram' | 'tiktok';
 
@@ -90,128 +93,29 @@ export default function PublicarPage() {
   };
 
   const handlePost = async () => {
-    // Verificar que al menos uno de los dos campos esté completo
-    if (!postText && mediaFiles.length === 0) {
-      setPostStatus("Completa la publicación");
+    if (selectedUsers.length === 0) {
+      setPostStatus('Por favor, selecciona al menos un usuario para publicar.');
       return;
     }
-  
-    if (accessToken && pageId) {
-      setLoading(true); // Activar el estado de carga
-      let endpoint = '';
-  
-      try {
-        if (mediaFiles.length > 0) {
-          const isVideoPost = mediaFiles.some(file => file.type === 'video');
-          const isImagePost = mediaFiles.every(file => file.type === 'image');
-  
-          if (isVideoPost && !isImagePost) {
-            // Solo un video, no se permiten imágenes junto con videos
-            const videoFile = mediaFiles.find(file => file.type === 'video');
-            if (videoFile) {
-              const fileFormData = new FormData();
-              fileFormData.append('source', videoFile.file);
-              if (postText) {
-                fileFormData.append('description', postText); // Añadir descripción si existe
-              }
-  
-              endpoint = `https://graph.facebook.com/${pageId}/videos?access_token=${accessToken}`;
-  
-              const response = await fetch(endpoint, {
-                method: 'POST',
-                body: fileFormData,
-              });
-  
-              const data = await response.json();
-  
-              if (response.ok && data.id) {
-                setPostStatus("¡El video se ha publicado con éxito!");
-              } else {
-                console.error('Error en la respuesta:', data);
-                setPostStatus(`Error al publicar en Facebook: ${data.error.message}`);
-              }
-            }
-          } else if (isImagePost) {
-            // Múltiples imágenes pero ningún video
-            const uploadedMedia = [];
-  
-            for (const fileData of mediaFiles) {
-              const fileFormData = new FormData();
-              fileFormData.append('source', fileData.file);
-              endpoint = `https://graph.facebook.com/${pageId}/photos?access_token=${accessToken}&published=false`;
-  
-              const response = await fetch(endpoint, {
-                method: 'POST',
-                body: fileFormData,
-              });
-  
-              const data = await response.json();
-  
-              if (response.ok && data.id) {
-                uploadedMedia.push({ media_fbid: data.id });
-              } else {
-                console.error('Error en la respuesta:', data);
-                setPostStatus(`Error al publicar en Facebook: ${data.error.message}`);
-                throw new Error(data.error.message);
-              }
-            }
-  
-            // Crear la publicación en el feed usando los archivos subidos
-            const createPostEndpoint = `https://graph.facebook.com/${pageId}/feed?access_token=${accessToken}`;
-            const postResponse = await fetch(createPostEndpoint, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                attached_media: uploadedMedia,
-                message: postText,
-              }),
-            });
-  
-            const postResult = await postResponse.json();
-            if (postResponse.ok && postResult.id) {
-              setPostStatus('¡Las fotos se han publicado con éxito!');
-            } else {
-              console.error('Error al crear la publicación:', postResult);
-              setPostStatus(`Error al crear la publicación: ${postResult.error.message}`);
-            }
-          } else {
-            setPostStatus("No se puede mezclar imágenes y videos en una sola publicación.");
-          }
-        } else {
-          // Si no hay archivo, pero hay mensaje, usar el endpoint de solo texto
-          const textPostEndpoint = `https://graph.facebook.com/${pageId}/feed?access_token=${accessToken}`;
-          const textResponse = await fetch(textPostEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message: postText }),
-          });
-  
-          const textData = await textResponse.json();
-  
-          if (textResponse.ok && textData.id) {
-            setPostStatus('¡La publicación de texto se ha realizado con éxito!');
-          } else {
-            console.error('Error en la respuesta:', textData);
-            setPostStatus(`Error al publicar en Facebook: ${textData.error.message}`);
-          }
-        }
-      } catch (error: unknown) {
-        console.error('Error al intentar realizar la publicación:', error);
-        if (error instanceof Error) {
-          setPostStatus(`Ocurrió un error al publicar en Facebook: ${error.message}`);
-        } else {
-          setPostStatus('Ocurrió un error desconocido al intentar realizar la publicación.');
-        }
-      } finally {
-        setLoading(false); // Desactivar el estado de carga
+
+    setLoading(true);
+    try {
+      if (selectedUsers.includes(1)) {
+        // Publicar en Facebook
+        await handleFacebookPost(postText, mediaFiles, setPostStatus);
       }
-    } else {
-      console.log('No access token or page ID available.');
-      setPostStatus('No access token or page ID available.');
+      if (selectedUsers.includes(2)) {
+        // Aquí se podría agregar la lógica para Instagram
+        
+      }
+      if (selectedUsers.includes(3)) {
+        // Aquí se podría agregar la lógica para TikTok
+      }
+    } catch (error) {
+      console.error('Error al intentar realizar la publicación:', error);
+      setPostStatus('Ocurrió un error al publicar en la(s) red(es) seleccionada(s).');
+    } finally {
+      setLoading(false);
     }
   };
 
