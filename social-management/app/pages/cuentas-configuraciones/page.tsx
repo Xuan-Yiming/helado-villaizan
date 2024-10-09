@@ -25,11 +25,7 @@ interface Account {
 
 const initialAccounts: Account[] = [
     {
-        name: 'Facebook',
-        linked: false,
-    },
-    {
-        name: 'Instagram',
+        name: 'Facebook e Instagram',
         linked: false,
     },
     {
@@ -41,6 +37,7 @@ const initialAccounts: Account[] = [
         linked: false,
     },
 ];
+
 
 export default function Page() {
     const router = useRouter();
@@ -91,10 +88,17 @@ export default function Page() {
 
     const getLogo = (name: string) => {
         switch (name) {
-            case 'Facebook':
-                return <FacebookLogo />;
-            case 'Instagram':
-                return <InstagramLogo />;
+            case 'Facebook e Instagram':
+                return (
+                    <div className="flex items-center">
+                        <div className="mr-2">
+                            <FacebookLogo />
+                        </div>
+                        <div>
+                            <InstagramLogo />
+                        </div>
+                    </div>
+                );
             case 'Tiktok':
                 return <TiktokLogo />;
             case 'Google':
@@ -107,69 +111,87 @@ export default function Page() {
     const handleLink = (name: string, linked: boolean) => {
         if (linked) {
             switch (name) {
+                case 'Facebook e Instagram':
+                    return '/api/facebook/logout'; // Desvincula tanto Facebook como Instagram
                 case 'Tiktok':
                     return '/api/tiktok/logout';
-                case 'Facebook':
-                    return '/api/facebook/logout';
-                case 'Instagram':
-                    return '/api/instagram/logout';
                 case 'Google':
                     return '/api/google/logout';
             }
         } else {
             switch (name) {
+                case 'Facebook e Instagram':
+                    // Iniciar el proceso de vinculación con Facebook e Instagram
+                    window.FB.login(function (response: any) {
+                        if (response.authResponse) {
+                            const userAccessToken = response.authResponse.accessToken;
+                            console.log('Facebook login successful:', response);
+                            console.log('User Access Token:', userAccessToken);
+    
+                            window.FB.api('/me/accounts', 'GET', { access_token: userAccessToken }, function (response: any) {
+                                if (response && !response.error) {
+                                    const pages = response.data;
+                                    if (pages.length > 0) {
+                                        const pageAccessToken = pages[0].access_token;
+                                        const pageId = pages[0].id;
+    
+                                        setFacebookAccessToken(pageAccessToken);
+                                        console.log('Facebook Page Access Token:', pageAccessToken);
+                                        console.log('Facebook Page ID:', pageId);
+    
+                                        // Consultar si hay una cuenta de Instagram asociada a la página de Facebook
+                                        window.FB.api(
+                                            `/${pageId}?fields=instagram_business_account`,
+                                            'GET',
+                                            { access_token: pageAccessToken },
+                                            function (instaResponse: any) {
+                                                if (instaResponse && instaResponse.instagram_business_account) {
+                                                    const instagramAccountId = instaResponse.instagram_business_account.id;
+                                                    console.log('Instagram Business Account ID:', instagramAccountId);
+    
+                                                    // Actualizar el estado para mostrar que Facebook e Instagram están vinculados
+                                                    const updatedAccounts = accountsState.map((account) =>
+                                                        account.name === 'Facebook e Instagram' ? { ...account, linked: true } : account
+                                                    );
+                                                    setAccountsState(updatedAccounts);
+    
+                                                    // Guardar el estado actualizado en Local Storage
+                                                    localStorage.setItem('accountsState', JSON.stringify(updatedAccounts));
+                                                } else {
+                                                    console.log('No se encontró una cuenta de Instagram asociada.');
+                                                }
+                                            }
+                                        );
+    
+                                        // Actualizar el estado para mostrar que Facebook está vinculado
+                                        const updatedAccounts = accountsState.map((account) =>
+                                            account.name === 'Facebook e Instagram' ? { ...account, linked: true } : account
+                                        );
+                                        setAccountsState(updatedAccounts);
+    
+                                        // Guardar el estado actualizado en Local Storage
+                                        localStorage.setItem('accountsState', JSON.stringify(updatedAccounts));
+                                    } else {
+                                        console.log('No se encontraron páginas administradas por el usuario.');
+                                    }
+                                } else {
+                                    console.error('Error obteniendo páginas del usuario:', response.error);
+                                }
+                            });
+                        } else {
+                            console.log('User cancelled login or did not fully authorize.');
+                        }
+                    }, { scope: 'pages_manage_posts,pages_read_engagement,pages_show_list,pages_manage_metadata,business_management,instagram_basic,instagram_manage_insights' });
+                    break;
                 case 'Tiktok':
                     return '/api/tiktok/login';
-                case 'Facebook':
-                    // Iniciar el proceso de vinculación con Facebook
-                    window.FB.login(function (response: any) {
-                    if (response.authResponse) {
-                        const userAccessToken = response.authResponse.accessToken;
-                        console.log('Facebook login successful:', response);
-                        console.log('User Access Token:', userAccessToken);
-                        // Usar el token de usuario para hacer una solicitud a la API Graph y obtener las páginas
-                        window.FB.api('/me/accounts', 'GET', { access_token: userAccessToken }, function (response: any) {
-                            if (response && !response.error) {
-                                const pages = response.data;
-                                if (pages.length > 0) {
-                                    const pageAccessToken = pages[0].access_token;
-                                    const pageId = pages[0].id;
-
-                                    setFacebookAccessToken(pageAccessToken);
-                                    console.log('Facebook Page Access Token:', pageAccessToken);
-                                    console.log('Facebook Page ID:', pageId);
-
-                                    // Guardar el accessToken y el pageId en Local Storage
-                                    localStorage.setItem('facebookAccessToken', pageAccessToken);
-                                    localStorage.setItem('facebookPageId', pageId);
-
-                                    // Actualizar el estado para mostrar que Facebook está vinculado
-                                    const updatedAccounts = accountsState.map((account) =>
-                                        account.name === 'Facebook' ? { ...account, linked: true } : account
-                                    );
-                                    setAccountsState(updatedAccounts);
-
-                                    // Guardar el estado actualizado en Local Storage
-                                    localStorage.setItem('accountsState', JSON.stringify(updatedAccounts));
-                                } else {
-                                    console.log('No se encontraron páginas administradas por el usuario.');
-                                }
-                            } else {
-                                console.error('Error obteniendo páginas del usuario:', response.error);
-                            }
-                        });
-                    } else {
-                    console.log('User cancelled login or did not fully authorize.');
-                    }}, { scope: 'pages_manage_posts,pages_read_engagement,pages_show_list,pages_manage_metadata,business_management' });
-                        break;
-                    case 'Instagram':
-                        return '/api/instagram/login';
-                    case 'Google':
-                        return '/api/google/login';
-                }
+                case 'Google':
+                    return '/api/google/login';
             }
-            return '';
-        };
+        }
+        return '';
+    };
+    
 
     return (
         <main>
@@ -206,6 +228,7 @@ export default function Page() {
                     ))}
                 </div>
             </div>
+
 
             <div className="mt-10">
                 <h2 className="font-bold text-2xl">Configuraciones</h2>
