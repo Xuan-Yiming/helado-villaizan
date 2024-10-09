@@ -21,82 +21,68 @@ export default function Preview({ text, media, mediaType, selectedNetwork }: Pre
   };
 
   const renderMediaForFacebook = () => {
-    if (media.length === 1) {
-      return (
-        <div className="w-full h-auto bg-gray-200 flex items-center justify-center mb-2">
-          <img src={media[0]} alt="Media" className="w-full h-full object-cover" />
-        </div>
-      );
-    }
-
-    if (media.length === 2) {
-      return (
-        <div className="grid grid-cols-2 gap-2">
-          {media.slice(0, 2).map((item, index) => (
-            <img key={index} src={item} alt={`Media ${index}`} className="w-full h-full object-cover" />
-          ))}
-        </div>
-      );
-    }
-
-    if (media.length === 3) {
-      return (
-        <div className="grid grid-cols-2 gap-2">
-          <img src={media[0]} alt="Media 0" className="col-span-2 w-full h-full object-cover" />
-          <img src={media[1]} alt="Media 1" className="w-full h-full object-cover" />
-          <img src={media[2]} alt="Media 2" className="w-full h-full object-cover" />
-        </div>
-      );
-    }
-
-    if (media.length === 4) {
-      return (
-        <div className="grid grid-cols-2 gap-2">
-          {media.slice(0, 4).map((item, index) => (
-            <img key={index} src={item} alt={`Media ${index}`} className="w-full h-full object-cover" />
-          ))}
-        </div>
-      );
-    }
-
-    if (media.length === 5) {
-      return (
-        <div className="grid grid-cols-2 gap-2">
-          <div className="grid grid-cols-2 gap-2 col-span-2">
-            <img src={media[0]} alt="Media 0" className="w-full h-60 object-cover" />
-            <img src={media[1]} alt="Media 1" className="w-full h-60 object-cover" />
-          </div>
-          <div className="grid grid-cols-3 gap-2 col-span-2">
-            {media.slice(2, 5).map((item, index) => (
-              <img key={index} src={item} alt={`Media ${index + 2}`} className="w-full h-40 object-cover" />
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    if (media.length > 5) {
-      return (
-        <div className="grid grid-cols-2 gap-2">
-          <div className="grid grid-cols-2 gap-2 col-span-2">
-            <img src={media[0]} alt="Media 0" className="w-full h-60 object-cover" />
-            <img src={media[1]} alt="Media 1" className="w-full h-60 object-cover" />
-          </div>
-          <div className="grid grid-cols-3 gap-2 col-span-2">
-            {media.slice(2, 4).map((item, index) => (
-              <img key={index} src={item} alt={`Media ${index + 2}`} className="w-full h-40 object-cover" />
-            ))}
-            <div className="relative w-full h-40 bg-gray-300">
-              <img src={media[4]} alt="Media 4" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-3xl font-bold">
-                +{media.length - 5}
-              </div>
+    if (mediaType === 'video') {
+        // Renderiza el video correctamente si el mediaType es 'video'
+        return (
+            <div className="w-full h-auto bg-gray-200 flex items-center justify-center mb-2">
+                <video controls className="w-full h-full object-cover">
+                    <source src={media[0]} type="video/mp4" />
+                    Tu navegador no soporta video.
+                </video>
             </div>
-          </div>
-        </div>
-      );
+        );
+    } else if (mediaType === 'image' && media.length === 1) {
+        return (
+            <div className="w-full h-auto bg-gray-200 flex items-center justify-center mb-2">
+                <img src={media[0]} alt="Media" className="w-full h-full object-cover" />
+            </div>
+        );
+    } else if (mediaType === 'image' && media.length === 2) {
+        return (
+            <div className="grid grid-cols-2 gap-2">
+                {media.slice(0, 2).map((item, index) => (
+                    <img key={index} src={item} alt={`Media ${index}`} className="w-full h-full object-cover" />
+                ))}
+            </div>
+        );
+    } else if (mediaType === 'image' && media.length === 3) {
+        return (
+            <div className="grid grid-cols-2 gap-2">
+                <img src={media[0]} alt="Media 0" className="col-span-2 w-full h-full object-cover" />
+                <img src={media[1]} alt="Media 1" className="w-full h-full object-cover" />
+                <img src={media[2]} alt="Media 2" className="w-full h-full object-cover" />
+            </div>
+        );
+    } else if (mediaType === 'image' && media.length === 4) {
+        return (
+            <div className="grid grid-cols-2 gap-2">
+                {media.slice(0, 4).map((item, index) => (
+                    <img key={index} src={item} alt={`Media ${index}`} className="w-full h-full object-cover" />
+                ))}
+            </div>
+        );
+    } else if (mediaType === 'image' && media.length > 4) {
+        return (
+            <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 col-span-2">
+                    <img src={media[0]} alt="Media 0" className="w-full h-60 object-cover" />
+                    <img src={media[1]} alt="Media 1" className="w-full h-60 object-cover" />
+                </div>
+                <div className="grid grid-cols-3 gap-2 col-span-2">
+                    {media.slice(2, 4).map((item, index) => (
+                        <img key={index} src={item} alt={`Media ${index + 2}`} className="w-full h-40 object-cover" />
+                    ))}
+                    <div className="relative w-full h-40 bg-gray-300">
+                        <img src={media[4]} alt="Media 4" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-3xl font-bold">
+                            +{media.length - 5}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
-  };
+};
 
   return (
     <div>

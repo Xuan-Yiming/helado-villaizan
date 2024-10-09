@@ -10,6 +10,8 @@ type NetworkType = 'facebook' | 'instagram' | 'tiktok';
 export default function PublicarPage() {
   const [isScheduled, setIsScheduled] = useState(false);
   const [postText, setPostText] = useState('');
+  const [isVideoSelected, setIsVideoSelected] = useState(false);
+  const [isImageSelected, setIsImageSelected] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<Array<{ id: string; file: File; url: string; type: 'image' | 'video'; name: string }>>([]);
   const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
   const [users] = useState([
@@ -43,80 +45,166 @@ export default function PublicarPage() {
   const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>, mediaType: 'image' | 'video') => {
     const files = event.target.files;
     if (files) {
-      const newFiles = Array.from(files).map(file => ({
-        id: generateUniqueID(),
-        file,
-        url: URL.createObjectURL(file),
-        type: mediaType,
-        name: file.name,
-      }));
-      setMediaFiles([...mediaFiles, ...newFiles]);
+        const newFiles = Array.from(files).map(file => ({
+            id: generateUniqueID(),
+            file,
+            url: URL.createObjectURL(file),
+            type: mediaType,
+            name: file.name,
+        }));
+
+        setMediaFiles([...mediaFiles, ...newFiles]);
+
+        if (mediaType === 'video') {
+            setIsVideoSelected(true);
+            setIsImageSelected(true); // Deshabilita la opción de agregar imágenes cuando se selecciona un video
+        } else if (mediaType === 'image') {
+            setIsImageSelected(true); // Mantén la opción de agregar más imágenes activada
+        }
+
+        // Reiniciar el valor del input para permitir volver a subir el mismo archivo
+        event.target.value = ''; // Esta línea asegura que el input de archivo se restablezca
     }
-  };
+};
+
+  
+  
 
   const handleRemoveMedia = (id: string) => {
-    setMediaFiles(mediaFiles.filter(file => file.id !== id));
+    const fileToRemove = mediaFiles.find(file => file.id === id);
+    if (fileToRemove) {
+      URL.revokeObjectURL(fileToRemove.url); // Liberar el objeto URL creado
+    }
+  
+    const updatedMediaFiles = mediaFiles.filter(file => file.id !== id);
+    setMediaFiles(updatedMediaFiles);
+  
+    // Si se eliminan todos los archivos, restablecer los estados de selección
+    if (updatedMediaFiles.length === 0) {
+      setIsVideoSelected(false);
+      setIsImageSelected(false);
+    }
+  
+    // Resetear el valor del input para que permita volver a subir el mismo archivo
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = '';
+      fileInput.value = ''; // Esto resetea el valor del input
     }
   };
+  
+  
 
   const handlePost = async () => {
+    // Verificar que al menos uno de los dos campos esté completo
     if (!postText && mediaFiles.length === 0) {
-      setPostStatus('Completa la publicación');
+      setPostStatus("Completa la publicación");
       return;
     }
   
     if (accessToken && pageId) {
       setLoading(true); // Activar el estado de carga
-      const formData = new FormData();
       let endpoint = '';
   
       try {
-        // Si hay archivos en el arreglo `mediaFiles`, los añadimos al FormData
         if (mediaFiles.length > 0) {
-          // Subir cada archivo por separado si es necesario
-          for (const fileData of mediaFiles) {
-            const fileFormData = new FormData();
-            fileFormData.append('source', fileData.file);
-            fileFormData.append('message', postText); // Añadir el mensaje al post si existe
-            const isVideo = fileData.type === 'video';
-            endpoint = isVideo
-              ? `https://graph.facebook.com/${pageId}/videos?access_token=${accessToken}`
-              : `https://graph.facebook.com/${pageId}/photos?access_token=${accessToken}`;
+          const isVideoPost = mediaFiles.some(file => file.type === 'video');
+          const isImagePost = mediaFiles.every(file => file.type === 'image');
   
-            const response = await fetch(endpoint, {
+          if (isVideoPost && !isImagePost) {
+            // Solo un video, no se permiten imágenes junto con videos
+            const videoFile = mediaFiles.find(file => file.type === 'video');
+            if (videoFile) {
+              const fileFormData = new FormData();
+              fileFormData.append('source', videoFile.file);
+              if (postText) {
+                fileFormData.append('description', postText); // Añadir descripción si existe
+              }
+  
+              endpoint = `https://graph.facebook.com/${pageId}/videos?access_token=${accessToken}`;
+  
+              const response = await fetch(endpoint, {
+                method: 'POST',
+                body: fileFormData,
+              });
+  
+              const data = await response.json();
+  
+              if (response.ok && data.id) {
+                setPostStatus("¡El video se ha publicado con éxito!");
+              } else {
+                console.error('Error en la respuesta:', data);
+                setPostStatus(`Error al publicar en Facebook: ${data.error.message}`);
+              }
+            }
+          } else if (isImagePost) {
+            // Múltiples imágenes pero ningún video
+            const uploadedMedia = [];
+  
+            for (const fileData of mediaFiles) {
+              const fileFormData = new FormData();
+              fileFormData.append('source', fileData.file);
+              endpoint = `https://graph.facebook.com/${pageId}/photos?access_token=${accessToken}&published=false`;
+  
+              const response = await fetch(endpoint, {
+                method: 'POST',
+                body: fileFormData,
+              });
+  
+              const data = await response.json();
+  
+              if (response.ok && data.id) {
+                uploadedMedia.push({ media_fbid: data.id });
+              } else {
+                console.error('Error en la respuesta:', data);
+                setPostStatus(`Error al publicar en Facebook: ${data.error.message}`);
+                throw new Error(data.error.message);
+              }
+            }
+  
+            // Crear la publicación en el feed usando los archivos subidos
+            const createPostEndpoint = `https://graph.facebook.com/${pageId}/feed?access_token=${accessToken}`;
+            const postResponse = await fetch(createPostEndpoint, {
               method: 'POST',
-              body: fileFormData,
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                attached_media: uploadedMedia,
+                message: postText,
+              }),
             });
   
-            const data = await response.json();
-  
-            if (!response.ok || !data.id) {
-              throw new Error(data.error.message || 'Error desconocido al subir el archivo');
+            const postResult = await postResponse.json();
+            if (postResponse.ok && postResult.id) {
+              setPostStatus('¡Las fotos se han publicado con éxito!');
+            } else {
+              console.error('Error al crear la publicación:', postResult);
+              setPostStatus(`Error al crear la publicación: ${postResult.error.message}`);
             }
+          } else {
+            setPostStatus("No se puede mezclar imágenes y videos en una sola publicación.");
           }
-          setPostStatus('¡La publicación se ha realizado con éxito!');
         } else {
           // Si no hay archivo, pero hay mensaje, usar el endpoint de solo texto
-          formData.append('message', postText); // Añadir mensaje al post
-          endpoint = `https://graph.facebook.com/${pageId}/feed?access_token=${accessToken}`;
-  
-          const response = await fetch(endpoint, {
+          const textPostEndpoint = `https://graph.facebook.com/${pageId}/feed?access_token=${accessToken}`;
+          const textResponse = await fetch(textPostEndpoint, {
             method: 'POST',
-            body: formData,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: postText }),
           });
   
-          const data = await response.json();
+          const textData = await textResponse.json();
   
-          if (response.ok && data.id) {
-            setPostStatus('¡La publicación se ha realizado con éxito!');
+          if (textResponse.ok && textData.id) {
+            setPostStatus('¡La publicación de texto se ha realizado con éxito!');
           } else {
-            throw new Error(data.error.message || 'Error desconocido al publicar texto');
+            console.error('Error en la respuesta:', textData);
+            setPostStatus(`Error al publicar en Facebook: ${textData.error.message}`);
           }
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error al intentar realizar la publicación:', error);
         if (error instanceof Error) {
           setPostStatus(`Ocurrió un error al publicar en Facebook: ${error.message}`);
@@ -132,6 +220,9 @@ export default function PublicarPage() {
     }
   };
   
+  
+
+
 
   const handleUserSelect = (id: number, network: NetworkType) => {
     if (selectedUsers.includes(id)) {
@@ -200,13 +291,26 @@ export default function PublicarPage() {
 
             {/* Botones para subir archivos */}
             <div className="flex items-center space-x-4 mt-4">
-              <label className="flex items-center cursor-pointer">
-                <CameraIcon className="h-6 w-6 text-gray-500" />
-                <input type="file" accept="image/*" className="hidden" multiple onChange={(e) => handleMediaUpload(e, 'image')} />
+              <label className={`flex items-center cursor-pointer ${isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <CameraIcon className={`h-6 w-6 ${isVideoSelected ? 'text-gray-300' : 'text-gray-500'}`} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  multiple
+                  onChange={(e) => handleMediaUpload(e, 'image')}
+                  disabled={isVideoSelected} // Deshabilitar si hay un video seleccionado
+                />
               </label>
-              <label className="flex items-center cursor-pointer">
-                <VideoCameraIcon className="h-6 w-6 text-gray-500" />
-                <input type="file" accept="video/*" className="hidden" multiple onChange={(e) => handleMediaUpload(e, 'video')} />
+              <label className={`flex items-center cursor-pointer ${isImageSelected || isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <VideoCameraIcon className={`h-6 w-6 ${isImageSelected || isVideoSelected ? 'text-gray-300' : 'text-gray-500'}`} />
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => handleMediaUpload(e, 'video')}
+                  disabled={isImageSelected || isVideoSelected} // Deshabilitar si hay una imagen o un video seleccionado
+                />
               </label>
             </div>
           </div>
