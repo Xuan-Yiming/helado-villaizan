@@ -123,13 +123,13 @@ export default function Page() {
                 case 'Facebook':
                     // Iniciar el proceso de vinculación con Facebook
                     window.FB.login(function (response: any) {
-                        if (response.authResponse) {
-                            const userAccessToken = response.authResponse.accessToken;
-                            console.log('Facebook login successful:', response);
-                            console.log('User Access Token:', userAccessToken);
-
-                            // Obtener las páginas administradas por el usuario
-                            window.FB.api('/me/accounts', function (response: any) {
+                    if (response.authResponse) {
+                        const userAccessToken = response.authResponse.accessToken;
+                        console.log('Facebook login successful:', response);
+                        console.log('User Access Token:', userAccessToken);
+                        // Usar el token de usuario para hacer una solicitud a la API Graph y obtener las páginas
+                        window.FB.api('/me/accounts', 'GET', { access_token: userAccessToken }, function (response: any) {
+                            if (response && !response.error) {
                                 const pages = response.data;
                                 if (pages.length > 0) {
                                     const pageAccessToken = pages[0].access_token;
@@ -154,20 +154,22 @@ export default function Page() {
                                 } else {
                                     console.log('No se encontraron páginas administradas por el usuario.');
                                 }
-                            });
-                        } else {
-                            console.log('User cancelled login or did not fully authorize.');
-                        }
-                    }, { scope: 'pages_manage_posts,pages_read_engagement,pages_show_list' });
-                    break;
-                case 'Instagram':
-                    return '/api/instagram/login';
-                case 'Google':
-                    return '/api/google/login';
+                            } else {
+                                console.error('Error obteniendo páginas del usuario:', response.error);
+                            }
+                        });
+                    } else {
+                    console.log('User cancelled login or did not fully authorize.');
+                    }}, { scope: 'pages_manage_posts,pages_read_engagement,pages_show_list,pages_manage_metadata,business_management' });
+                        break;
+                    case 'Instagram':
+                        return '/api/instagram/login';
+                    case 'Google':
+                        return '/api/google/login';
+                }
             }
-        }
-        return '';
-    };
+            return '';
+        };
 
     return (
         <main>
