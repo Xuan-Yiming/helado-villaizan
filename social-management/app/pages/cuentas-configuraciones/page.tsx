@@ -79,6 +79,9 @@ export default function Page() {
                 }
             })(document, 'script', 'facebook-jssdk');
         }
+
+        
+
     }, []);
 
     const handleLogout = async () => {
