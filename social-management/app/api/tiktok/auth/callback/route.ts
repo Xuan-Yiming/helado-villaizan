@@ -42,8 +42,9 @@ export async function GET(request: Request) {
             const res = NextResponse.json({ success: true, open_id, access_token });
             res.cookies.set('tiktok_open_id', open_id, { httpOnly: true, maxAge: 60 * 60 * 24 });
             res.cookies.set('tiktok_access_token', access_token, { httpOnly: true, maxAge: 60 * 60 * 24 });
-            res.headers.set('Location', '/pages/cuentas-configuraciones');
-            return res;
+            
+            // Redirect to /pages/cuentas-configuraciones
+            return NextResponse.redirect('/pages/cuentas-configuraciones');
         }
 
         return NextResponse.json({ error: `Failed to retrieve TikTok access token.` }, { status: 400 });
