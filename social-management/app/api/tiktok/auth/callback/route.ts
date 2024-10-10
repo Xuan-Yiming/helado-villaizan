@@ -21,7 +21,7 @@ export async function GET(request: Request) {
             client_secret: process.env.TIKTOK_CLIENT_SECRET,
             code: code, // Authorization code from the TikTok redirect
             grant_type: 'authorization_code',
-            redirect_uri: 'https://helado-villaizan.vercel.app/api/tiktok/access-token/callback'
+            redirect_uri: 'https://helado-villaizan.vercel.app/api/tiktok/auth/callback'
         }), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
