@@ -44,7 +44,7 @@ export async function GET(request: Request) {
             res.cookies.set('tiktok_access_token', access_token, { httpOnly: true, maxAge: 60 * 60 * 24 });
             
             // Redirect to /pages/cuentas-configuraciones
-            return NextResponse.redirect('/pages/cuentas-configuraciones');
+            return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas-configuraciones');
         }
 
         return NextResponse.json({ error: `Failed to retrieve TikTok access token.` }, { status: 400 });
