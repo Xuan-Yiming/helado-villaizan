@@ -5,11 +5,10 @@ export default function Home() {
     <div className="flex flex-col">
       <div className="flex justify-center items-center h-screen">
         <div>
-          <h1 className="font-bold text-8xl mb-4">Gestión de </h1>
-          <h1 className="font-bold text-8xl mb-10">Redes Sociales </h1>
-          <h1 className="font-bold text-5xl mb-20">Paletas Villaizán</h1>
-
-          <a href="/login" className="font-bold bg-[#BD181E] text-white px-4 py-2 rounded-md border-none text-xl">
+          <h1 className="font-bold text-8xl mb-4">Gestión de</h1>
+          <h1 className="font-bold text-8xl mb-10">Redes Sociales</h1>
+          <h1 className="font-bold text-5xl mb-20">Heladería Villaizán</h1>
+          <a href="/login" className="font-bold bg-[#BD181E] text-white px-4 py-2 rounded-md border-none text-4xl">
             Iniciar Sesión
           </a>
         </div>

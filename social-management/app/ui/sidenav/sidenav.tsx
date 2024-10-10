@@ -39,9 +39,6 @@ const SideNav = () => {
   );
 };
 
-
-
-
 export default SideNav;
 
 const MenuItem = ({ item }: { item: SideNavItem }) => {
@@ -57,17 +54,17 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
         <>
           <button
             onClick={toggleSubMenu}
-            className={`flex flex-row items-center p-2 rounded-lg hover-bg-[#BD181E] hover-text-white w-full justify-between hover:bg-[#BD181E] hover:text-white ${
-              pathname.includes(item.path) ? 'bg-[#BD181E]  text-white' : ''
+            className={`flex flex-row items-center p-2 rounded-lg hover:bg-[#BD181E] hover:text-white w-full justify-between ${
+              pathname.includes(item.path) ? 'bg-[#BD181E] text-white' : ''
             }`}
           >
             <div className="flex flex-row space-x-4 items-center">
               {item.icon}
-              <span className="font-semibold text-xl  flex">{item.title}</span>
+              <span className="font-semibold text-xl flex">{item.title}</span>
             </div>
 
             <div className={`${subMenuOpen ? 'rotate-180' : ''} flex`}>
-                <ChevronDownIcon className='w-6'/>
+              <ChevronDownIcon className="w-6" />
             </div>
           </button>
 
@@ -101,3 +98,4 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
     </div>
   );
 };
+

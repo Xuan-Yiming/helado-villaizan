@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import qs from 'qs';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -15,13 +16,19 @@ export async function GET(request: Request) {
     console.log('TikTok Authorization Code:', code);
     try {
         // Exchange the authorization code for an access token
-        const response = await axios.post(process.env.TIKTOK_API_URL + '/oauth/token/', {
+        const response = await axios.post(process.env.TIKTOK_API_URL + '/oauth/token/', qs.stringify({
             client_key: process.env.TIKTOK_CLIENT_KEY,
             client_secret: process.env.TIKTOK_CLIENT_SECRET,
             code: code, // Authorization code from the TikTok redirect
             grant_type: 'authorization_code',
-            redirect_uri: 'https://helado-villaizan.vercel.app/api/tiktok/access-token/callback'
+            redirect_uri: 'https://helado-villaizan.vercel.app/api/tiktok/auth/callback'
+        }), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
         });
+
+        console.log('TikTok OAuth Response:', response.data);
 
         const access_token = response.data.access_token;
         const open_id = response.data.open_id;
@@ -35,10 +42,12 @@ export async function GET(request: Request) {
             const res = NextResponse.json({ success: true, open_id, access_token });
             res.cookies.set('tiktok_open_id', open_id, { httpOnly: true, maxAge: 60 * 60 * 24 });
             res.cookies.set('tiktok_access_token', access_token, { httpOnly: true, maxAge: 60 * 60 * 24 });
-            return res;
+            
+            // Redirect to /pages/cuentas-configuraciones
+            return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas-configuraciones');
         }
 
-        return NextResponse.json({ error: `Failed to retrieve TikTok access token. : ${JSON.stringify(response)}` }, { status: 400 });
+        return NextResponse.json({ error: `Failed to retrieve TikTok access token.` }, { status: 400 });
     } catch (error) {
         return NextResponse.json({ error: `Error during TikTok OAuth process. Message: ${error}`  }, { status: 500 });
     }

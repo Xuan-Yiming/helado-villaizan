@@ -47,7 +47,7 @@ const Page = () => {
                         }`}
                 >
                     <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
-                    <div>Filtrar</div>
+                    <div>Filtros</div>
                 </button>
             </div>
             {/* Filters */}
