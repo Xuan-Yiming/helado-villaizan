@@ -1,16 +1,20 @@
+'use server'
+
 import { Post } from "./types";
 
-export async function load_posts(page: number, redSocial: string, tipoPublicacion: string, estado: string, tags: string) {
-    const pageSize = 20;
-    const apiUrl = `https://api.example.com/posts?page=${page}&pageSize=${pageSize}&redSocial=${redSocial}&tipoPublicacion=${tipoPublicacion}&estado=${estado}&tags=${tags}`;
+export async function load_posts(offset: number, limit: number,redSocial: string, tipoPublicacion: string, estado: string, tags: string): Promise<Post[]> {
+  var apiUrl = `https://api.example.com/posts?offset=${offset}&limit=${limit}&redSocial=${redSocial}&tipoPublicacion=${tipoPublicacion}&estado=${estado}&tags=${tags}`;
+
+  // for test
+  apiUrl = "https://mocki.io/v1/8bf11121-29f2-4ea9-ad68-bc38e3f38612"
+
+  const response = await fetch(apiUrl);
+  if (!response.ok) {
+    throw new Error(`Error fetching posts: ${response.statusText}`);
+  }
   
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error(`Error fetching posts: ${response.statusText}`);
-    }
-  
-    const data = await response.json();
-    return data as Post[];
+  const data = await response.json();
+  return data as Post[];
 }
 
 export async function load_post_by_id(postId: string): Promise<Post> {

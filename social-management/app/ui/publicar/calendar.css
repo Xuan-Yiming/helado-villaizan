@@ -1,0 +1,30 @@
+/* calendar.css */
+.fc .fc-toolbar-title {
+  color: #BD181E;
+  font-weight: bold;
+}
+
+.fc .fc-daygrid-event {
+  background-color: #BD181E;
+  border-color: #BD181E;
+}
+
+.fc .fc-button-primary {
+  background-color: #BD181E;
+  border-color: #BD181E;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #BD181E;
+  border-color: #BD181E;
+}
+
+.fc .fc-button-primary:not(:disabled):hover {
+  background-color: #BD181E;
+  border-color: #BD181E;
+}
+
+.fc .fc-day-today {
+    background-color: rgba(189, 24, 30, 0.2) !important; /* Light red background for today with 30% transparency */
+  }

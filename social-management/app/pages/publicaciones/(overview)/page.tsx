@@ -1,20 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import {
-    AdjustmentsHorizontalIcon,
-    XMarkIcon,
-    ArrowTopRightOnSquareIcon,
-    HeartIcon,
-    StarIcon
-} from '@heroicons/react/24/solid';
+import React, { useState, useEffect } from 'react';
 
-import FacebookLogo from '@/app/ui/icons/facebook';
-import TiktokLogo from '@/app/ui/icons/tiktok';
-import InstagramLogo from '@/app/ui/icons/instagram';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid';
+
+import { load_posts } from '@/app/lib/data';
+import { Post } from '@/app/lib/types';
 
 import FilterSelect from '@/app/ui/mensajes/filter-select';
-import MessageCard from '@/app/ui/publicar/post-card';
+import PostList from '@/app/ui/publicar/post-list';
 
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -22,6 +16,7 @@ const Page = () => {
     const [tagsFilter, setTagsFilter] = useState('all');
     const [socialNetworkFilter, setSocialNetworkFilter] = useState('all');
     const [postTypeFilter, setPostTypeFilter] = useState('all');
+    const [posts, setPosts] = useState<Post[]>([]);
 
     const toggleFilters = () => {
         setFiltersVisible(!filtersVisible);
@@ -33,6 +28,21 @@ const Page = () => {
         setSocialNetworkFilter('all');
         setPostTypeFilter('all');
     };
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const data = await load_posts(0, 1, socialNetworkFilter, postTypeFilter, responseFilter, tagsFilter);
+                setPosts(data);
+            } catch (error) {
+                console.error('Error fetching posts:', error);
+            }
+        };
+
+        fetchPosts();
+    }, [socialNetworkFilter, postTypeFilter, responseFilter, tagsFilter]);
+
+
 
     return (
         <div
@@ -114,34 +124,13 @@ const Page = () => {
                 </div>
             )}
             {/* Post */}
-
-            <ul className="mt-6 flex flex-col gap-2 list-none p-0 min-w-full">
-                {/* Example Post */}
-                <MessageCard
-                    postTime="Hace 2 horas"
-                    content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "
-                    socialIcon={<FacebookLogo />}
-                    image='/images/Logo-red.png'
-                    ifPosted={true}
-                    link=""
-                />
-                <MessageCard
-                    postTime="Hace 2 horas"
-                    content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis."
-                    socialIcon={<InstagramLogo />}
-                    image='/images/Logo-red.png'
-                    ifPosted={true}
-                    link=""
-                />
-                <MessageCard
-                    postTime="Hace 2 horas"
-                    content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non nibh blandit, iaculis velit vel, mollis lectus. Aliquam purus nulla, hendrerit sed ullamcorper sed, sagittis mattis turpis. "
-                    socialIcon={<TiktokLogo />}
-                    image='/images/Logo-red.png'
-                    ifPosted={false}
-                    link=""
-                />
-            </ul>
+            <PostList
+                initialPosts={posts}
+                socialNetworkFilter={socialNetworkFilter}
+                postTypeFilter={postTypeFilter}
+                responseFilter={responseFilter}
+                tagsFilter={tagsFilter}
+            /> 
         </div>
     );
 };
