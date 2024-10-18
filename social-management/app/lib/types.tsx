@@ -26,3 +26,14 @@ export type Post = {
   is_programmed: boolean;
   programmed_post_time?: Date;
 }
+
+export type calendarEvent = {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  url?: string;
+  date?: string;
+  allDay?: boolean;
+  overlap: boolean;
+}

@@ -6,20 +6,18 @@ import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from '@fullcalendar/core/locales/es'; // Import Spanish locale
 
 import { useState } from 'react';
+import { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
 import ConfirmationModal from "../confirmation-modal";
 
+import { load_programmed_posts } from "@/app/lib/data";
+import { calendarEvent } from "@/app/lib/types";
+
 import './calendar.css'; // Import the custom CSS
 
-const initialEvents = [
-    { title: 'Event 1', date: '2024-10-30', url: '/pages/publicaciones/crear?type=nuevo/id=1' },
-    { title: 'Event 2', date: '2024-10-20', url: '/pages/publicaciones/crear?type=nuevo/id=2' },
-    // Add more events as needed
-];
-
 export default function Calendar() {
-    const [events, setEvents] = useState(initialEvents);
+    const [events, setEvents] = useState<calendarEvent[]>();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedInfo, setSelectedInfo] = useState<{ startStr: string; endStr: string; allDay: boolean } | null>(null);
     const router = useRouter();
@@ -33,7 +31,7 @@ export default function Calendar() {
         if (selectedInfo) {
             const { startStr, endStr, allDay } = selectedInfo;
             const allDayParam = allDay ? 'true' : 'false';
-            router.push(`/pages/publicaciones/crear?type=programado&start=${startStr}&end=${endStr}&allDay=${allDayParam}`);
+            router.push(`/pages/publicaciones/crear?type=nuevo&id=0&start=${startStr}&end=${endStr}&allDay=${allDayParam}`);
         }
         setIsModalOpen(false);
     };
@@ -41,6 +39,33 @@ export default function Calendar() {
     const handleClose = () => {
         setIsModalOpen(false);
     };
+
+    useEffect (() => {
+        const fetchEvents = async () => {
+            try {
+                const data = await load_programmed_posts();
+                const _events: calendarEvent[] = data.map((post): calendarEvent | undefined => {
+                    if (post.is_programmed) {
+                        const start = post.programmed_post_time;
+                        const end = start ? new Date(new Date(start).getTime() + 60 * 60 * 1000).toISOString() : '';
+                        return {
+                            id: post.id,
+                            title: post.social_media,
+                            start: start?.toString() || '',
+                            end: end,
+                            url: `/pages/publicaciones/crear?type=programado&id=${post.id}`,
+                            allDay: false,
+                            overlap: false,
+                        };
+                    }
+                }).filter(Boolean) as calendarEvent[];
+                setEvents(_events);
+            } catch (error) {
+                console.error('Error fetching programmed posts:', error);
+            }
+        };
+        fetchEvents();
+    }, []);
     return (
         <>
 

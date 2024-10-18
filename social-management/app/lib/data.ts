@@ -29,7 +29,7 @@ export async function load_post_by_id(postId: string): Promise<Post> {
     return data as Post;
   }
 
-export async function create_post(newPost: Omit<Post, 'id'>): Promise<Post> {
+export async function create_post(newPost: Post): Promise<Post> {
     const apiUrl = `https://api.example.com/posts`;
   
     const response = await fetch(apiUrl, {
@@ -46,4 +46,16 @@ export async function create_post(newPost: Omit<Post, 'id'>): Promise<Post> {
   
     const data = await response.json();
     return data as Post;
+  }
+
+export async function load_programmed_posts(): Promise<Post[]> {
+    var apiUrl = `https://api.example.com/posts/programmed`;
+    apiUrl = "https://mocki.io/v1/8bf11121-29f2-4ea9-ad68-bc38e3f38612"
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`Error fetching programmed posts: ${response.statusText}`);
+    }
+  
+    const data = await response.json();
+    return data as Post[];
   }
