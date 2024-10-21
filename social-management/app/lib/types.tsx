@@ -26,3 +26,44 @@ export type Post = {
   is_programmed: boolean;
   programmed_post_time?: Date;
 }
+
+export type calendarEvent = {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  url?: string;
+  date?: string;
+  allDay?: boolean;
+  overlap: boolean;
+}
+
+export type Encuesta = {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  questions?: Question[];
+  responses?: Response[];
+}
+
+export type Question = {
+  id?: string;
+  title: string;
+  type: string;
+  required?: boolean;
+  options?: string[];
+}
+
+export type Response = {
+  id: string;
+  date: Date;
+  answers: Answer[];
+}
+
+export type Answer = {
+  question_id: string;
+  answer: string;
+}
