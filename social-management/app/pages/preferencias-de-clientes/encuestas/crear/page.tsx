@@ -100,7 +100,9 @@ function EncuestaPage() {
             </div>
 
             <form className="p-4 mx-auto" onSubmit={handleSubmit}>
-                <EncuestaHeader encuesta={encuesta} onUpdate={handleUpdateEncuesta} />
+                {encuesta && (
+                    <EncuestaHeader encuesta={encuesta} onUpdate={handleUpdateEncuesta} />
+                )}
 
                 {encuesta?.questions?.map((question, index) => (
                     <EncuestaNode
