@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid';
+import Link from 'next/link';
+import { AdjustmentsHorizontalIcon, PlusCircleIcon } from '@heroicons/react/24/solid';
 
 import { load_posts } from '@/app/lib/data';
 import { Post } from '@/app/lib/types';
@@ -51,14 +51,27 @@ const Page = () => {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Todas las publicaciones</h1>
+                <div className="flex items-center">
                 <button
                     onClick={toggleFilters}
-                    className={`flex items-center rounded px-4 py-2 ${filtersVisible ? 'bg-black text-white' : 'border border-black bg-transparent text-black'
+                    className={`flex items-center ml-5 rounded px-4 py-2 ${filtersVisible ? 'bg-black text-white' : 'border border-black bg-transparent text-black'
                         }`}
                 >
                     <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
                     <div>Filtrar</div>
                 </button>
+
+                <Link
+                    href="/pages/publicaciones/crear"
+                    className={`flex items-center ml-5 rounded px-4 py-2 ${filtersVisible ? 'bg-[#BD181E] text-white' : 'border border-black bg-transparent text-black'
+                        }`}
+                >
+                    <PlusCircleIcon className="h-5 w-5 mr-2" />
+                    <div>Nuevo</div>
+                </Link>
+
+                </div>
+
             </div>
             {/* Filters */}
             {filtersVisible && (
