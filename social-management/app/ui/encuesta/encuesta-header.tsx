@@ -13,6 +13,7 @@ export default function EncuestaHeader({ encuesta, onUpdate }: EncuestaHeaderPro
     const [endDate, setEndDate] = useState(encuesta?.end_date || '');
 
     useEffect(() => {
+        // console.log('head: ',encuesta?.title, encuesta?.description, encuesta?.start_date, encuesta?.end_date)
         onUpdate({
             ...encuesta,
             title,

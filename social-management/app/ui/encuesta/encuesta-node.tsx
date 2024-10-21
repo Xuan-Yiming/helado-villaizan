@@ -24,11 +24,16 @@ export default function EncuestaNode({ question, onDelete, onUpdate, isEditable 
       onUpdate({ ...question, options: [...options, ''] });
   }
 
-  function handleOptionChange(index: number, newValue: string) {
-    const updatedOptions = options.map((option, i) => (i === index ? newValue : option));
+function handleOptionChange(index: number, newValue: string) {
+    let updatedOptions;
+    if (newValue === "") {
+        updatedOptions = options.filter((_, i) => i !== index);
+    } else {
+        updatedOptions = options.map((option, i) => (i === index ? newValue : option));
+    }
     setOptions(updatedOptions);
     onUpdate({ ...question, options: updatedOptions });
-  }
+}
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setTitle(e.target.value);
@@ -64,6 +69,7 @@ export default function EncuestaNode({ question, onDelete, onUpdate, isEditable 
                   value={option}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
                   className="ml-2 border-b-2"
+                  required
                 />
               </div>
             ))}
@@ -93,6 +99,7 @@ export default function EncuestaNode({ question, onDelete, onUpdate, isEditable 
                   value={option}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
                   className="ml-2 border-b-2"
+                  required
                 />
               </div>
             ))}
