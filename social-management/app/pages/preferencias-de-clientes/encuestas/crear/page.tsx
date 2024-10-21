@@ -1,25 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PlusCircleIcon, DocumentArrowUpIcon } from '@heroicons/react/24/solid';
 
 import EncuestaHeader from '@/app/ui/encuesta/encuesta-header';
 import EncuestaNode from '@/app/ui/encuesta/encuesta-node';
 
-import { Encuesta } from '@/app/lib/types';
+import { Encuesta, Question } from '@/app/lib/types';
 import { load_survey_by_id } from '@/app/lib/data';
 
-export default function Page() {
+function EncuestaPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
 
-    const [isActive, setIsActive] = useState(false);
+    const [isActive, setIsActive] = useState(true);
     const [encuesta, setEncuesta] = useState<Encuesta | null>(null);
 
     useEffect(() => {
         const fetchEncuesta = async () => {
             if (!id) {
+                setEncuesta({
+                    id: '',
+                    title: '',
+                    status: 'activo',
+                    start_date: '',
+                    end_date: '',
+                    questions: []
+                });
+
                 return;
             }
             try {
@@ -42,12 +51,39 @@ export default function Page() {
             const updatedQuestions = [
                 ...(encuesta.questions || []),
                 {
+                    id: `${Date.now()}`, // Generate a unique ID for the new question
                     title: '',
                     type: 'open_text',
                 },
             ];
             setEncuesta({ ...encuesta, questions: updatedQuestions });
         }
+    }
+
+    function handleDeleteQuestion(questionId: string) {
+        if (encuesta) {
+            const updatedQuestions = encuesta.questions?.filter(question => question.id !== questionId);
+            setEncuesta({ ...encuesta, questions: updatedQuestions });
+        }
+    }
+
+    function handleUpdateQuestion(updatedQuestion: Question) {
+        if (encuesta) {
+            const updatedQuestions = encuesta.questions?.map(question =>
+                question.id === updatedQuestion.id ? updatedQuestion : question
+            );
+            setEncuesta({ ...encuesta, questions: updatedQuestions });
+        }
+    }
+
+    function handleUpdateEncuesta(updatedEncuesta: Encuesta) {
+        setEncuesta(updatedEncuesta);
+    }
+
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        console.log('Submitting encuesta:', encuesta);
+        // Perform any necessary actions, such as sending data to an API
     }
 
     return (
@@ -63,30 +99,46 @@ export default function Page() {
                 </button>
             </div>
 
-            <form className="p-4 mx-auto">
-                <EncuestaHeader encuesta={encuesta} />
+            <form className="p-4 mx-auto" onSubmit={handleSubmit}>
+                <EncuestaHeader encuesta={encuesta} onUpdate={handleUpdateEncuesta} />
 
                 {encuesta?.questions?.map((question, index) => (
-                    <EncuestaNode key={index} question={question} />
+                    <EncuestaNode
+                        key={index}
+                        question={question}
+                        onDelete={handleDeleteQuestion}
+                        onUpdate={handleUpdateQuestion}
+                        isEditable={true}
+                    />
                 ))}
-            </form>
-            <div className="flex justify-center mt-4">
-                <button
-                    className="flex items-center ml-5 rounded px-4 py-2 bg-black text-white"
-                    onClick={handleAddQuestion}
-                >
-                    <PlusCircleIcon className="h-5 w-5 mr-2" />
-                    Nueva Pregunta
-                </button>
 
-                <button
-                    className="flex items-center ml-5 rounded px-4 py-2 bg-[#BD181E] text-white"
-                    onClick={handleSave}
-                >
-                    <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
-                    Guardar
-                </button>
-            </div>
+                <div className="flex justify-center mt-4">
+                    <button
+                        type="button" // Prevent form validation
+                        className="flex items-center ml-5 rounded px-4 py-2 bg-black text-white"
+                        onClick={handleAddQuestion}
+                    >
+                        <PlusCircleIcon className="h-5 w-5 mr-2" />
+                        Nueva Pregunta
+                    </button>
+
+                    <button
+                        type="submit"
+                        className="flex items-center ml-5 rounded px-4 py-2 bg-[#BD181E] text-white"
+                    >
+                        <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
+                        Guardar
+                    </button>
+                </div>
+            </form>
         </main>
+    );
+}
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <EncuestaPage />
+        </Suspense>
     );
 }

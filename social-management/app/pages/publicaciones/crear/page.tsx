@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { inter } from '../../../ui/fonts';
 import Preview from '../../../ui/publicar/preview';
@@ -11,7 +11,7 @@ import { useSearchParams } from 'next/navigation';
 
 type NetworkType = 'facebook' | 'instagram' | 'tiktok';
 
-export default function PublicarPage() {
+function PublicarPage() {
   const searchParams = useSearchParams();
 
   const type = searchParams.get('type');
@@ -294,5 +294,14 @@ export default function PublicarPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function Page() {
+  return (
+      <Suspense fallback={<div>Loading...</div>}>
+          <PublicarPage />
+      </Suspense>
   );
 }
