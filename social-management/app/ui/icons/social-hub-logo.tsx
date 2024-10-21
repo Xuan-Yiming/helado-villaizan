@@ -13,6 +13,7 @@ export default function SocialHubLogo({ width = 300, height = 300 }: SocialHubLo
                 alt="social hub logo"
                 width={width}
                 height={height}
+                priority={true} 
             />
         </div>
     );

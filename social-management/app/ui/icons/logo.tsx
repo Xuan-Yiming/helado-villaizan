@@ -8,6 +8,7 @@ export default function Logo(){
             alt = 'helado villaizan logo'
             width={100}
             height={50}
+            priority={false} 
             />
         </div>
     );

@@ -85,3 +85,22 @@ export async function load_survey_by_id(surveyId: string): Promise<Encuesta> {
     const data = await response.json();
     return data as Encuesta;
   }
+
+export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
+  const apiUrl = `https://api.example.com/surveys`;
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newSurvey)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error uploading survey: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data as Encuesta;
+}

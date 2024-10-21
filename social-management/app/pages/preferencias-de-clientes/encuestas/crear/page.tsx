@@ -6,9 +6,11 @@ import { PlusCircleIcon, DocumentArrowUpIcon } from '@heroicons/react/24/solid';
 
 import EncuestaHeader from '@/app/ui/encuesta/encuesta-header';
 import EncuestaNode from '@/app/ui/encuesta/encuesta-node';
+import Error from '@/app/ui/error'; // Import the Error component
 
 import { Encuesta, Question } from '@/app/lib/types';
 import { load_survey_by_id } from '@/app/lib/data';
+import { upload_survey } from '@/app/lib/data';
 
 function EncuestaPage() {
     const searchParams = useSearchParams();
@@ -16,6 +18,7 @@ function EncuestaPage() {
 
     const [isActive, setIsActive] = useState(true);
     const [encuesta, setEncuesta] = useState<Encuesta | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for error message
 
     useEffect(() => {
         const fetchEncuesta = async () => {
@@ -36,6 +39,7 @@ function EncuestaPage() {
                 setEncuesta(data);
             } catch (error) {
                 console.error('Error fetching encuesta:', error);
+                setErrorMessage('Error fetching encuesta');
             }
         };
 
@@ -80,14 +84,25 @@ function EncuestaPage() {
         setEncuesta(updatedEncuesta);
     }
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        console.log('Submitting encuesta:', encuesta);
-        // Perform any necessary actions, such as sending data to an API
+        try {
+            console.log('Submitting encuesta:', encuesta);
+            
+            if (encuesta) {
+                await upload_survey(encuesta);
+            }
+            // Perform any necessary actions, such as sending data to an API
+        } catch (error) {
+            console.error('Error guardando la encuesta:', error);
+            setErrorMessage('Error guardando la encuesta');
+        }
     }
 
     return (
         <main>
+            {errorMessage && <Error key={errorMessage} message={errorMessage} />} {/* Display the Error component */}
+            
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Detalle de la Encuesta</h1>
 
