@@ -4,8 +4,6 @@ import { useEffect, useState, Suspense } from 'react';
 import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { inter } from '../../../ui/fonts';
 import Preview from '../../../ui/publicar/preview';
-import { handleFacebookPost } from './facebook-post'; // Importar la función para manejar publicaciones en Facebook
-import { handleInstagramPost } from './instagram-post'; // Importar la función para manejar publicaciones en Instagram
 // import { handleTiktokPost } from './tiktok-post'; // Importar la función para manejar publicaciones en TikTok
 import { useSearchParams } from 'next/navigation';
 
@@ -112,11 +110,9 @@ function PublicarPage() {
     try {
       if (selectedUsers.includes(1)) {
         // Publicar en Facebook
-        await handleFacebookPost(postText, mediaFiles, setPostStatus);
       }
       if (selectedUsers.includes(2)) {
         // Publicar en Instagram
-        await handleInstagramPost(postText, mediaFiles, setPostStatus);
       }      
       if (selectedUsers.includes(3)) {
         // Aquí se podría agregar la lógica para TikTok
