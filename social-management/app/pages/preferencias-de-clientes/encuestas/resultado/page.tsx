@@ -96,7 +96,7 @@ async function ResultadoPage(){
         <main>
             {errorMessage && <Error key={errorMessage} message={errorMessage} />} {/* Display the Error component */}
             <div className="flex justify-between items-center">
-                <h1 className="text-xl font-bold">Detalle de la Encuesta</h1>
+                <h1 className="text-xl font-bold">Resultados de la Encuesta</h1>
 
                 <button
                         type="button"
