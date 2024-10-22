@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { PlusCircleIcon, DocumentArrowUpIcon } from '@heroicons/react/24/solid';
 
 import EncuestaHeader from '@/app/ui/encuesta/encuesta-header';
@@ -114,7 +114,7 @@ function EncuestaPage() {
                 </button>
             </div>
 
-            <form className="p-4 mx-auto" onSubmit={handleSubmit}>
+            <form className="p-4 mx-auto sm:w-full lg:w-1/2" onSubmit={handleSubmit}>
                 {encuesta && (
                     <EncuestaHeader encuesta={encuesta} onUpdate={handleUpdateEncuesta} />
                 )}

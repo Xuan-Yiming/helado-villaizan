@@ -76,7 +76,7 @@ export async function load_all_survey(offset: number, limit: number, estado: str
 
 export async function load_survey_by_id(surveyId: string): Promise<Encuesta> {
     var apiUrl = `https://api.example.com/surveys/${surveyId}`;
-    apiUrl = 'https://mocki.io/v1/a6d2bdea-e63c-41fb-aaa4-68879ecbe1b2'
+    apiUrl = 'https://mocki.io/v1/28e3c6aa-7b14-4798-a1b5-90ede6b6bf8c'
 
     const response = await fetch(apiUrl);
     if (!response.ok) {
