@@ -50,7 +50,7 @@ export type Encuesta = {
 }
 
 export type Question = {
-  id?: string;
+  id: string;
   title: string;
   type: string;
   required?: boolean;
@@ -59,7 +59,7 @@ export type Question = {
 
 export type Response = {
   id: string;
-  date: Date;
+  date: string;
   answers: Answer[];
 }
 
