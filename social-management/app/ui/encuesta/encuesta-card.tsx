@@ -32,7 +32,7 @@ export default function EncuestaCard( {encuesta}: EncuestaCardProps){
             </div>
             <div className="flex items-center">
                 <Link 
-                href={`/pages/preferencias-de-clientes/encuestas/${encuesta.id}`}
+                href={`/pages/preferencias-de-clientes/encuestas/resultado?id=${encuesta.id}`}
                 className="flex items-center text-blue-500 hover:text-blue-700 ml-5"
                 >
                         <EyeIcon className="h-5 w-5 mr-2" />
