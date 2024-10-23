@@ -2,21 +2,22 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { inter } from '../../../ui/fonts';
-import Preview from '../../../ui/publicar/preview';
+import { inter } from '@/app/ui/fonts';
+import Preview from '@/app/ui/publicar/preview';
 // import { handleTiktokPost } from './tiktok-post'; // Importar la función para manejar publicaciones en TikTok
 import { useSearchParams } from 'next/navigation';
+import { SocialAccount } from '@/app/lib/types';
 
-type NetworkType = 'facebook' | 'instagram' | 'tiktok';
+import FacebookLogo from "@/app/ui/icons/facebook";
+import InstagramLogo from "@/app/ui/icons/instagram";
+import TiktokLogo from "@/app/ui/icons/tiktok";
+
 
 function PublicarPage() {
   const searchParams = useSearchParams();
 
-  const type = searchParams.get('type');
   const id = searchParams.get('id');
-  const start = searchParams.get('start');
-  const end = searchParams.get('end');
-  const allDay = searchParams.get('allDay');
+  const postTime = searchParams.get('postTime');
 
 
   const [isScheduled, setIsScheduled] = useState(false);
@@ -25,28 +26,32 @@ function PublicarPage() {
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<Array<{ id: string; file: File; url: string; type: 'image' | 'video'; name: string }>>([]);
   const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
-  const [users] = useState([
-    { id: 1, name: 'Facebook - Heladería Villaizan', network: 'facebook' as NetworkType },
-    { id: 2, name: 'Instagram - @villaizanpaletasartesanales', network: 'instagram' as NetworkType },
-    { id: 3, name: 'TikTok - @heladeriavillaizan', network: 'tiktok' as NetworkType },
-  ]);
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+
+
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>('facebook');
   const [postStatus, setPostStatus] = useState<string>('');
 
-  // Cargar el token de acceso y el ID de la página desde el Local Storage al cargar la página - ESTO DEBE SER DESDE LA BD
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [pageId, setPageId] = useState<string | null>(null);
+
+
+  const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
+
+  const getLogo = (name: string) => {
+    switch (name) {
+        case 'Facebook':
+            return <FacebookLogo />;
+        case 'Instagram':
+            return <InstagramLogo />;
+        case 'TikTok':
+            return <TiktokLogo />;
+        default:
+            return null;
+    }
+};
 
   useEffect(() => {
-    const storedAccessToken = localStorage.getItem('facebookAccessToken');
-    const storedPageId = localStorage.getItem('facebookPageId');
-    if (storedAccessToken) {
-      setAccessToken(storedAccessToken);
-    }
-    if (storedPageId) {
-      setPageId(storedPageId);
-    }
+    const _socialAccounts = JSON.parse(localStorage.getItem('socialAccounts') || '[]');
+    setSocialAccounts(_socialAccounts);
   }, []);
 
   const generateUniqueID = () => {
@@ -108,7 +113,7 @@ function PublicarPage() {
 
     setLoading(true);
     try {
-      if (selectedUsers.includes(1)) {
+      if (selectedUsers.includes('')) {
         // Publicar en Facebook
       }
       if (selectedUsers.includes(2)) {
@@ -125,7 +130,7 @@ function PublicarPage() {
     }
   };
 
-  const handleUserSelect = (id: number, network: NetworkType) => {
+  const handleUserSelect = (id: string, network: NetworkType) => {
     if (selectedUsers.includes(id)) {
       setSelectedUsers(selectedUsers.filter(userId => userId !== id));
     } else {
@@ -148,18 +153,18 @@ function PublicarPage() {
           <div className="bg-white p-4 rounded border">
             <h2 className="text-sm font-semibold text-black">Seleccionar usuarios</h2>
             <ul className="mt-4 space-y-2">
-              {users.map(user => (
+                {socialAccounts.map(account => (
                 <li
-                  key={user.id}
-                  onClick={() => handleUserSelect(user.id, user.network)}
+                  key={account.red_social}
+                  onClick={() => handleUserSelect(account.red_social, account.red_social)}
                   className={`flex items-center p-2 rounded cursor-pointer text-black ${
-                    selectedUsers.includes(user.id)
+                  selectedUsers.includes(account.red_social)
                       ? 'bg-red-600 text-white'
                       : 'border border-gray-300 hover:bg-gray-100'
                   }`}
                 >
-                  <div className="flex-grow">{user.name}</div>
-                  {selectedUsers.includes(user.id) && <CheckIcon className="h-5 w-5 text-white" />}
+                  <div className="flex-grow">{account.usuario}</div>
+                  {selectedUsers.includes(account.red_social) && <CheckIcon className="h-5 w-5 text-white" />}
                 </li>
               ))}
             </ul>

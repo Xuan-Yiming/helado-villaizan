@@ -30,8 +30,7 @@ export default function Calendar() {
     const handleConfirm = () => {
         if (selectedInfo) {
             const { startStr, endStr, allDay } = selectedInfo;
-            const allDayParam = allDay ? 'true' : 'false';
-            router.push(`/pages/publicaciones/crear?type=nuevo&id=0&start=${startStr}&end=${endStr}&allDay=${allDayParam}`);
+            router.push(`/pages/publicaciones/crear?postTime=${startStr}`);
         }
         setIsModalOpen(false);
     };
@@ -53,7 +52,7 @@ export default function Calendar() {
                             title: post.social_media,
                             start: start?.toString() || '',
                             end: end,
-                            url: `/pages/publicaciones/crear?type=programado&id=${post.id}`,
+                            url: `/pages/publicaciones/crear?id=${post.id}`,
                             allDay: false,
                             overlap: false,
                         };

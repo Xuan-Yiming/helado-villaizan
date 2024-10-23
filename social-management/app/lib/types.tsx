@@ -1,3 +1,18 @@
+export type SocialAccount = {
+  red_social: string;
+  usuario?: string;
+  contraseña?: string;
+
+  tipo_autenticacion: string;
+
+  open_id?: string;
+  refresh_token?: string;
+  token_autenticacion: string;
+
+  fecha_expiracion_token?: string;
+}
+
+
 export type SideNavItem = {
   title: string;
   path: string;
@@ -15,14 +30,14 @@ export type User = {
 
 export type Post = {
   id: string;
-  social_media: string;
-  type: string;
-  status: string;
-  preview?: string;
-  media?: string;
-  content?: string;
-  post_time?: Date;
-  link?: string;
+  social_media: string; //fb,ig,tk
+  type: string; //video,photos
+  status: string; //publicado, programado, eliminado 
+  preview?: string; //enlace
+  media?: string; //enlace
+  content?: string; //texto
+  post_time?: Date; 
+  link?: string; //enlace al post
   is_programmed: boolean;
   programmed_post_time?: Date;
 }

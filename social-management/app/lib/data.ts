@@ -3,6 +3,7 @@
 import { Post } from "./types";
 import {Encuesta} from "./types";
 import { Response } from "./types";
+import { SocialAccount } from "./types";
 
 export async function load_posts(offset: number, limit: number,redSocial: string, tipoPublicacion: string, estado: string, tags: string): Promise<Post[]> {
   var apiUrl = `https://api.example.com/posts?offset=${offset}&limit=${limit}&redSocial=${redSocial}&tipoPublicacion=${tipoPublicacion}&estado=${estado}&tags=${tags}`;
@@ -119,5 +120,51 @@ export async function submit_survey_response(surveyId: string, responseQ: Respon
 
   if (!response.ok) {
     throw new Error(`Error submitting survey response: ${response.statusText}`);
+  }
+}
+
+export async function load_all_social_accounts(): Promise<SocialAccount[]> {
+  var apiUrl = `https://api.example.com/social-accounts`;
+  apiUrl = 'https://mocki.io/v1/2151a9e2-83db-40ee-b44c-8e1f37623c88'
+
+  const response = await fetch(apiUrl);
+
+  if (!response.ok) {
+    throw new Error(`Error fetching social accounts: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data as SocialAccount[];
+}
+
+export async function add_social_account(social_account:SocialAccount): Promise<void> {
+  const apiUrl = `https://api.example.com/social-accounts`;
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(social_account)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error creating social account: ${response.statusText}`);
+  }
+}
+
+export async function logout_social_account(red_social:string): Promise<void> {
+  const apiUrl = `https://api.example.com/social-accounts/logout`;
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ red_social })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error logging out social account: ${response.statusText}`);
   }
 }
