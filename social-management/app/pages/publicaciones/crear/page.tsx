@@ -1,16 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { PaperAirplaneIcon, ClockIcon, CameraIcon, VideoCameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { inter } from '../../../ui/fonts';
 import Preview from '../../../ui/publicar/preview';
-import { handleFacebookPost } from './facebook-post'; // Importar la función para manejar publicaciones en Facebook
-import { handleInstagramPost } from './instagram-post'; // Importar la función para manejar publicaciones en Instagram
 // import { handleTiktokPost } from './tiktok-post'; // Importar la función para manejar publicaciones en TikTok
+import { useSearchParams } from 'next/navigation';
 
 type NetworkType = 'facebook' | 'instagram' | 'tiktok';
 
-export default function PublicarPage() {
+function PublicarPage() {
+  const searchParams = useSearchParams();
+
+  const type = searchParams.get('type');
+  const id = searchParams.get('id');
+  const start = searchParams.get('start');
+  const end = searchParams.get('end');
+  const allDay = searchParams.get('allDay');
+
+
   const [isScheduled, setIsScheduled] = useState(false);
   const [postText, setPostText] = useState('');
   const [isVideoSelected, setIsVideoSelected] = useState(false);
@@ -102,11 +110,9 @@ export default function PublicarPage() {
     try {
       if (selectedUsers.includes(1)) {
         // Publicar en Facebook
-        await handleFacebookPost(postText, mediaFiles, setPostStatus);
       }
       if (selectedUsers.includes(2)) {
         // Publicar en Instagram
-        await handleInstagramPost(postText, mediaFiles, setPostStatus);
       }      
       if (selectedUsers.includes(3)) {
         // Aquí se podría agregar la lógica para TikTok
@@ -177,7 +183,7 @@ export default function PublicarPage() {
                   ) : (
                     <video src={file.url} className="w-16 h-16 object-cover rounded" />
                   )}
-                  <button onClick={() => handleRemoveMedia(file.id)} className="absolute top-0 right-0 text-red-500">
+                  <button onClick={() => handleRemoveMedia(file.id)} className="absolute top-0 right-0 text-red-500" title="Remove Media">
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                 </div>
@@ -200,6 +206,7 @@ export default function PublicarPage() {
               <label className={`flex items-center cursor-pointer ${isImageSelected || isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <VideoCameraIcon className={`h-6 w-6 ${isImageSelected || isVideoSelected ? 'text-gray-300' : 'text-gray-500'}`} />
                 <input
+
                   type="file"
                   accept="video/*"
                   className="hidden"
@@ -283,5 +290,14 @@ export default function PublicarPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function Page() {
+  return (
+      <Suspense fallback={<div>Loading...</div>}>
+          <PublicarPage />
+      </Suspense>
   );
 }
