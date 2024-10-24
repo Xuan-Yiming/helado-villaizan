@@ -49,7 +49,7 @@ export default function Calendar() {
                         const end = start ? new Date(new Date(start).getTime() + 60 * 60 * 1000).toISOString() : '';
                         return {
                             id: post.id,
-                            title: post.social_media,
+                            title: post.red_social,
                             start: start?.toString() || '',
                             end: end,
                             url: `/pages/publicaciones/crear?id=${post.id}`,

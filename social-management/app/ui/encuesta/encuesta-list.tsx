@@ -29,8 +29,12 @@ export default function EncuestaList({
                 offset / NUMBER_OF_POSTS_TO_FETCH + 1,
                 estadoFilter
             );
-            setEncuestas(encuestas => [...encuestas, ...apiEncuestas]);
-            setOffset(offset => offset + NUMBER_OF_POSTS_TO_FETCH);
+            if (Array.isArray(apiEncuestas)) {
+                setEncuestas(encuestas => [...encuestas, ...apiEncuestas]);
+                setOffset(offset => offset + NUMBER_OF_POSTS_TO_FETCH);
+            } else {
+                console.error('Error: apiEncuestas is not an array', apiEncuestas);
+            }
         } catch (error) {
             console.error('Error loading more encuestas:', error);
         }

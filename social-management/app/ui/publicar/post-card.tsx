@@ -30,9 +30,9 @@ export default function PostCard ({post}:PostCardProps ) {
             <div className="flex justify-between w-full md:w-auto">
                 <div className="flex items-center">
                 <div className="w-10 text-black md:w-10">
-                    {post.social_media.toLowerCase() === 'facebook' && <FacebookLogo />}
-                    {post.social_media.toLowerCase() === 'tiktok' && <TiktokLogo />}
-                    {post.social_media.toLowerCase() === 'instagram' && <InstagramLogo />}
+                    {post.red_social.toLowerCase() === 'facebook' && <FacebookLogo />}
+                    {post.red_social.toLowerCase() === 'tiktok' && <TiktokLogo />}
+                    {post.red_social.toLowerCase() === 'instagram' && <InstagramLogo />}
                 </div>
         
                 {post.media && (
@@ -50,10 +50,10 @@ export default function PostCard ({post}:PostCardProps ) {
         
             <div className='flex flex-col justify-between w-full md:w-auto'>
                 <p className="p-2 pb-0 space-x-4">
-                {post.content && (post.content.length > 50 ? `${post.content.substring(0, 50)}...` : post.content)}
+                {post.contenido && (post.contenido.length > 50 ? `${post.contenido.substring(0, 50)}...` : post.contenido)}
                 </p>
                 <div className="p-2 pt-0 text-xs text-gray-700">
-                {post.post_time && new Date(post.post_time).toLocaleString()}
+                {post.fecha_publicacion && new Date(post.fecha_publicacion).toLocaleString()}
                 </div>
             </div>
             </div>
@@ -61,8 +61,8 @@ export default function PostCard ({post}:PostCardProps ) {
             <Link 
             href={post.link || '#'}
             className="flex items-center text-blue-500 hover:text-blue-700">
-            {post.status === 'published' ? <ArrowTopRightOnSquareIcon className="h-5 w-5 mr-1" /> : <PaperAirplaneIcon className="h-5 w-5 mr-1" /> } 
-            <span>{post.status === 'published' ? 'Abrir' : 'Publicar'}</span>
+            {post.estado === 'published' ? <ArrowTopRightOnSquareIcon className="h-5 w-5 mr-1" /> : <PaperAirplaneIcon className="h-5 w-5 mr-1" /> } 
+            <span>{post.estado === 'published' ? 'Abrir' : 'Publicar'}</span>
             </Link>
         </li>
     );

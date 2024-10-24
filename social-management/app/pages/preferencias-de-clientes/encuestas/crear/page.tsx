@@ -6,7 +6,6 @@ import { PlusCircleIcon, DocumentArrowUpIcon } from '@heroicons/react/24/solid';
 
 import EncuestaHeader from '@/app/ui/encuesta/encuesta-header';
 import EncuestaNode from '@/app/ui/encuesta/encuesta-node';
-import Error from '@/app/ui/error'; // Import the Error component
 
 import { Encuesta, Question } from '@/app/lib/types';
 import { load_survey_by_id } from '@/app/lib/data';
@@ -15,10 +14,10 @@ import { upload_survey } from '@/app/lib/data';
 function EncuestaPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
-
+    const router = useRouter();
+    
     const [isActive, setIsActive] = useState(true);
     const [encuesta, setEncuesta] = useState<Encuesta | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for error message
 
     useEffect(() => {
         const fetchEncuesta = async () => {
@@ -38,8 +37,7 @@ function EncuestaPage() {
                 const data = await load_survey_by_id(id);
                 setEncuesta(data);
             } catch (error) {
-                console.error('Error fetching encuesta:', error);
-                setErrorMessage('Error fetching encuesta');
+                throw new Error('Error fetching encuesta:');
             }
         };
 
@@ -87,22 +85,21 @@ function EncuestaPage() {
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         try {
-            console.log('Submitting encuesta:', encuesta);
+            console.log('Submitting encuesta:', JSON.stringify(encuesta));
             
             if (encuesta) {
                 await upload_survey(encuesta);
+                
+                router.push('/pages/preferencias-de-clientes/encuestas');
             }
             // Perform any necessary actions, such as sending data to an API
         } catch (error) {
-            console.error('Error guardando la encuesta:', error);
-            setErrorMessage('Error guardando la encuesta');
+            throw new Error('Error guardando la encuesta');
         }
     }
 
     return (
-        <main>
-            {errorMessage && <Error key={errorMessage} message={errorMessage} />} {/* Display the Error component */}
-            
+        <main>            
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Detalle de la Encuesta</h1>
 
