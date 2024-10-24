@@ -1,3 +1,29 @@
+export type SocialAccount = {
+  id?: number;
+  red_social: string;
+  usuario?: string;
+
+  tipo_autenticacion: string;
+
+  page_id?: string;
+  open_id?: string;
+  refresh_token?: string;
+  token_autenticacion: string;
+  instagram_business_account?: string;
+
+  fecha_expiracion_token?: string;
+  fecha_expiracion_refresh?: string;
+  linked?: boolean
+}
+
+export type MediaFILE = {
+  id: string;
+  file: File;
+  url: string;
+  type: string;
+  name: string;
+}
+
 export type SideNavItem = {
   title: string;
   path: string;
@@ -15,16 +41,16 @@ export type User = {
 
 export type Post = {
   id: string;
-  social_media: string;
-  type: string;
-  status: string;
-  preview?: string;
-  media?: string;
-  content?: string;
-  post_time?: Date;
-  link?: string;
+  red_social: string; //fb,ig,tk
+  tipo: string; //video,photos
+  estado: string; //publicado, programado, eliminado, borrador 
+  preview?: string; //enlace
+  media?: string; //enlace
+  contenido?: string; //texto
+  fecha_publicacion?: string; 
+  link?: string; //enlace al post
   is_programmed: boolean;
-  programmed_post_time?: Date;
+  programmed_post_time?: string;
 }
 
 export type calendarEvent = {

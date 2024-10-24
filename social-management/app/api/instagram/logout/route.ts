@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 
+import { logout_social_account } from '@/app/lib/data';
+
 export async function GET() {
-    const response = NextResponse.json({ success: true });
-    response.cookies.set('instagram_access_token', '', { maxAge: -1 });  // Expire the cookie
-    response.cookies.set('instagram_open_id', '', { maxAge: -1 });  // Expire the cookie
-    return response;
+    try {
+        await logout_social_account('instagram');
+    } catch (error) {
+    }
+    return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas-configuraciones');
 }

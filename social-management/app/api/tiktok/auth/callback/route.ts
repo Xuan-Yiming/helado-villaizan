@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import qs from 'qs';
 
+import { SocialAccount } from '@/app/lib/types';
+import { add_social_account } from '@/app/lib/data';
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
@@ -32,17 +35,29 @@ export async function GET(request: Request) {
 
         const access_token = response.data.access_token;
         const open_id = response.data.open_id;
+        const refresh_token = response.data.refresh_token;
 
         if (access_token) {
             // You can now link the user's TikTok account in your database or session
             // Here, you'd save the TikTok `open_id` and `access_token` to your user's profile in the database.
             console.log('TikTok Open ID:', open_id);
             console.log('TikTok Access Token:', access_token);
+            console.log('TikTok Refresh Token:', refresh_token)
             // Example: Set a cookie with the TikTok account link (or store in database)
-            const res = NextResponse.json({ success: true, open_id, access_token });
-            res.cookies.set('tiktok_open_id', open_id, { httpOnly: true, maxAge: 60 * 60 * 24 });
-            res.cookies.set('tiktok_access_token', access_token, { httpOnly: true, maxAge: 60 * 60 * 24 });
-            
+
+            // Create the social account object
+            const socialAccount: SocialAccount = {
+                red_social: 'tiktok',
+                tipo_autenticacion: 'OAuth2',
+                open_id: open_id,
+                token_autenticacion: access_token,
+                refresh_token: refresh_token,
+                fecha_expiracion_token: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            };
+
+            // Call the function to add the social account
+            await add_social_account(socialAccount);
+
             // Redirect to /pages/cuentas-configuraciones
             return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas-configuraciones');
         }
