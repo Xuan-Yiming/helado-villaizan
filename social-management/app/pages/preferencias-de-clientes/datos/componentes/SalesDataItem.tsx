@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ArchiveBoxArrowDownIcon, ArchiveBoxIcon, TrashIcon } from '@heroicons/react/24/outline';
 import DatePicker, { registerLocale } from 'react-datepicker';
+import { format } from 'date-fns';
 import {es} from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import Link from 'next/link';
@@ -15,6 +16,20 @@ const SalesDataItem = () => {
     const [endDate, setEndDate] = useState<Date | null>(new Date());
 
     const isDateSelected = startDate !== null && endDate !== null;
+
+    const formatDateForLink = (date: Date | null) => {
+        return date ? format(date, "yyyy-MM-dd") : ''; // Formato para la URL
+    };
+    
+    const formatDateForDisplay = (date: Date | null) => {
+        return date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: es }) : ''; // Formato para mostrar en la interfaz
+    };
+    
+    const startDateFormattedForLink = formatDateForLink(startDate);
+    const endDateFormattedForLink = formatDateForLink(endDate);
+    
+    const startDateFormattedForDisplay = formatDateForDisplay(startDate);
+    const endDateFormattedForDisplay = formatDateForDisplay(endDate);
 
     return (
             <div className="bg-green-200 rounded-lg p-4 flex items-start justify-between w-full mx-auto mt-4 hover:bg-green-300 cursor-pointer">
@@ -39,6 +54,7 @@ const SalesDataItem = () => {
                                     locale="es"
                                     className="border rounded p-1"
                                 />
+                                
                             </div>
                         </div>
                         <p className="text-gray-600 mt-2">Data procesada</p>
@@ -46,18 +62,19 @@ const SalesDataItem = () => {
                 </div>
 
                 <div>
-                    {isDateSelected ? (
-                        <Link href="/pages/preferencias-de-clientes/datos/dashboard">
-                            <ArchiveBoxArrowDownIcon className="h-6 w-6 text-gray-600 hover:text-blue-500 cursor-pointer" />
-                        </Link>
-                    ) : (
-                        <ArchiveBoxArrowDownIcon className="h-6 w-6 text-gray-400 cursor-not-allowed" />
-                    )}
+                {isDateSelected ? (
+                    <Link href={`/pages/preferencias-de-clientes/datos/dashboard?startDate=${startDateFormattedForLink}&endDate=${endDateFormattedForLink}`}>
+                        <ArchiveBoxArrowDownIcon className="h-6 w-6 text-gray-600 hover:text-blue-500 cursor-pointer" />
+                    </Link>
+                ) : (
+                    <ArchiveBoxArrowDownIcon className="h-6 w-6 text-gray-400 cursor-not-allowed" />
+                )}
                 </div>
 
                 
             </div>
     );
+    
 };
 
 export default SalesDataItem;
