@@ -24,7 +24,8 @@ import Preview from "@/app/ui/publicar/preview";
 
 import { load_all_social_accounts } from "@/app/lib/data";
 import { load_post_by_id } from "@/app/lib/data";
-
+import { create_post } from "@/app/lib/data";
+import { json } from "stream/consumers";
 
 function PublicarPage() {
   const searchParams = useSearchParams();
@@ -186,17 +187,26 @@ function PublicarPage() {
         const uploadedMediaURL = newBlob.url
 
         setMedia(uploadedMediaURL)
-        const newPost = {
-          id: id,
-          text: content,
-          media: media,
-          status: status,
-          isProgrammed: isProgrammed,
-          programmed_post_time: programmed_post_time,
-          socialAccounts: selectedAccount,
-        };
-    
-        console.log("New Post:", newPost);
+
+        for (const account of selectedAccount) {
+            const newPost: Post = {
+            id: id ? id : "",
+            red_social: account.red_social,
+            tipo: type,
+            estado: status,
+            preview: preview,
+            media: uploadedMediaURL,
+            contenido: content,
+            fecha_publicacion: new Date().toISOString(),
+            link: link,
+            is_programmed: isProgrammed,
+            programmed_post_time: programmed_post_time,
+            };
+          console.log("New Post :", newPost);
+          console.log("New Post json:", JSON.stringify(newPost));
+          await create_post(newPost)
+        }
+        
       }else{
       }
 
