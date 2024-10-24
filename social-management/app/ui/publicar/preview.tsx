@@ -147,12 +147,14 @@ export default function Preview({ text, media, mediaType, selectedNetwork }: Pre
                   <button
                     onClick={handlePrev}
                     className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white p-2 rounded-full"
+                    title="Previous"
                   >
                     <ArrowLeftCircleIcon className="w-8 h-8" />
                   </button>
                   <button
                     onClick={handleNext}
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white p-2 rounded-full"
+                    title="Next"
                   >
                     <ArrowRightCircleIcon className="w-8 h-8" />
                   </button>
