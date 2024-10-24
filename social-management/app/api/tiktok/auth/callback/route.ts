@@ -55,6 +55,7 @@ export async function GET(request: Request) {
                 fecha_expiracion_token: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
             };
 
+            console.log("tiktok account: " + JSON.stringify(socialAccount))
             // Call the function to add the social account
             await add_social_account(socialAccount);
 

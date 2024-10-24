@@ -9,7 +9,7 @@ import { SocialAccount } from "./types";
 
 export async function load_posts(offset: number, limit: number,redSocial: string, tipoPublicacion: string, estado: string, tags: string): Promise<Post[]> {
   //var apiUrl = `https://api.example.com/posts?offset=${offset}&limit=${limit}&redSocial=${redSocial}&tipoPublicacion=${tipoPublicacion}&estado=${estado}&tags=${tags}`;
-  const apiUrl = API_URL + '/posts';
+  const apiUrl = API_URL + '/posts/';
   // for test
   //apiUrl = "https://mocki.io/v1/8bf11121-29f2-4ea9-ad68-bc38e3f38612"
 
@@ -35,8 +35,8 @@ export async function load_post_by_id(postId: string): Promise<Post> {
   }
 
 export async function create_post(newPost: Post): Promise<Post> {
-    const apiUrl = `https://api.example.com/posts`;
-  
+    // const apiUrl = API_URL+`/posts/crear`;
+    const apiUrl = "https://dp2-back.onrender.com/posts/crear/";
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -90,7 +90,7 @@ export async function load_survey_by_id(surveyId: string): Promise<Encuesta> {
   }
 
 export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
-  const apiUrl = API_URL + `/encuestas`;
+  const apiUrl = API_URL + `/surveys-create/`;
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -138,7 +138,7 @@ export async function load_all_social_accounts(): Promise<SocialAccount[]> {
 }
 
 export async function add_social_account(social_account:SocialAccount): Promise<void> {
-  const apiUrl = `https://api.example.com/social-accounts`;
+  const apiUrl = API_URL + `/cuentas/vincular/`;
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -154,7 +154,7 @@ export async function add_social_account(social_account:SocialAccount): Promise<
 }
 
 export async function logout_social_account(red_social:string): Promise<void> {
-  const apiUrl = `https://api.example.com/social-accounts/logout`;
+  const apiUrl = API_URL + `/cuentas/desvincular/`;
 
   const response = await fetch(apiUrl, {
     method: 'POST',
