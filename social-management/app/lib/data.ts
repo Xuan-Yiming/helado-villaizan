@@ -35,8 +35,8 @@ export async function load_post_by_id(postId: string): Promise<Post> {
   }
 
 export async function create_post(newPost: Post): Promise<Post> {
-    const apiUrl = API_URL+`/posts/crear`;
-  
+    // const apiUrl = API_URL+`/posts/crear`;
+    const apiUrl = "https://dp2-back.onrender.com/posts/crear/";
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
