@@ -13,7 +13,6 @@ import PostList from '@/app/ui/publicar/post-list';
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [responseFilter, setResponseFilter] = useState('all');
-    const [tagsFilter, setTagsFilter] = useState('all');
     const [socialNetworkFilter, setSocialNetworkFilter] = useState('all');
     const [postTypeFilter, setPostTypeFilter] = useState('all');
     const [posts, setPosts] = useState<Post[]>([]);
@@ -24,7 +23,6 @@ const Page = () => {
 
     const resetFilters = () => {
         setResponseFilter('all');
-        setTagsFilter('all');
         setSocialNetworkFilter('all');
         setPostTypeFilter('all');
     };
@@ -32,7 +30,7 @@ const Page = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const data = await load_posts(0, 1, socialNetworkFilter, postTypeFilter, responseFilter, tagsFilter);
+                const data = await load_posts(0, 1, socialNetworkFilter, postTypeFilter, responseFilter);
                 setPosts(data);
             } catch (error) {
                 console.error('Error fetching posts:', error);
@@ -40,7 +38,7 @@ const Page = () => {
         };
 
         fetchPosts();
-    }, [socialNetworkFilter, postTypeFilter, responseFilter, tagsFilter]);
+    }, [socialNetworkFilter, postTypeFilter, responseFilter]);
 
 
 
@@ -111,18 +109,6 @@ const Page = () => {
                         value={responseFilter}
                         onChange={setResponseFilter}
                     />
-                    <FilterSelect
-                        label="#Tags"
-                        id="tags-filter"
-                        options={[
-                            { value: 'all', label: 'Ver todo' },
-                            { value: 'tag1', label: 'Tag 1' },
-                            { value: 'tag2', label: 'Tag 2' },
-                            { value: 'tag3', label: 'Tag 3' },
-                        ]}
-                        value={tagsFilter}
-                        onChange={setTagsFilter}
-                    />
 
 
                     <div className="flex-1 h-15 mx-1 flex justify-center items-center">
@@ -142,7 +128,6 @@ const Page = () => {
                 socialNetworkFilter={socialNetworkFilter}
                 postTypeFilter={postTypeFilter}
                 responseFilter={responseFilter}
-                tagsFilter={tagsFilter}
             /> 
         </div>
     );

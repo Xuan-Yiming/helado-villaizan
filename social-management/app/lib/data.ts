@@ -35,8 +35,8 @@ export async function load_post_by_id(postId: string): Promise<Post> {
   }
 
 export async function create_post(newPost: Post): Promise<Post> {
-    // const apiUrl = API_URL+`/posts/crear`;
-    const apiUrl = "https://dp2-back.onrender.com/posts/crear/";
+    const apiUrl = API_URL+`/posts/crear`;
+    //const apiUrl = "https://dp2-back.onrender.com/posts/crear/";
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -65,7 +65,7 @@ export async function load_programmed_posts(): Promise<Post[]> {
   }
 
 export async function load_all_survey(offset: number, limit: number, estado: string): Promise<Encuesta[]> {
-    const apiUrl = API_URL + `/surveys`;
+    const apiUrl = API_URL + `/encuestas/`;
     //apiUrl = "https://mocki.io/v1/605b445a-03a2-4f50-b396-579224838780"
     const response = await fetch(apiUrl);
     if (!response.ok) {
