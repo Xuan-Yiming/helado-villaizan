@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { logout_social_account } from '@/app/lib/data';
+import { logout_social_account } from '@/app/lib/database';
 
 export async function GET() {
     try {

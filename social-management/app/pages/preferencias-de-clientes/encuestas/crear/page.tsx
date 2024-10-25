@@ -8,8 +8,8 @@ import EncuestaHeader from '@/app/ui/encuesta/encuesta-header';
 import EncuestaNode from '@/app/ui/encuesta/encuesta-node';
 
 import { Encuesta, Question } from '@/app/lib/types';
-import { load_survey_by_id } from '@/app/lib/data';
-import { upload_survey } from '@/app/lib/data';
+import { load_survey_by_id } from '@/app/lib/database';
+import { upload_survey } from '@/app/lib/database';
 
 function EncuestaPage() {
     const searchParams = useSearchParams();
@@ -30,11 +30,11 @@ function EncuestaPage() {
                     end_date: '',
                     questions: []
                 });
-
                 return;
             }
             try {
                 const data = await load_survey_by_id(id);
+                console.log('Encuesta:', data);
                 setEncuesta(data);
             } catch (error) {
                 throw new Error('Error fetching encuesta:');

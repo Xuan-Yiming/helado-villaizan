@@ -22,10 +22,9 @@ import InstagramLogo from "@/app/ui/icons/instagram";
 import TiktokLogo from "@/app/ui/icons/tiktok";
 import Preview from "@/app/ui/publicar/preview";
 
-import { load_all_social_accounts } from "@/app/lib/data";
-import { load_post_by_id } from "@/app/lib/data";
-import { create_post } from "@/app/lib/data";
-import { json } from "stream/consumers";
+import { load_all_social_accounts } from "@/app/lib/database";
+import { load_post_by_id } from "@/app/lib/database";
+import { create_post } from "@/app/lib/database";
 
 function PublicarPage() {
   const searchParams = useSearchParams();
@@ -59,12 +58,12 @@ function PublicarPage() {
   const [programmed_post_time, setPost_time] = useState<string>();
 
   const getLogo = (name: string) => {
-    switch (name) {
-      case "Facebook":
+    switch (name.toLowerCase()) {
+      case "Facebook".toLowerCase():
         return <FacebookLogo />;
-      case "Instagram":
+      case "Instagram".toLowerCase():
         return <InstagramLogo />;
-      case "TikTok":
+      case "TikTok".toLowerCase():
         return <TiktokLogo />;
       default:
         return null;
@@ -85,12 +84,12 @@ function PublicarPage() {
         try {
           const data = await load_post_by_id(id);
           setPosts(data);
-            setType(data.tipo);
-            setStatus(data.estado);
+            setType(data.type);
+            setStatus(data.status);
             setPreview(data.preview);
             setMedia(data.media);
-            setContent(data.contenido);
-            setPostTime(data.fecha_publicacion);
+            setContent(data.content);
+            setPostTime(data.post_time);
             setLink(data.link);
             setIsProgrammed(data.is_programmed);
             setPost_time(data.programmed_post_time);
@@ -191,13 +190,13 @@ function PublicarPage() {
         for (const account of selectedAccount) {
             const newPost: Post = {
             id: id ? id : "",
-            red_social: account.red_social,
-            tipo: type,
-            estado: status,
+            social_media: account.red_social,
+            type: type,
+            status: status,
             preview: preview,
             media: uploadedMediaURL,
-            contenido: content,
-            fecha_publicacion: new Date().toISOString(),
+            content: content,
+            post_time: new Date().toISOString(),
             link: link,
             is_programmed: isProgrammed,
             programmed_post_time: programmed_post_time,

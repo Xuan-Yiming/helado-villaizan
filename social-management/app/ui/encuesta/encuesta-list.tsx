@@ -5,7 +5,7 @@ import EncuestaCard from './encuesta-card';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-import { load_all_survey } from '@/app/lib/data';
+import { load_all_survey } from '@/app/lib/database';
 
 interface EncuestaListProps {
     initialEncuestas: Encuesta[];

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Post } from '@/app/lib/types';
 
-import { load_posts } from '@/app/lib/data';
+import { load_posts } from '@/app/lib/database';
 import PostCard from './post-card';
 
 interface PostListProps {

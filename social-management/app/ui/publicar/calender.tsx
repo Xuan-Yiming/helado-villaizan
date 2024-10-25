@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 
 import ConfirmationModal from "../confirmation-modal";
 
-import { load_programmed_posts } from "@/app/lib/data";
+import { load_programmed_posts } from "@/app/lib/database";
 import { calendarEvent } from "@/app/lib/types";
 
 import './calendar.css'; // Import the custom CSS
@@ -49,7 +49,7 @@ export default function Calendar() {
                         const end = start ? new Date(new Date(start).getTime() + 60 * 60 * 1000).toISOString() : '';
                         return {
                             id: post.id,
-                            title: post.red_social,
+                            title: post.social_media,
                             start: start?.toString() || '',
                             end: end,
                             url: `/pages/publicaciones/crear?id=${post.id}`,

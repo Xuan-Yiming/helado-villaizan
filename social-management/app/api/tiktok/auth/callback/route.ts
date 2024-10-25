@@ -5,7 +5,7 @@ import axios from 'axios';
 import qs from 'qs';
 
 import { SocialAccount } from '@/app/lib/types';
-import { add_social_account } from '@/app/lib/data';
+import { add_social_account } from '@/app/lib/database';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);

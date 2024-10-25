@@ -11,7 +11,7 @@ import FacebookLogo from "@/app/ui/icons/facebook";
 import InstagramLogo from "@/app/ui/icons/instagram";
 import TiktokLogo from "@/app/ui/icons/tiktok";
 
-import { load_all_social_accounts } from '@/app/lib/data';
+import { load_all_social_accounts } from '@/app/lib/database';
 import { SocialAccount } from '@/app/lib/types';
 
 

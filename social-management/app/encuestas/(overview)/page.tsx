@@ -4,13 +4,13 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { PlusCircleIcon, DocumentArrowUpIcon } from '@heroicons/react/24/solid';
 
-import EncuestaHeader from './encuesta-header';
-import EncuestaNode from './encuesta-node';
+import EncuestaHeader from '../encuesta-header';
+import EncuestaNode from '../encuesta-node';
 import Error from '@/app/ui/error'; // Import the Error component
 
 import { Encuesta, Question, Response,Answer } from '@/app/lib/types';
-import { load_survey_by_id } from '@/app/lib/data';
-import { submit_survey_response } from '@/app/lib/data';
+import { load_survey_by_id } from '@/app/lib/database';
+import { submit_survey_response } from '@/app/lib/database';
 
 function EncuestaPage() {
     const searchParams = useSearchParams();
