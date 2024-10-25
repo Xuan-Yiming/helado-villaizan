@@ -86,6 +86,7 @@ export type Question = {
 export type Response = {
   id: string;
   date: string;
+  ip?: string;
   answers: Answer[];
 }
 

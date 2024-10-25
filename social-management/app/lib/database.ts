@@ -5,10 +5,37 @@ const client = await db.connect();
 
 import { Post, Encuesta,  Question, Response, Answer , SocialAccount } from "./types";
 
-export async function load_posts(offset: number, limit: number, redSocial: string, tipoPublicacion: string, estado: string, tags: string): Promise<Post[]> {
-    const result = await client.sql`
-        SELECT * FROM posts
+export async function load_posts(offset: number, limit: number, redSocial: string, tipoPublicacion: string, estado: string): Promise<Post[]> {
+    let sqlQuery = `
+    SELECT * FROM posts 
+    WHERE id IS NOT NULL
     `;
+    
+    const params: any[] = [];
+    
+    if (redSocial !== 'all') {
+        sqlQuery += ` AND social_media = $${params.length + 1}`;
+        params.push(redSocial);
+    }
+    
+    if (tipoPublicacion !== 'all') {
+        sqlQuery += ` AND type = $${params.length + 1}`;
+        params.push(tipoPublicacion);
+    }
+    
+    if (estado !== 'all') {
+        sqlQuery += ` AND status = $${params.length + 1}`;
+        params.push(estado);
+    }
+    
+    sqlQuery += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+    
+    console.log(sqlQuery);
+    console.log(params);
+
+    const result = await client.query(sqlQuery, params);
+    
     return result.rows as Post[];
 }
 
@@ -39,9 +66,25 @@ export async function load_programmed_posts(): Promise<Post[]> {
 }
 
 export async function load_all_survey(offset: number, limit: number, estado: string): Promise<Encuesta[]> {
-    const encuestasResult = await client.sql`
-        SELECT * FROM encuestas
+    let sqlQuery = `
+    SELECT * FROM encuestas 
+    WHERE id IS NOT NULL
     `;
+    
+    const params: any[] = [];
+    
+    if (estado !== 'all') {
+        sqlQuery += ` AND status = $${params.length + 1}`;
+        params.push(estado);
+    }
+    
+    sqlQuery += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+    
+    console.log(sqlQuery);
+    console.log(params);
+
+    const encuestasResult = await client.query(sqlQuery, params);
     const encuestas = encuestasResult.rows as Encuesta[];
 
     for (const encuesta of encuestas) {
@@ -64,6 +107,13 @@ export async function load_survey_by_id(surveyId: string): Promise<Encuesta> {
     encuesta.responses = await load_responses_by_encuesta_id(encuesta.id);
 
     return encuesta;
+}
+
+export async function check_survey_response(surveyId: string, userIP: string): Promise<boolean> {
+    const responsesResult = await client.sql`
+        SELECT * FROM responses WHERE encuesta_id = ${surveyId} AND ip = ${userIP}
+    `;
+    return responsesResult.rows.length > 0;
 }
 
 export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
@@ -90,7 +140,7 @@ async function load_questions_by_encuesta_id(encuestaId: string): Promise<Questi
 
     return questionsResult.rows.map(row => ({
         ...row,
-        options: row.options[0] ? row.options[0].split(',').map((option: string) => option.trim().replace(/^'|'$/g, '')): null
+        options: row.options && row.options[0] ? row.options[0].split(',').map((option: string) => option.trim().replace(/^'|'$/g, '')) : null
     })) as Question[];
 }
 
@@ -119,8 +169,8 @@ async function load_answers_by_response_id(responseId: string): Promise<Answer[]
 export async function submit_survey_response(surveyId: string, responseQ: Response): Promise<void> {
     // Insert the response into the responses table
     const responseResult = await client.sql`
-        INSERT INTO responses (encuesta_id, date)
-        VALUES (${surveyId}, ${responseQ.date})
+        INSERT INTO responses (encuesta_id, date, ip)
+        VALUES (${surveyId}, ${responseQ.date}, ${responseQ.ip})
         RETURNING id
     `;
     const responseId = responseResult.rows[0].id;

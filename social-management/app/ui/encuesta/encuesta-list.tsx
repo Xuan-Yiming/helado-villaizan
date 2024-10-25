@@ -5,7 +5,7 @@ import EncuestaCard from './encuesta-card';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-import { load_all_survey } from '@/app/lib/database';
+import { load_all_survey } from '@/app/lib/data';
 
 interface EncuestaListProps {
     initialEncuestas: Encuesta[];
@@ -18,7 +18,7 @@ export default function EncuestaList({
     initialEncuestas,
     estadoFilter
 }: EncuestaListProps) {
-    const [offset, setOffset] = useState(NUMBER_OF_POSTS_TO_FETCH);
+    const [offset, setOffset] = useState(0);
     const [encuestas, setEncuestas] = useState<Encuesta[]>(initialEncuestas);
     const { ref, inView } = useInView();
 
@@ -26,7 +26,7 @@ export default function EncuestaList({
         try {
             const apiEncuestas = await load_all_survey(
                 offset,
-                offset / NUMBER_OF_POSTS_TO_FETCH + 1,
+                NUMBER_OF_POSTS_TO_FETCH,
                 estadoFilter
             );
             if (Array.isArray(apiEncuestas)) {

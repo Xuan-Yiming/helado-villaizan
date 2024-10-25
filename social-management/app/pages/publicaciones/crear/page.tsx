@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import type { PutBlobResult } from '@vercel/blob';
+import { useSearchParams, useRouter } from "next/navigation";
+import type { PutBlobResult } from "@vercel/blob";
 
 import {
   PaperAirplaneIcon,
@@ -28,7 +28,7 @@ import { create_post } from "@/app/lib/database";
 
 function PublicarPage() {
   const searchParams = useSearchParams();
-
+  const router = useRouter();
   const id = searchParams.get("id");
 
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
@@ -44,11 +44,12 @@ function PublicarPage() {
   const [posts, setPosts] = useState<Post>();
   const [selectedAccount, setSelectedAccount] = useState<SocialAccount[]>([]);
   const [selectedNetwork, setSelectedNetwork] = useState<string>("");
-  const [selectedSocialAccountName, setSelectedSocialAccountName] = useState<string>("");
+  const [selectedSocialAccountName, setSelectedSocialAccountName] =
+    useState<string>("");
   // PostDetail
   const [socialMedia, setSocialMedia] = useState<string>("fb");
   const [type, setType] = useState<string>("video");
-  const [status, setStatus] = useState<string>("nuevo");
+  const [status, setStatus] = useState<string>("publicado");
   const [preview, setPreview] = useState<string | undefined>(undefined);
   const [media, setMedia] = useState<string | undefined>(undefined);
   const [content, setContent] = useState<string | undefined>(undefined);
@@ -71,6 +72,20 @@ function PublicarPage() {
   };
 
   useEffect(() => {
+    // si es programado
+    const postTimeParam = searchParams.get("postTime");
+    if (postTimeParam) {
+      const date = new Date(postTimeParam);
+      const formattedPostTime = date.toISOString();      
+      setPost_time(formattedPostTime);
+      console.log('Post Time:', formattedPostTime);
+      const button = document.getElementById("bt_programar");
+      if (button) {
+        button.click();
+        
+      }
+    }
+
     const fetchData = async () => {
       const socialAccounts = await load_all_social_accounts();
       const filteredSocialAccounts = socialAccounts.filter(
@@ -80,31 +95,30 @@ function PublicarPage() {
     };
 
     const fetchPosts = async () => {
-      if(id)
+      if (id)
         try {
           const data = await load_post_by_id(id);
           setPosts(data);
-            setType(data.type);
-            setStatus(data.status);
-            setPreview(data.preview);
-            setMedia(data.media);
-            setContent(data.content);
-            setPostTime(data.post_time);
-            setLink(data.link);
-            setIsProgrammed(data.is_programmed);
-            setPost_time(data.programmed_post_time);
+          setType(data.type);
+          setStatus(data.status);
+          setPreview(data.preview);
+          setMedia(data.media);
+          setContent(data.content);
+          setPostTime(data.post_time);
+          setLink(data.link);
+          setIsProgrammed(data.is_programmed);
+          setPost_time(data.programmed_post_time);
         } catch (error) {
-          console.error('Error fetching posts:', error);
+          console.error("Error fetching posts:", error);
         }
-    }
+    };
 
     const createNewProgrammedPost = async () => {
-
       if (searchParams.get("postTime")) {
         setPost_time(searchParams.get("postTime")!);
-        setStatus('programado')
+        setStatus("programado");
       }
-    }
+    };
 
     fetchData();
     fetchPosts();
@@ -158,8 +172,6 @@ function PublicarPage() {
     setIsImageSelected(false);
   };
 
-
-
   const handlePost = async () => {
     if (selectedAccount.length === 0) {
       setPostStatus("Por favor, selecciona al menos un usuario para publicar.");
@@ -169,26 +181,26 @@ function PublicarPage() {
     setLoading(true);
 
     try {
-      if(mediaFiles){
+      if (mediaFiles) {
         const response = await fetch(
           `/api/media/upload?filename=${mediaFiles.name}`,
           {
-            method: 'POST',
+            method: "POST",
             body: mediaFiles.file,
-          },
+          }
         );
         const newBlob = (await response.json()) as PutBlobResult;
 
         setBlob(newBlob);
 
-        console.log("Response: ", newBlob.url)
+        console.log("Response: ", newBlob.url);
 
-        const uploadedMediaURL = newBlob.url
+        const uploadedMediaURL = newBlob.url;
 
-        setMedia(uploadedMediaURL)
-
+        setMedia(uploadedMediaURL);
+        
         for (const account of selectedAccount) {
-            const newPost: Post = {
+          const newPost: Post = {
             id: id ? id : "",
             social_media: account.red_social,
             type: type,
@@ -200,15 +212,14 @@ function PublicarPage() {
             link: link,
             is_programmed: isProgrammed,
             programmed_post_time: programmed_post_time,
-            };
+          };
           console.log("New Post :", newPost);
           console.log("New Post json:", JSON.stringify(newPost));
-          await create_post(newPost)
+          await create_post(newPost);
         }
-        
-      }else{
+        router.push("/publicaciones");
+      } else {
       }
-
     } catch (error) {
       console.error("Error al intentar realizar la publicación:", error);
       setPostStatus(
@@ -218,7 +229,6 @@ function PublicarPage() {
       setLoading(false);
     }
   };
-
 
   const handleAccountSelect = (account: SocialAccount) => {
     if (selectedAccount.includes(account)) {
@@ -231,9 +241,17 @@ function PublicarPage() {
   const handleSocialPreviewSelect = (socialMedia: string) => {
     setSelectedNetwork(socialMedia);
     setSelectedSocialAccountName(
-      socialAccounts.find(account => account.red_social.toLowerCase() === socialMedia)?.usuario || ""
-    )
-  }
+      socialAccounts.find(
+        (account) => account.red_social.toLowerCase() === socialMedia
+      )?.usuario || ""
+    );
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = new Date(e.target.value);
+    const formattedDate = date.toISOString();
+    setPostTime(formattedDate);
+  };
 
   return (
     <div className={`flex justify-center p-2 h-full w-full`}>
@@ -279,80 +297,76 @@ function PublicarPage() {
 
             {/* Mostrar cola de archivos multimedia */}
             <div className="flex items-center space-x-4 mt-4">
-                {mediaFiles && (
+              {mediaFiles && (
                 <div key={mediaFiles.id} className="relative">
                   {mediaFiles.type === "image" ? (
-                  <img
-                    src={mediaFiles.url}
-                    alt={mediaFiles.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                    <img
+                      src={mediaFiles.url}
+                      alt={mediaFiles.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
                   ) : (
-                  <video
-                    src={mediaFiles.url}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                    <video
+                      src={mediaFiles.url}
+                      className="w-16 h-16 object-cover rounded"
+                    />
                   )}
                   <button
-                  onClick={handleRemoveMedia}
-                  className="absolute top-0 right-0 text-red-500"
-                  title="Remove Media"
+                    onClick={handleRemoveMedia}
+                    className="absolute top-0 right-0 text-red-500"
+                    title="Remove Media"
                   >
-                  <XMarkIcon className="w-4 h-4" />
+                    <XMarkIcon className="w-4 h-4" />
                   </button>
                 </div>
-                )}
+              )}
             </div>
 
             {/* Botones para subir archivos */}
             <div className="flex items-center space-x-4 mt-4">
               <label
-                className={`flex items-center cursor-pointer ${isVideoSelected ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                className={`flex items-center cursor-pointer ${
+                  isVideoSelected ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 <CameraIcon
-                  className={`h-6 w-6 ${isVideoSelected ? "text-gray-300" : "text-gray-500"
-                    }`}
+                  className={`h-6 w-6 ${
+                    isVideoSelected ? "text-gray-300" : "text-gray-500"
+                  }`}
                 />
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={
-                    (e) => 
-                      {
-                        handleMediaUpload(e, "image")
-                        setType('image')
-                      }
-
-                  }
+                  onChange={(e) => {
+                    handleMediaUpload(e, "image");
+                    setType("image");
+                  }}
                   disabled={isVideoSelected} // Deshabilitar si hay un video seleccionado
                 />
               </label>
               <label
-                className={`flex items-center cursor-pointer ${isImageSelected || isVideoSelected
+                className={`flex items-center cursor-pointer ${
+                  isImageSelected || isVideoSelected
                     ? "opacity-50 cursor-not-allowed"
                     : ""
-                  }`}
+                }`}
               >
                 <VideoCameraIcon
-                  className={`h-6 w-6 ${isImageSelected || isVideoSelected
+                  className={`h-6 w-6 ${
+                    isImageSelected || isVideoSelected
                       ? "text-gray-300"
                       : "text-gray-500"
-                    }`}
+                  }`}
                 />
                 <input
                   type="file"
                   accept="video/*"
                   className="hidden"
-                  onChange={
-                    (e) => 
-                      {
-                        handleMediaUpload(e, "video")
-                        setType('video')
-                      }
-
-                  }
+                  onChange={(e) => {
+                    handleMediaUpload(e, "video");
+                    setType("video");
+                  }}
                   disabled={isImageSelected || isVideoSelected} // Deshabilitar si hay una imagen o un video seleccionado
                 />
               </label>
@@ -360,54 +374,60 @@ function PublicarPage() {
           </div>
 
           {/* Seleccionar cuándo publicar */}
-            <div className="p-4 border rounded bg-white">
+          <div className="p-4 border rounded bg-white">
             <h2 className="text-xl font-semibold text-black">
               Seleccionar cuándo publicar
             </h2>
             <div className="mt-4 flex space-x-4">
               <button
-              onClick={() => {
-                setStatus("publicado")
-                setIsProgrammed(false)
-              }}
-              className={`${!isProgrammed ? "bg-blue-500" : "bg-gray-300"
+                onClick={() => {
+                  setStatus("publicado");
+                  setIsProgrammed(false);
+                }}
+                className={`${
+                  !isProgrammed ? "bg-blue-500" : "bg-gray-300"
                 } text-white px-4 py-2 rounded flex items-center`}
               >
-              <PaperAirplaneIcon className="h-5 w-5 mr-2" />
-              Ahora
+                <PaperAirplaneIcon className="h-5 w-5 mr-2" />
+                Ahora
               </button>
               <button
-              onClick={() => {
-                setStatus("programado")
-                setIsProgrammed(true)
-              }}
-              className={`${isProgrammed ? "bg-blue-500" : "bg-gray-300"
+                id="bt_programar"
+                onClick={() => {
+                  setStatus("programado");
+                  setIsProgrammed(true);
+                }}
+                className={`${
+                  isProgrammed ? "bg-blue-500" : "bg-gray-300"
                 } text-white px-4 py-2 rounded flex items-center`}
               >
-              <ClockIcon className="h-5 w-5 mr-2" />
-              Programar
+                <ClockIcon className="h-5 w-5 mr-2" />
+                Programar
               </button>
             </div>
-            {isProgrammed && (
-              <div className="mt-4">
-              <label className="block text-black mb-2">Fecha y hora para publicar:</label>
+            <div className={`mt-4 ${isProgrammed ? '' : 'hidden'}`}>
+              <label className="block text-black mb-2">
+                Fecha y hora para publicar:
+              </label>
               <input
                 type="datetime-local"
                 value={programmed_post_time}
-                onChange={(e) => setPost_time(e.target.value)}
+                onChange={(e) => {
+                  console.log('Post Time:', e.target.value);
+                  setPost_time(e.target.value);
+                }}
                 className="w-full p-2 border rounded"
                 min={new Date().toISOString().slice(0, -8)}
               />
-              </div>
-            )}
             </div>
+          </div>
 
           <div className="flex justify-end space-x-4 mt-4">
-            <button 
+            <button
               className="bg-gray-500 text-white px-4 py-2 rounded"
-              onClick={()=>{
-                setStatus("borrador")
-                handlePost()
+              onClick={() => {
+                setStatus("borrador");
+                handlePost();
               }}
             >
               Guardar borrador
@@ -415,8 +435,9 @@ function PublicarPage() {
             <button
               onClick={handlePost}
               disabled={loading} // Deshabilitar el botón si está cargando
-              className={`bg-red-500 text-white px-4 py-2 rounded ${loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+              className={`bg-red-500 text-white px-4 py-2 rounded ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               {loading ? "Publicando..." : "Publicar"}
             </button>
@@ -426,10 +447,11 @@ function PublicarPage() {
           {postStatus && (
             <div className="mt-4">
               <p
-                className={`text-sm ${postStatus.includes("éxito")
+                className={`text-sm ${
+                  postStatus.includes("éxito")
                     ? "text-green-600"
                     : "text-red-600"
-                  }`}
+                }`}
               >
                 {postStatus}
               </p>
@@ -443,37 +465,40 @@ function PublicarPage() {
             <button
               onClick={() => handleSocialPreviewSelect("facebook")}
               className={`p-2 rounded flex items-center
-                  ${selectedNetwork === "facebook"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300"
-                }`}
+                  ${
+                    selectedNetwork === "facebook"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-300"
+                  }`}
             >
               <div className="w-6 h-6 mr-2">
-              <FacebookLogo />
+                <FacebookLogo />
               </div>
               Facebook
             </button>
             <button
               onClick={() => handleSocialPreviewSelect("instagram")}
-              className={`p-2 rounded flex items-center ${selectedNetwork === "instagram"
+              className={`p-2 rounded flex items-center ${
+                selectedNetwork === "instagram"
                   ? "bg-pink-500 text-white"
                   : "bg-gray-300"
-                }`}
+              }`}
             >
               <div className="w-6 h-6 mr-2">
-              <InstagramLogo />
+                <InstagramLogo />
               </div>
               Instagram
             </button>
             <button
               onClick={() => handleSocialPreviewSelect("tiktok")}
-              className={`p-2 rounded flex items-center ${selectedNetwork === "tiktok"
+              className={`p-2 rounded flex items-center ${
+                selectedNetwork === "tiktok"
                   ? "bg-black text-white"
                   : "bg-gray-300"
-                }`}
+              }`}
             >
               <div className="w-6 h-6 mr-2">
-              <TiktokLogo />
+                <TiktokLogo />
               </div>
               TikTok
             </button>
@@ -481,9 +506,9 @@ function PublicarPage() {
 
           {/* Componente de vista previa */}
           <Preview
-            text={content? content:""}
+            text={content ? content : ""}
             media={mediaFiles ? mediaFiles.url : ""}
-            mediaType={mediaFiles ? mediaFiles.type: ""}
+            mediaType={mediaFiles ? mediaFiles.type : ""}
             selectedNetwork={selectedNetwork}
             selectedSocialAccountName={selectedSocialAccountName}
           />

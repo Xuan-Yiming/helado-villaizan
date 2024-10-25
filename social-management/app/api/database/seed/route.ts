@@ -83,6 +83,9 @@ async function seedDatabase() {
       encuesta_id UUID REFERENCES encuestas(id),
       date TIMESTAMP NOT NULL
     );
+
+    ALTER TABLE responses
+      ADD COLUMN ip VARCHAR(45) NOT NULL;
   `;
 
   // Create Answer table
