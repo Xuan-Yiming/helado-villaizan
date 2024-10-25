@@ -12,8 +12,6 @@ import {
  } from '@/app/lib/types';
 
 
-
-
 async function seedDatabase() {
   await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
