@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 
 import ConfirmationModal from "../confirmation-modal";
 
-import { load_programmed_posts } from "@/app/lib/data";
+import { load_programmed_posts } from "@/app/lib/database";
 import { calendarEvent } from "@/app/lib/types";
 
 import './calendar.css'; // Import the custom CSS

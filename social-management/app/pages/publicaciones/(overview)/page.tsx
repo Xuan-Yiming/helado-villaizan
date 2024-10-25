@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdjustmentsHorizontalIcon, PlusCircleIcon } from '@heroicons/react/24/solid';
 
-import { load_posts } from '@/app/lib/data';
+import { load_posts } from '@/app/lib/database';
 import { Post } from '@/app/lib/types';
 
 import FilterSelect from '@/app/ui/mensajes/filter-select';

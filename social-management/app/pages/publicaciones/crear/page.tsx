@@ -22,10 +22,9 @@ import InstagramLogo from "@/app/ui/icons/instagram";
 import TiktokLogo from "@/app/ui/icons/tiktok";
 import Preview from "@/app/ui/publicar/preview";
 
-import { load_all_social_accounts } from "@/app/lib/data";
-import { load_post_by_id } from "@/app/lib/data";
-import { create_post } from "@/app/lib/data";
-import { json } from "stream/consumers";
+import { load_all_social_accounts } from "@/app/lib/database";
+import { load_post_by_id } from "@/app/lib/database";
+import { create_post } from "@/app/lib/database";
 
 function PublicarPage() {
   const searchParams = useSearchParams();
@@ -59,12 +58,12 @@ function PublicarPage() {
   const [programmed_post_time, setPost_time] = useState<string>();
 
   const getLogo = (name: string) => {
-    switch (name) {
-      case "Facebook":
+    switch (name.toLowerCase()) {
+      case "Facebook".toLowerCase():
         return <FacebookLogo />;
-      case "Instagram":
+      case "Instagram".toLowerCase():
         return <InstagramLogo />;
-      case "TikTok":
+      case "TikTok".toLowerCase():
         return <TiktokLogo />;
       default:
         return null;
