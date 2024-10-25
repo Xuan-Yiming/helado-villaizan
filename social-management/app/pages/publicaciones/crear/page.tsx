@@ -198,7 +198,7 @@ function PublicarPage() {
         const uploadedMediaURL = newBlob.url;
 
         setMedia(uploadedMediaURL);
-        
+
         for (const account of selectedAccount) {
           const newPost: Post = {
             id: id ? id : "",
@@ -217,7 +217,7 @@ function PublicarPage() {
           console.log("New Post json:", JSON.stringify(newPost));
           await create_post(newPost);
         }
-        router.push("/publicaciones");
+        router.push("/pages/publicaciones");
       } else {
       }
     } catch (error) {
