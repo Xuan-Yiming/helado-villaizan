@@ -13,5 +13,5 @@ export async function GET() {
     }
     
     // Redirige solo después de que ambas promesas se resuelvan.
-    return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas-configuraciones');
+    return;
 }
