@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
+
 import { logout_social_account } from '@/app/lib/database';
 
 export async function GET() {
     try {
-        // Espera a que ambas operaciones se completen en paralelo.
-        await Promise.all([
-            logout_social_account('facebook'),
-            logout_social_account('instagram')
-        ]);
+        console.log('Cerrando sesión en Facebook...');
+        await logout_social_account('facebook');
+        console.log('Cerrando sesión en Instagram...');
+        await logout_social_account('instagram');
     } catch (error) {
-        console.error('Error al cerrar sesión:', error);
+        console.error('Error en el logout:', error);
     }
-    
-    // Redirige solo después de que ambas promesas se resuelvan.
+
+    console.log('Redirigiendo en 3 segundos...');
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas-configuraciones');
 }
