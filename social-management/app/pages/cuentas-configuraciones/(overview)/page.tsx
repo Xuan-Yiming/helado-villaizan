@@ -73,7 +73,9 @@ const handleLink = async (name: string, linked: boolean) => {
     if (linked) {
         switch (name) {
             case 'Facebook':
+                console.log("Luego del api de desvincular");
                 router.push('/api/facebook/logout');
+                console.log("Luego del api de desvincular");
                 break;
             case 'Instagram':
                 router.push('/api/instagram/logout');
