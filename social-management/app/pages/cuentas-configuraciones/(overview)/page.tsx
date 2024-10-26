@@ -53,7 +53,7 @@ export default function Page() {
         await axios.get('/api/auth/logout');
         router.push('/login');
     };
-
+    /*
     const handleLink = async (name: string, linked: boolean) => {
         if (!linked && (name === 'Facebook' || name === 'Instagram')) {
             try {
@@ -63,34 +63,55 @@ export default function Page() {
             } catch (error) {
                 console.error('Error durante la vinculación con Meta:', error);
             }
-        } else if (name === 'TikTok' || name === 'Google') {
+        } else if (linked || (name === 'Tiktok' || name === 'Google')) {
             const link = handlePlatformLink(name, linked);
             router.push(link);
         }
     };
-
-    const handlePlatformLink = (name: string, linked: boolean) => {
-        if (linked) {
-            switch (name) {
-                case 'Facebook':
-                    return '/api/facebook/logout';
-                case 'Instagram':
-                    return '/api/instagram/logout';
-                case 'TikTok':
-                    return '/api/tiktok/logout';
-                case 'Google':
-                    return '/api/google/logout';
-            }
-        } else {
-            switch (name) {
-                case 'TikTok':
-                    return '/api/tiktok/login';
-                case 'Google':
-                    return '/api/google/login';
-            }
+*/
+const handleLink = async (name: string, linked: boolean) => {
+    if (linked) {
+        switch (name) {
+            case 'Facebook':
+                router.push('/api/facebook/logout');
+                break;
+            case 'Instagram':
+                router.push('/api/instagram/logout');
+                break;
+            case 'TikTok':
+                router.push('/api/tiktok/logout');
+                break;
+            case 'Google':
+                router.push('/api/google/logout');
+                break;
+            default:
+                console.error('Plataforma desconocida para logout');
         }
-        return '';
-    };
+    } else {
+        switch (name) {
+            case 'Facebook':
+            case 'Instagram':
+                try {
+                    const authResponse = await metaLogin(); // Realiza el login
+                    await handleMetaAccount(authResponse); // Guarda la cuenta en la BD
+                    console.log(`${name} vinculado exitosamente.`);
+                } catch (error) {
+                    console.error('Error durante la vinculación con Meta:', error);
+                }
+                break;
+            case 'TikTok':
+                console.log('Entra a TikTok');
+                router.push('/api/tiktok/login');
+                break;
+            case 'Google':
+                router.push('/api/google/login');
+                break;
+            default:
+                console.error('Plataforma desconocida para login');
+        }
+    }
+};
+
 
     const getLogo = (name: string) => {
         switch (name) {
