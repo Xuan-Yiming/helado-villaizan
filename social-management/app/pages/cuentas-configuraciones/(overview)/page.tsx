@@ -131,36 +131,44 @@ const handleLink = async (name: string, linked: boolean) => {
     return (
         <main>
             <h1 className="font-bold text-4xl">Cuentas y Configuraciones</h1>
+
             <div className="mt-10">
                 <h2 className="font-bold text-2xl">Cuentas</h2>
+                <p>En esta sección podrás ver las cuentas que tienes vinculadas a tu perfil.</p>
                 <div>
                     {accountsState.map((account, index) => (
                         <div key={index} className="flex justify-between items-center border-b border-gray-200 py-2">
                             <div className="flex items-center">
                                 {getLogo(account.name)}
-                                <p className="ml-2 font-bold">{account.name}</p>
+                                <div className="ml-2">
+                                    <p className="font-bold">{account.name}</p>
+                                </div>
+                                <div className="ml-2">
+                                    <p>: {account.socialAccount?.usuario}</p>
+                                </div>
                             </div>
-                            <button
-                                onClick={() => handleLink(account.name, account.linked)}
-                                className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${
-                                    account.linked ? 'text-[#BD181E]' : 'bg-[#BD181E] text-white'
-                                }`}
-                            >
-                                {account.linked ? <LinkSlashIcon className="mr-5 h-5 w-5" /> : <LinkIcon className="mr-12 h-5 w-5" />}
-                                {account.linked ? 'Desvincular' : 'Vincular'}
-                            </button>
+                            <div className="">
+                                <button 
+                                    onClick={() => handleLink(account.name, account.linked)}
+                                    className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${account.linked ? 'text-[#BD181E] bg-white-0' : '  bg-[#BD181E] text-white'}`}
+                                >
+                                    {account.linked ? <LinkSlashIcon className="mr-5 h-5 w-5" /> : <LinkIcon className="mr-12 h-5 w-5" />}
+                                    {account.linked ? 'Desvincular' : 'Vincular'}
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
 
+
             <div className="mt-10">
                 <h2 className="font-bold text-2xl">Configuraciones</h2>
                 <p>En esta sección podrás configurar tu perfil y tus preferencias.</p>
-                <div className="flex justify-end mt-4">
-                    <button
+                <div className="flex justify-end">
+                    <button 
+                        className="flex bg-[#BD181E] text-white px-4 py-2 rounded-md mt-4 font-bold"
                         onClick={handleLogout}
-                        className="flex items-center bg-[#BD181E] text-white px-4 py-2 rounded-md font-bold"
                     >
                         <ArrowRightEndOnRectangleIcon className="h-5 w-5 mr-2" />
                         Cerrar sesión
@@ -170,4 +178,3 @@ const handleLink = async (name: string, linked: boolean) => {
         </main>
     );
 }
-

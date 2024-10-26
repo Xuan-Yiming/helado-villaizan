@@ -110,8 +110,8 @@ export async function handleMetaAccount(authResponse: any): Promise<void> {
             );
 
             // Forzar valores para Instagram si la respuesta es nula (hardcoding temporal)
-            const instagramAccountId = instagramResponse?.instagram_business_account?.id || 'hardcoded-instagram-id';
-            const instagramUsername = instagramResponse?.instagram_business_account?.username || 'hardcoded-username';
+            const instagramAccountId = instagramResponse?.instagram_business_account?.id || 'villaizan-hardcoded-id';
+            const instagramUsername = instagramResponse?.instagram_business_account?.username || 'villaizan-hardcoded';
 
             if (instagramAccountId && instagramUsername) {
                 // Crear el objeto SocialAccount para Instagram
