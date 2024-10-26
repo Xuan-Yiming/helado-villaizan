@@ -13,7 +13,7 @@ import TiktokLogo from "@/app/ui/icons/tiktok";
 
 import { load_all_social_accounts } from '@/app/lib/database';
 import { SocialAccount } from '@/app/lib/types';
-import { metaLogin, initMetaSdk } from '../meta-login'; // Importamos las funciones
+
 
 interface Account {
     name: string;
@@ -22,26 +22,43 @@ interface Account {
 }
 
 const initialAccounts: Account[] = [
-    { name: 'Facebook', socialAccount: undefined, linked: false },
-    { name: 'Instagram', socialAccount: undefined, linked: false },
-    { name: 'TikTok', socialAccount: undefined, linked: false },
-    { name: 'Google', socialAccount: undefined, linked: false },
+    {
+        name: 'Facebook',
+        socialAccount: undefined,
+        linked: false,
+    },
+    {
+        name: 'Instagram',
+        socialAccount: undefined,
+        linked: false,
+    },
+    {
+        name: 'TikTok',
+        socialAccount: undefined,
+        linked: false,
+    },
+    {
+        name: 'Google',
+        socialAccount: undefined,
+        linked: false,
+    },
 ];
 
 export default function Page() {
     const router = useRouter();
+
     const [accountsState, setAccountsState] = useState<Account[]>(initialAccounts);
 
     useEffect(() => {
-        initMetaSdk(); // Inicializa el SDK de Meta
-
         const fetchData = async () => {
             const socialAccounts = await load_all_social_accounts();
             const updatedAccounts = initialAccounts.map(account => {
-                const socialAccount = socialAccounts.find(
-                    sa => sa.red_social.toLowerCase() === account.name.toLowerCase()
-                );
-                return { ...account, socialAccount, linked: !!socialAccount };
+                const socialAccount = socialAccounts.find(sa => sa.red_social.toLowerCase() === account.name.toLowerCase() );
+                return {
+                    ...account,
+                    socialAccount,
+                    linked: !!socialAccount,
+                };
             });
             setAccountsState(updatedAccounts);
             document.cookie = `socialAccounts=${JSON.stringify(socialAccounts)}; path=/;`;
@@ -70,7 +87,7 @@ export default function Page() {
         }
     };
 
-    const handleLink = async (name: string, linked: boolean) => {
+    const handleLink = (name: string, linked: boolean) => {
         if (linked) {
             switch (name) {
                 case 'Facebook':
@@ -82,17 +99,12 @@ export default function Page() {
                 case 'Google':
                     return '/api/google/logout';
             }
-        } else {
+        }   else {
             switch (name) {
                 case 'Facebook':
+                    return '/pages/cuentas-configuraciones/facebook-login'
                 case 'Instagram':
-                    try {
-                        await metaLogin(); // Invoca la función de login
-                        console.log(`Vinculación exitosa con ${name}`);
-                    } catch (error) {
-                        console.error('Error durante la vinculación con Meta:', error);
-                    }
-                    break;
+                    return '/pages/cuentas-configuraciones/facebook-login'
                 case 'TikTok':
                     return '/api/tiktok/login';
                 case 'Google':
@@ -101,6 +113,7 @@ export default function Page() {
         }
         return '';
     };
+    
 
     return (
         <main>
@@ -121,23 +134,17 @@ export default function Page() {
                                     <p>: {account.socialAccount?.usuario}</p>
                                 </div>
                             </div>
-                            <div>
-                                <button
+                            <div className="">
+                                <button 
                                     onClick={async () => {
-                                        const link = await handleLink(account.name, account.linked);
+                                        const link = handleLink(account.name, account.linked);
                                         if (link) {
                                             router.push(link);
                                         }
                                     }}
-                                    className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${
-                                        account.linked ? 'text-[#BD181E] bg-white-0' : 'bg-[#BD181E] text-white'
-                                    }`}
+                                    className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${account.linked ? 'text-[#BD181E] bg-white-0' : '  bg-[#BD181E] text-white'}`}
                                 >
-                                    {account.linked ? (
-                                        <LinkSlashIcon className="mr-5 h-5 w-5" />
-                                    ) : (
-                                        <LinkIcon className="mr-12 h-5 w-5" />
-                                    )}
+                                    {account.linked ? <LinkSlashIcon className="mr-5 h-5 w-5" /> : <LinkIcon className="mr-12 h-5 w-5" />}
                                     {account.linked ? 'Desvincular' : 'Vincular'}
                                 </button>
                             </div>
@@ -146,11 +153,12 @@ export default function Page() {
                 </div>
             </div>
 
+
             <div className="mt-10">
                 <h2 className="font-bold text-2xl">Configuraciones</h2>
-                <p>En esta sección podrás configurar tu perfil y preferencias.</p>
+                <p>En esta sección podrás configurar tu perfil y tus preferencias.</p>
                 <div className="flex justify-end">
-                    <button
+                    <button 
                         className="flex bg-[#BD181E] text-white px-4 py-2 rounded-md mt-4 font-bold"
                         onClick={handleLogout}
                     >
