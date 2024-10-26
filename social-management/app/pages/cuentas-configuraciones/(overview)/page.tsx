@@ -148,7 +148,7 @@ export default function Page() {
 
             <div className="mt-10">
                 <h2 className="font-bold text-2xl">Configuraciones</h2>
-                <p>En esta sección podrás configurar tu perfil y tus preferencias.</p>
+                <p>En esta sección podrás configurar tu perfil y preferencias.</p>
                 <div className="flex justify-end">
                     <button
                         className="flex bg-[#BD181E] text-white px-4 py-2 rounded-md mt-4 font-bold"
