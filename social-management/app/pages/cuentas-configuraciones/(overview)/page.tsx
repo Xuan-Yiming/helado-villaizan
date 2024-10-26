@@ -130,7 +130,7 @@ const handleLink = async (name: string, linked: boolean) => {
 
     return (
         <main>
-            <h1 className="font-bold text-4xl">Cuentas y Configuraciones 3</h1>
+            <h1 className="font-bold text-4xl">Cuentas y Configuraciones</h1>
 
             <div className="mt-10">
                 <h2 className="font-bold text-2xl">Cuentas</h2>
