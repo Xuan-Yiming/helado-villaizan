@@ -1,71 +1,148 @@
 "use client"; 
-import React from 'react';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import React, { useEffect, useState } from 'react';
+import {
+  LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell,
+} from 'recharts';
+import axios from 'axios';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+interface ProductoData {
+  id_producto: string;
+  total_ventas: number;
+}
+
+const dataLine = [
+  { name: 'Ene', esteAno: 12000, anoAnterior: 8000 },
+  { name: 'Feb', esteAno: 15000, anoAnterior: 12000 },
+  { name: 'Mar', esteAno: 20000, anoAnterior: 18000 },
+  { name: 'Abr', esteAno: 25000, anoAnterior: 22000 },
+  { name: 'May', esteAno: 30000, anoAnterior: 28000 },
+  { name: 'Jun', esteAno: 32000, anoAnterior: 30000 },
+  { name: 'Jul', esteAno: 28000, anoAnterior: 25000 },
+];
+
+const dataPie = [
+  { name: 'EcoGreen', value: 38.6 },
+  { name: 'Canada', value: 22.5 },
+  { name: 'Mexico', value: 30.8 },
+  { name: 'Other', value: 8.1 },
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
-  // Datos para los gráficos
-  const lineData = {
-    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'],
-    datasets: [
-      {
-        label: 'Este año',
-        data: [12000, 15000, 10000, 20000, 25000, 22000, 27000],
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      },
-      {
-        label: 'Año anterior',
-        data: [10000, 14000, 9000, 19000, 23000, 20000, 26000],
-        borderColor: 'rgba(153, 102, 255, 1)',
-        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-      },
-    ],
+  // Estado para almacenar los datos del gráfico de barras
+  const [barData, setBarData] = useState([]);
+
+  // Función para obtener datos de la API
+  const fetchBarData = async () => {
+    try {
+      const response = await axios.get('https://villaizan-social.onrender.com/ventas-por-producto/');
+      // Formatear los datos según la estructura de la API
+      const formattedData = response.data.map((item: ProductoData) => ({
+        name: item.id_producto, // Utiliza 'id_producto' para el eje X
+        value: item.total_ventas, // Utiliza 'total_ventas' para el eje Y
+      }));
+      
+      setBarData(formattedData); // Actualiza el estado con los datos formateados
+    } catch (error) {
+      console.error("Error fetching bar chart data:", error);
+    }
   };
 
+  // useEffect para obtener los datos de la API cuando el componente se monta
+  useEffect(() => {
+    fetchBarData();
+  }, []);
+
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <div className="flex items-center mb-4">
-          <div className="bg-green-500 rounded-full h-10 w-10"></div>
-          <div className="ml-4">
-            <h2 className="text-xl font-bold">Temporada Verano 2024 (Enero 01, 2024 - Abril 01, 2024)</h2>
-            <p className="text-gray-600">Data procesada</p>
-          </div>
+    <div className="container mx-auto p-4">
+      <div className="bg-green-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center">
+          <div className="bg-green-500 rounded-full h-4 w-4 mr-2"></div>
+          <h2 className="font-bold text-xl">Temporada Verano 2024 (Enero 01, 2024 - Abril 01, 2024)</h2>
         </div>
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <div className="bg-red-200 p-4 rounded-lg">
-            <h3 className="text-red-700">Cantidad de ventas</h3>
-            <p className="text-2xl font-bold">7,265</p>
-          </div>
-          <div className="bg-blue-200 p-4 rounded-lg">
-            <h3 className="text-blue-700">Productos vendidos</h3>
-            <p className="text-2xl font-bold">3,671</p>
-          </div>
-          <div className="bg-red-200 p-4 rounded-lg">
-            <h3 className="text-red-700">Ubicaciones</h3>
-            <p className="text-2xl font-bold">15</p>
-          </div>
-          <div className="bg-blue-200 p-4 rounded-lg">
-            <h3 className="text-blue-700">Clientes</h3>
-            <p className="text-2xl font-bold">231</p>
-          </div>
+        <p className="text-gray-600">Data procesada</p>
+      </div>
+
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="bg-red-100 rounded-lg p-4 text-center">
+          <p className="text-red-500 font-bold text-2xl">7,265</p>
+          <p className="text-gray-600">Cantidad de ventas</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-          <h3 className="text-lg font-bold mb-4">Ventas por mes</h3>
-          <Line data={lineData} />
+        <div className="bg-blue-100 rounded-lg p-4 text-center">
+          <p className="text-blue-500 font-bold text-2xl">3,671</p>
+          <p className="text-gray-600">Productos vendidos</p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-bold mb-4">Sabores más populares</h3>
-            {/* Aquí se puede agregar un gráfico de barras para los sabores */}
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-bold mb-4">Promociones con mayor alcance</h3>
-            {/* Aquí se puede agregar un gráfico de pastel para las promociones */}
-          </div>
+        <div className="bg-red-100 rounded-lg p-4 text-center">
+          <p className="text-red-500 font-bold text-2xl">15</p>
+          <p className="text-gray-600">Ubicaciones</p>
+        </div>
+        <div className="bg-blue-100 rounded-lg p-4 text-center">
+          <p className="text-blue-500 font-bold text-2xl">231</p>
+          <p className="text-gray-600">Clientes</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="bg-white rounded-lg p-6 shadow-md col-span-2">
+          <h3 className="font-bold text-lg mb-4">Ventas por mes</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={dataLine}>
+              <Line type="monotone" dataKey="esteAno" stroke="#8884d8" />
+              <Line type="monotone" dataKey="anoAnterior" stroke="#82ca9d" />
+              <CartesianGrid stroke="#ccc" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h3 className="font-bold text-lg mb-4">Zonas y demanda</h3>
+          <ul className="space-y-2">
+            <li>Tarapoto</li>
+            <li>Iquitos</li>
+            <li>Lima</li>
+            <li>Lambayeque</li>
+            <li>Pucallpa</li>
+            <li>Jaén</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h3 className="font-bold text-lg mb-4">Ventas por Producto</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={barData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" label={{ value: "Producto", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Cantidad Total de Ventas", angle: -90, position: "insideCenter" }} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={dataPie}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label
+              >
+                {dataPie.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
