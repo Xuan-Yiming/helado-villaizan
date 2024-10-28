@@ -362,6 +362,11 @@ export async function logout_social_account(red_social: string): Promise<void> {
 }
 
 export async function get_social_account(usuario: string, red_social: string): Promise<SocialAccount | null> {
+    await connectToDatabase();
+    if (!client) {
+        throw new Error('Database client is not initialized');
+    }
+
     const result = await client.sql`
         SELECT * FROM social_accounts 
         WHERE usuario = ${usuario} AND red_social = ${red_social}
@@ -370,6 +375,11 @@ export async function get_social_account(usuario: string, red_social: string): P
 }
 
 export async function update_meta_tokens(nuevoToken: string, nuevaFechaExpiracion: string) {
+    await connectToDatabase();
+    if (!client) {
+        throw new Error('Database client is not initialized');
+    }
+    
     await client.sql`
         UPDATE social_accounts 
         SET token_autenticacion = ${nuevoToken}, fecha_expiracion_token = ${nuevaFechaExpiracion}
