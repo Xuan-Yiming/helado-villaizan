@@ -18,7 +18,7 @@ export default function EncuestaList({
     initialEncuestas,
     estadoFilter
 }: EncuestaListProps) {
-    const [offset, setOffset] = useState(NUMBER_OF_POSTS_TO_FETCH);
+    const [offset, setOffset] = useState(0);
     const [encuestas, setEncuestas] = useState<Encuesta[]>(initialEncuestas);
     const { ref, inView } = useInView();
 
@@ -26,11 +26,15 @@ export default function EncuestaList({
         try {
             const apiEncuestas = await load_all_survey(
                 offset,
-                offset / NUMBER_OF_POSTS_TO_FETCH + 1,
+                NUMBER_OF_POSTS_TO_FETCH,
                 estadoFilter
             );
-            setEncuestas(encuestas => [...encuestas, ...apiEncuestas]);
-            setOffset(offset => offset + NUMBER_OF_POSTS_TO_FETCH);
+            if (Array.isArray(apiEncuestas)) {
+                setEncuestas(encuestas => [...encuestas, ...apiEncuestas]);
+                setOffset(offset => offset + NUMBER_OF_POSTS_TO_FETCH);
+            } else {
+                console.error('Error: apiEncuestas is not an array', apiEncuestas);
+            }
         } catch (error) {
             console.error('Error loading more encuestas:', error);
         }

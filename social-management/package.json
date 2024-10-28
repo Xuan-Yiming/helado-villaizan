@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/util": "^0.12.1",
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/interaction": "^6.1.15",
@@ -17,28 +19,33 @@
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@heroicons/react": "^2.1.5",
+    "@types/bcrypt": "^5.0.2",
     "@types/react-dom": "^18.3.1",
-    "autoprefixer": "^10.4.20",
+    "@types/request-ip": "^0.0.41",
+    "@vercel/blob": "^0.25.1",
+    "@vercel/postgres": "^0.10.0",
     "axios": "^1.7.7",
+    "bcrypt": "^5.1.1",
     "chart.js": "^4.4.5",
-    "date-fns": "^4.1.0",
     "framer-motion": "^11.11.1",
     "fullcalendar": "^6.1.15",
     "js-cookie": "^3.0.5",
     "next": "^14.2.14",
-    "postcss": "^8.4.47",
     "qs": "^6.13.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.3.1",
     "react-intersection-observer": "^9.13.1",
-    "tailwindcss": "^3.4.14",
+    "recharts": "^2.13.0",
+    "request-ip": "^3.3.0",
+    "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2"
   },
   "devDependencies": {
     "@types/node": "^22.7.4",
     "@types/qs": "^6.9.16",
-    "@types/react": "18.3.11"
+    "@types/react": "18.3.11",
+    "@types/recharts": "^1.8.29"
   }
 }

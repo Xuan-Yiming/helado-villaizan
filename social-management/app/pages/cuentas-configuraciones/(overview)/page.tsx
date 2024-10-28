@@ -1,63 +1,125 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
-import { ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/solid";
-import { LinkIcon, LinkSlashIcon } from "@heroicons/react/24/solid";
-import GoogleLogo from "@/app/ui/icons/google";
-import FacebookLogo from "@/app/ui/icons/facebook";
-import InstagramLogo from "@/app/ui/icons/instagram";
-import TiktokLogo from "@/app/ui/icons/tiktok";
+import { ArrowRightEndOnRectangleIcon, LinkIcon, LinkSlashIcon } from '@heroicons/react/24/solid';
+import GoogleLogo from '@/app/ui/icons/google';
+import FacebookLogo from '@/app/ui/icons/facebook';
+import InstagramLogo from '@/app/ui/icons/instagram';
+import TiktokLogo from '@/app/ui/icons/tiktok';
 
-
+import { load_all_social_accounts } from '@/app/lib/database';
+import { SocialAccount } from '@/app/lib/types';
+import { initMetaSdk, metaLogin, handleMetaAccount } from './meta-login'; // Importamos las funciones
 
 interface Account {
     name: string;
+    socialAccount?: SocialAccount;
     linked: boolean;
 }
 
 const initialAccounts: Account[] = [
-    {
-        name: 'Facebook e Instagram',
-        linked: false,
-    },
-    {
-        name: 'Tiktok',
-        linked: false,
-    },
-    {
-        name: 'Google',
-        linked: false,
-    },
+    { name: 'Facebook', socialAccount: undefined, linked: false },
+    { name: 'Instagram', socialAccount: undefined, linked: false },
+    { name: 'TikTok', socialAccount: undefined, linked: false },
+    { name: 'Google', socialAccount: undefined, linked: false },
 ];
-
 
 export default function Page() {
     const router = useRouter();
     const [accountsState, setAccountsState] = useState<Account[]>(initialAccounts);
 
+    useEffect(() => {
+        initMetaSdk(); // Inicializa el SDK de Meta
+
+        const fetchData = async () => {
+            const socialAccounts = await load_all_social_accounts();
+            const updatedAccounts = initialAccounts.map((account) => {
+                const socialAccount = socialAccounts.find(
+                    (sa) => sa.red_social.toLowerCase() === account.name.toLowerCase()
+                );
+                return { ...account, socialAccount, linked: !!socialAccount };
+            });
+            setAccountsState(updatedAccounts);
+            document.cookie = `socialAccounts=${JSON.stringify(socialAccounts)}; path=/;`;
+        };
+
+        fetchData();
+    }, []);
 
     const handleLogout = async () => {
         await axios.get('/api/auth/logout');
         router.push('/login');
     };
+    /*
+    const handleLink = async (name: string, linked: boolean) => {
+        if (!linked && (name === 'Facebook' || name === 'Instagram')) {
+            try {
+                const authResponse = await metaLogin(); // Realiza el login
+                await handleMetaAccount(authResponse); // Guarda la cuenta en la BD
+                console.log(`${name} vinculado exitosamente.`);
+            } catch (error) {
+                console.error('Error durante la vinculación con Meta:', error);
+            }
+        } else if (linked || (name === 'Tiktok' || name === 'Google')) {
+            const link = handlePlatformLink(name, linked);
+            router.push(link);
+        }
+    };
+*/
+const handleLink = async (name: string, linked: boolean) => {
+    if (linked) {
+        switch (name) {
+            case 'Facebook':
+                router.push('/api/facebook/logout');
+                break;
+            case 'Instagram':
+                router.push('/api/instagram/logout');
+                break;
+            case 'TikTok':
+                router.push('/api/tiktok/logout');
+                break;
+            case 'Google':
+                router.push('/api/google/logout');
+                break;
+            default:
+                console.error('Plataforma desconocida para logout');
+        }
+    } else {
+        switch (name) {
+            case 'Facebook':
+            case 'Instagram':
+                try {
+                    const authResponse = await metaLogin(); // Realiza el login
+                    await handleMetaAccount(authResponse); // Guarda la cuenta en la BD
+                    console.log(`${name} vinculado exitosamente.`);
+                } catch (error) {
+                    console.error('Error durante la vinculación con Meta:', error);
+                }
+                break;
+            case 'TikTok':
+                console.log('Entra a TikTok');
+                router.push('/api/tiktok/login');
+                break;
+            case 'Google':
+                router.push('/api/google/login');
+                break;
+            default:
+                console.error('Plataforma desconocida para login');
+        }
+    }
+};
+
 
     const getLogo = (name: string) => {
         switch (name) {
-            case 'Facebook e Instagram':
-                return (
-                    <div className="flex items-center">
-                        <div className="mr-2">
-                            <FacebookLogo />
-                        </div>
-                        <div>
-                            <InstagramLogo />
-                        </div>
-                    </div>
-                );
-            case 'Tiktok':
+            case 'Facebook':
+                return <FacebookLogo />;
+            case 'Instagram':
+                return <InstagramLogo />;
+            case 'TikTok':
                 return <TiktokLogo />;
             case 'Google':
                 return <GoogleLogo />;
@@ -65,44 +127,6 @@ export default function Page() {
                 return null;
         }
     };
-
-    const handleLink = (name: string, linked: boolean) => {
-        if (linked) {
-            switch (name) {
-                case 'Facebook e Instagram':
-                    // Desvincular tanto Facebook como Instagram
-                    // Eliminar tokens del Local Storage y actualizar el estado de la cuenta
-                    localStorage.removeItem('facebookAccessToken');
-                    localStorage.removeItem('facebookPageId');
-        
-                    // Actualizar el estado para reflejar que las cuentas están desvinculadas
-                    const updatedAccounts = accountsState.map((account) =>
-                        account.name === 'Facebook e Instagram' ? { ...account, linked: false } : account
-                    );
-                    setAccountsState(updatedAccounts);
-                    localStorage.setItem('accountsState', JSON.stringify(updatedAccounts));
-                    console.log('Facebook e Instagram desvinculados correctamente.');
-        
-                    break;
-                case 'Tiktok':
-                    return '/api/tiktok/logout';
-                case 'Google':
-                    return '/api/google/logout';
-            }
-        }   else {
-            switch (name) {
-                case 'Facebook e Instagram':
-                    // Iniciar el proceso de vinculación con Facebook e Instagram
-                    return '/pages/cuentas-configuraciones/facebook-login'
-                case 'Tiktok':
-                    return '/api/tiktok/login';
-                case 'Google':
-                    return '/api/google/login';
-            }
-        }
-        return '';
-    };
-    
 
     return (
         <main>
@@ -119,17 +143,14 @@ export default function Page() {
                                 <div className="ml-2">
                                     <p className="font-bold">{account.name}</p>
                                 </div>
+                                <div className="ml-2">
+                                    <p>: {account.socialAccount?.usuario}</p>
+                                </div>
                             </div>
                             <div className="">
                                 <button 
-                                    onClick={async () => {
-                                        const link = handleLink(account.name, account.linked);
-                                        if (link) {
-                                            window.location.href = link;
-                                            router.push('/pages/cuentas-configuraciones');
-                                        }
-                                    }}
-                                    className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${account.linked ? 'bg-[#BD181E] text-white' : ' text-[#BD181E] bg-white-0'}`}
+                                    onClick={() => handleLink(account.name, account.linked)}
+                                    className={`flex px-4 py-2 rounded-md font-bold border-[#BD181E] border-2 ${account.linked ? 'text-[#BD181E] bg-white-0' : '  bg-[#BD181E] text-white'}`}
                                 >
                                     {account.linked ? <LinkSlashIcon className="mr-5 h-5 w-5" /> : <LinkIcon className="mr-12 h-5 w-5" />}
                                     {account.linked ? 'Desvincular' : 'Vincular'}

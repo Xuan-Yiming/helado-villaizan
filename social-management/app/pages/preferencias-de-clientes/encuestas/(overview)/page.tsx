@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { AdjustmentsHorizontalIcon, PlusCircleIcon } from '@heroicons/react/24/solid';
 
-import {load_all_survey} from '@/app/lib/data';
+import {load_all_survey} from '@/app/lib/database';
 import { Encuesta } from '@/app/lib/types';
 
 import EncuestaList from '@/app/ui/encuesta/encuesta-list';
