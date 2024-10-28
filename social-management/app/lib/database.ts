@@ -203,3 +203,19 @@ export async function logout_social_account(red_social: string): Promise<void> {
         DELETE FROM social_accounts WHERE red_social = ${red_social}
     `;
 }
+
+export async function get_social_account(usuario: string, red_social: string): Promise<SocialAccount | null> {
+    const result = await client.sql`
+        SELECT * FROM social_accounts 
+        WHERE usuario = ${usuario} AND red_social = ${red_social}
+    `;
+    return result.rows.length > 0 ? (result.rows[0] as SocialAccount) : null;
+}
+
+export async function update_meta_tokens(nuevoToken: string, nuevaFechaExpiracion: string) {
+    await client.sql`
+        UPDATE social_accounts 
+        SET token_autenticacion = ${nuevoToken}, fecha_expiracion_token = ${nuevaFechaExpiracion}
+        WHERE red_social IN ('facebook', 'instagram');
+    `;
+}
