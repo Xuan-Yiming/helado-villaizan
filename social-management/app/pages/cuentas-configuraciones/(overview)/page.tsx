@@ -53,30 +53,15 @@ export default function Page() {
         await axios.get('/api/auth/logout');
         router.push('/login');
     };
-    /*
-    const handleLink = async (name: string, linked: boolean) => {
-        if (!linked && (name === 'Facebook' || name === 'Instagram')) {
-            try {
-                const authResponse = await metaLogin(); // Realiza el login
-                await handleMetaAccount(authResponse); // Guarda la cuenta en la BD
-                console.log(`${name} vinculado exitosamente.`);
-            } catch (error) {
-                console.error('Error durante la vinculación con Meta:', error);
-            }
-        } else if (linked || (name === 'Tiktok' || name === 'Google')) {
-            const link = handlePlatformLink(name, linked);
-            router.push(link);
-        }
-    };
-*/
+
 const handleLink = async (name: string, linked: boolean) => {
     if (linked) {
         switch (name) {
             case 'Facebook':
-                router.push('/api/facebook/logout');
+                router.push('/api/meta/logout');
                 break;
             case 'Instagram':
-                router.push('/api/instagram/logout');
+                router.push('/api/meta/logout');
                 break;
             case 'TikTok':
                 router.push('/api/tiktok/logout');
