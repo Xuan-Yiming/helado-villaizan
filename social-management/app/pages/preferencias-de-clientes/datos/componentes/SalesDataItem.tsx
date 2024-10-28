@@ -9,7 +9,6 @@ import Link from 'next/link';
 // Registrar el idioma español para DatePicker
 //registerLocale('es', es);
 
-
 const SalesDataItem = () => {
     const [startDate, setStartDate] = useState<Date | null>(new Date());
     const [endDate, setEndDate] = useState<Date | null>(new Date());

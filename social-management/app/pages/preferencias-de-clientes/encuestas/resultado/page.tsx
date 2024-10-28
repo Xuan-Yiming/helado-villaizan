@@ -76,7 +76,7 @@ async function ResultadoPage(){
                 return;
             }else{
                 try {
-                    const data = await load_survey_by_id(id);
+                    const data = await load_survey_by_id(id,true);
                     setEncuesta(data);
                 } catch (error) {
                     console.error('Error fetching encuesta:', error);

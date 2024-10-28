@@ -1,14 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { AdjustmentsHorizontalIcon, PlusCircleIcon } from '@heroicons/react/24/solid';
+import { AdjustmentsHorizontalIcon, PlusCircleIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 import { load_posts } from '@/app/lib/database';
 import { Post } from '@/app/lib/types';
 
 import FilterSelect from '@/app/ui/mensajes/filter-select';
 import PostList from '@/app/ui/publicar/post-list';
+import PostCard from '@/app/ui/publicar/post-card';
+
+
+  
+const NUMBER_OF_POSTS_TO_FETCH = 20;
 
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -16,6 +21,9 @@ const Page = () => {
     const [socialNetworkFilter, setSocialNetworkFilter] = useState('all');
     const [postTypeFilter, setPostTypeFilter] = useState('all');
     const [posts, setPosts] = useState<Post[]>([]);
+    const [offset, setOffset] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const hasLoaded = useRef(false);
 
     const toggleFilters = () => {
         setFiltersVisible(!filtersVisible);
@@ -27,28 +35,48 @@ const Page = () => {
         setPostTypeFilter('all');
     };
 
+    const loadMorePosts = async (_offset: number) => {
+        try {
+            const apiPosts = await load_posts(
+                _offset,
+                NUMBER_OF_POSTS_TO_FETCH,
+                socialNetworkFilter,
+                postTypeFilter,
+                responseFilter
+            );
+            setPosts(posts => [...posts, ...apiPosts]);
+            setOffset(offset => _offset + NUMBER_OF_POSTS_TO_FETCH);
+        } catch (error) {
+            console.error('Error loading more posts:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const data = await load_posts(0, 1, socialNetworkFilter, postTypeFilter, responseFilter);
-                setPosts(data);
-            } catch (error) {
-                console.error('Error fetching posts:', error);
-            }
-        };
+        if (!hasLoaded.current) {
+            loadMorePosts(0);
+            hasLoaded.current = true;
+        }
+    }, []);
 
-        fetchPosts();
-    }, [socialNetworkFilter, postTypeFilter, responseFilter]);
+    async function reset(){
+        setPosts([]);
+    }
 
+    const handleAplicarFiltro  = async () => {
+        await reset();
+        await loadMorePosts(0);
+    };
 
 
     return (
         <div
             className='text-black'
         >
+            
             {/* Header */}
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Todas las publicaciones</h1>
+
                 <div className="flex items-center">
                 <button
                     onClick={toggleFilters}
@@ -71,6 +99,8 @@ const Page = () => {
                 </div>
 
             </div>
+
+
             {/* Filters */}
             {filtersVisible && (
                 <div className="flex justify-between mt-4">
@@ -80,7 +110,7 @@ const Page = () => {
                         options={[
                             { value: 'all', label: 'Ver todo' },
                             { value: 'facebook', label: 'Facebook' },
-                            { value: 'twitter', label: 'Twitter' },
+                            { value: 'instagram', label: 'Instagram' },
                             { value: 'tiktok', label: 'Tiktok' },
                         ]}
                         value={socialNetworkFilter}
@@ -103,8 +133,8 @@ const Page = () => {
                         id="response-filter"
                         options={[
                             { value: 'all', label: 'Ver todo' },
-                            { value: 'responded', label: 'Publicado' },
-                            { value: 'not-responded', label: 'Programado' },
+                            { value: 'publicado', label: 'Publicado' },
+                            { value: 'programado', label: 'Programado' },
                         ]}
                         value={responseFilter}
                         onChange={setResponseFilter}
@@ -116,19 +146,36 @@ const Page = () => {
                             className="flex items-center text-[#BD181E] underline px-4 py-2 hover:text-black border-none"
                             onClick={resetFilters}
                         >
-                            {/* <XMarkIcon className="h-5 w-5 mr-2" /> */}
+                            <XMarkIcon className="h-5 w-5 mr-2" />
                             <div>Limpiar Todo</div>
+                        </button>
+                    </div>
+                    <div className="flex-1 h-15 mx-1 flex justify-center items-center">
+                        <button
+                            className="flex items-center text-blue-500 underline px-4 py-2 hover:text-black border-none"
+                            onClick={handleAplicarFiltro}
+                        >
+                            <CheckCircleIcon className="h-5 w-5 mr-2" />
+                            <div>Aplicar el Filtro</div>
                         </button>
                     </div>
                 </div>
             )}
             {/* Post */}
-            <PostList
-                initialPosts={posts}
-                socialNetworkFilter={socialNetworkFilter}
-                postTypeFilter={postTypeFilter}
-                responseFilter={responseFilter}
-            /> 
+            <ul className="mt-6 flex flex-col gap-2 list-none p-0 min-w-full">
+                {posts.map(post => (
+                    <PostCard key={post.id} post={post} />
+                ))}
+            </ul>
+            <div className="flex justify-center mt-10">
+                <button
+                    onClick={() => loadMorePosts(offset)}
+                    className="px-4 py-2 text-[#BD181E] "
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Loading...' : 'Cargar Mas'}
+                </button>
+            </div>
         </div>
     );
 };
