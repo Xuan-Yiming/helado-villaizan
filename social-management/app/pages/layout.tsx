@@ -6,6 +6,7 @@ import HeaderMobile from '@/app/ui/header/header-mobile';
 import MarginWidthWrapper from '@/app/ui/page-wrapper/margin-width-wrapper';
 import PageWrapper from '@/app/ui/page-wrapper/page-wrapper';
 import SideNav from '@/app/ui/sidenav/sidenav';
+import NavigationBar from '@/app/ui/navegation-bar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default function Layout({
             <MarginWidthWrapper>
               <Header />
               <HeaderMobile />
+              <NavigationBar />
               <PageWrapper>{children}</PageWrapper>
             </MarginWidthWrapper>
           </main>

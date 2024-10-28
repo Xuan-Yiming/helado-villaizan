@@ -61,8 +61,8 @@ export default function PostCard ({post}:PostCardProps ) {
             <Link 
             href={post.link || '#'}
             className="flex items-center text-blue-500 hover:text-blue-700">
-            {post.status === 'published' ? <ArrowTopRightOnSquareIcon className="h-5 w-5 mr-1" /> : <PaperAirplaneIcon className="h-5 w-5 mr-1" /> } 
-            <span>{post.status === 'published' ? 'Abrir' : 'Publicar'}</span>
+            {post.status === 'publicado' ? <ArrowTopRightOnSquareIcon className="h-5 w-5 mr-1" /> : <PaperAirplaneIcon className="h-5 w-5 mr-1" /> } 
+            <span>{post.status === 'publicado' ? 'Abrir' : 'Publicar'}</span>
             </Link>
         </li>
     );

@@ -1,20 +1,30 @@
 'use client';
 
-import FilterSelect from '@/app/ui/mensajes/filter-select';
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import React, { useState, useEffect, useRef } from 'react';
 
-import { AdjustmentsHorizontalIcon, PlusCircleIcon } from '@heroicons/react/24/solid';
 
-import {load_all_survey} from '@/app/lib/database';
+import { AdjustmentsHorizontalIcon, PlusCircleIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
+
 import { Encuesta } from '@/app/lib/types';
 
+import FilterSelect from '@/app/ui/mensajes/filter-select';
 import EncuestaList from '@/app/ui/encuesta/encuesta-list';
+import EncuestaCard from '@/app/ui/encuesta/encuesta-card';
+
+import {load_all_survey} from '@/app/lib/database';
+
+const NUMBER_OF_POSTS_TO_FETCH = 20;
+
 
 export default function Page(){
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [estadoFilter, setEstadoFilter] = useState('all');
     const [encuestas, setEncuestas] = useState<Encuesta[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [offset, setOffset] = useState(0);
+    const hasLoaded = useRef(false);
+
 
     const toggleFilters = () => {
         setFiltersVisible(!filtersVisible);
@@ -24,18 +34,47 @@ export default function Page(){
         setEstadoFilter('all');
     };
 
-    useEffect(() => {
-        const fetchEncuestas = async () => {
-            try {
-                const data = await load_all_survey(0,1, estadoFilter);
-                setEncuestas(data);
-            } catch (error) {
-                console.error('Error fetching encuestas:', error);
-            }
-        };
 
-        fetchEncuestas();
-    }, [estadoFilter]);
+    const loadMoreEncuestas = async (_offset: number) => {
+        setIsLoading(true);
+        try {
+            const apiEncuestas = await load_all_survey(
+                _offset,
+                NUMBER_OF_POSTS_TO_FETCH,
+                estadoFilter,
+                false,
+                false
+            );
+            if (Array.isArray(apiEncuestas)) {
+                setEncuestas(encuestas => [...encuestas, ...apiEncuestas]);
+                setOffset(offset => _offset + NUMBER_OF_POSTS_TO_FETCH);
+            } else {
+                console.error('Error: apiEncuestas is not an array', apiEncuestas);
+            }
+        } catch (error) {
+            console.error('Error loading more encuestas:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        if (!hasLoaded.current) {
+            loadMoreEncuestas(0);
+            hasLoaded.current = true;
+        }
+    }, []);
+
+    async function reset(){
+        setEncuestas([]);
+    }
+
+    const handleAplicarFiltro  = async () => {
+        await reset();
+        await loadMoreEncuestas(0);
+    };
+
 
     return (
         <main>
@@ -73,8 +112,8 @@ export default function Page(){
                         id="response-filter"
                         options={[
                             { value: 'all', label: 'Ver todo' },
-                            { value: 'responded', label: 'Publicado' },
-                            { value: 'not-responded', label: 'Programado' },
+                            { value: 'activo', label: 'Activo' },
+                            { value: 'desactivo', label: 'Desactivo' },
                         ]}
                         value={estadoFilter}
                         onChange={setEstadoFilter}
@@ -85,17 +124,42 @@ export default function Page(){
                             className="flex items-center text-[#BD181E] underline px-4 py-2 hover:text-black border-none"
                             onClick={resetFilters}
                         >
-                            {/* <XMarkIcon className="h-5 w-5 mr-2" /> */}
-                            <div>Limpiar Todo</div>
+                            <XMarkIcon className="h-5 w-5 mr-2" />
+                            <div>Limpiar Filtro</div>
+                        </button>
+                    </div>
+
+                    <div className="flex-1 h-15 mx-1 flex justify-center items-center">
+                        <button
+                            className="flex items-center text-blue-500 underline px-4 py-2 hover:text-black border-none"
+                            onClick={handleAplicarFiltro}
+                        >
+                            <CheckCircleIcon className="h-5 w-5 mr-2" />
+                            <div>Aplicar el Filtro</div>
                         </button>
                     </div>
                 </div>
             )}
             {/* Encuestas */}
-            <EncuestaList 
+            {/* <EncuestaList 
                 initialEncuestas={encuestas} 
                 estadoFilter={estadoFilter} 
-            />
+            /> */}
+
+            <ul className="mt-6 flex flex-col gap-2 list-none p-0 min-w-full">
+                {encuestas.map(encuesta => (
+                    <EncuestaCard key={encuesta.id} encuesta={encuesta} />
+                ))}
+            </ul>
+            <div className="flex justify-center mt-10">
+                <button
+                    onClick={() => loadMoreEncuestas(offset)}
+                    className="px-4 py-2 text-[#BD181E] "
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Loading...' : 'Cargar Mas'}
+                </button>
+            </div>
         </main>
     )
 }
