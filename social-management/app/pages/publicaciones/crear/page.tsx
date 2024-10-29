@@ -4,15 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { PutBlobResult } from "@vercel/blob";
 
-import {
-  PaperAirplaneIcon,
-  ClockIcon,
-  CameraIcon,
-  VideoCameraIcon,
-  CheckIcon,
-  CheckCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import {PaperAirplaneIcon,  ClockIcon,  CameraIcon,  VideoCameraIcon,  CheckIcon,  CheckCircleIcon,  XMarkIcon,} from "@heroicons/react/24/outline";
 
 import { MediaFILE, SocialAccount } from "@/app/lib/types";
 import { Post } from "@/app/lib/types";
@@ -47,16 +39,14 @@ function PublicarPage() {
   const [selectedSocialAccountName, setSelectedSocialAccountName] =
     useState<string>("");
   // PostDetail
-  const [socialMedia, setSocialMedia] = useState<string>("fb");
-  const [type, setType] = useState<string>("video");
-  const [status, setStatus] = useState<string>("publicado");
-  const [preview, setPreview] = useState<string | undefined>(undefined);
-  const [media, setMedia] = useState<string | undefined>(undefined);
-  const [content, setContent] = useState<string | undefined>(undefined);
-  const [postTime, setPostTime] = useState<string | undefined>(undefined);
-  const [link, setLink] = useState<string | undefined>(undefined);
-  const [isProgrammed, setIsProgrammed] = useState<boolean>(false);
-  const [programmed_post_time, setPost_time] = useState<string>();
+// PostDetail - Estados alineados con el tipo Post
+const [socialMedia, setSocialMedia] = useState<string[]>([]); // Es un array
+const [type, setType] = useState<string>("video"); 
+const [status, setStatus] = useState<string>("publicado"); 
+const [thumbnail, setThumbnail] = useState<string | undefined>(undefined); 
+const [media, setMedia] = useState<string[] | undefined>(undefined); 
+const [content, setContent] = useState<string | undefined>(undefined); 
+const [postTime, setPostTime] = useState<string | undefined>(undefined); 
 
   const getLogo = (name: string) => {
     switch (name.toLowerCase()) {
@@ -77,7 +67,7 @@ function PublicarPage() {
     if (postTimeParam) {
       const date = new Date(postTimeParam);
       const formattedPostTime = date.toISOString();      
-      setPost_time(formattedPostTime);
+      setPostTime(formattedPostTime);
       console.log('Post Time:', formattedPostTime);
       const button = document.getElementById("bt_programar");
       if (button) {
@@ -95,27 +85,27 @@ function PublicarPage() {
     };
 
     const fetchPosts = async () => {
-      if (id)
+      if (id) {
         try {
           const data = await load_post_by_id(id);
+    
           setPosts(data);
+          setSocialMedia(data.social_media);
           setType(data.type);
           setStatus(data.status);
-          setPreview(data.preview);
+          setThumbnail(data.thumbnail); 
           setMedia(data.media);
           setContent(data.content);
           setPostTime(data.post_time);
-          setLink(data.link);
-          setIsProgrammed(data.is_programmed);
-          setPost_time(data.programmed_post_time);
         } catch (error) {
           console.error("Error fetching posts:", error);
         }
+      }
     };
 
     const createNewProgrammedPost = async () => {
       if (searchParams.get("postTime")) {
-        setPost_time(searchParams.get("postTime")!);
+        setPostTime(searchParams.get("postTime")!);
         setStatus("programado");
       }
     };
@@ -177,10 +167,12 @@ function PublicarPage() {
       setPostStatus("Por favor, selecciona al menos un usuario para publicar.");
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
+      let uploadedMediaURL: string | undefined = undefined;
+  
       if (mediaFiles) {
         const response = await fetch(
           `/api/media/upload?filename=${mediaFiles.name}`,
@@ -190,36 +182,32 @@ function PublicarPage() {
           }
         );
         const newBlob = (await response.json()) as PutBlobResult;
-
+  
         setBlob(newBlob);
-
         console.log("Response: ", newBlob.url);
-
-        const uploadedMediaURL = newBlob.url;
-
-        setMedia(uploadedMediaURL);
-
-        for (const account of selectedAccount) {
-          const newPost: Post = {
-            id: id ? id : "",
-            social_media: account.red_social,
-            type: type,
-            status: status,
-            preview: preview,
-            media: uploadedMediaURL,
-            content: content,
-            post_time: new Date().toISOString(),
-            link: link,
-            is_programmed: isProgrammed,
-            programmed_post_time: programmed_post_time,
-          };
-          console.log("New Post :", newPost);
-          console.log("New Post json:", JSON.stringify(newPost));
-          await create_post(newPost);
-        }
-        router.push("/pages/publicaciones");
-      } else {
+  
+        uploadedMediaURL = newBlob.url;
+        setMedia([uploadedMediaURL]); // Ajustamos para que sea un array
       }
+  
+      for (const account of selectedAccount) {
+        const newPost: Post = {
+          id: id || generateUniqueID(), // Generamos ID si no existe
+          social_media: [account.red_social], // Ajustamos para ser un array
+          type,
+          status,
+          thumbnail, // Alineado con el tipo Post
+          media: uploadedMediaURL ? [uploadedMediaURL] : undefined, // En array si existe
+          content,
+          post_time: postTime || new Date().toISOString(), // Usamos postTime correctamente
+        };
+  
+        console.log("New Post :", newPost);
+        console.log("New Post json:", JSON.stringify(newPost));
+        await create_post(newPost);
+      }
+  
+      router.push("/pages/publicaciones");
     } catch (error) {
       console.error("Error al intentar realizar la publicación:", error);
       setPostStatus(
@@ -228,7 +216,7 @@ function PublicarPage() {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const handleAccountSelect = (account: SocialAccount) => {
     if (selectedAccount.includes(account)) {
@@ -380,12 +368,9 @@ function PublicarPage() {
             </h2>
             <div className="mt-4 flex space-x-4">
               <button
-                onClick={() => {
-                  setStatus("publicado");
-                  setIsProgrammed(false);
-                }}
+                onClick={() => setStatus("publicado")}
                 className={`${
-                  !isProgrammed ? "bg-blue-500" : "bg-gray-300"
+                  status === "publicado" ? "bg-blue-500" : "bg-gray-300"
                 } text-white px-4 py-2 rounded flex items-center`}
               >
                 <PaperAirplaneIcon className="h-5 w-5 mr-2" />
@@ -393,35 +378,34 @@ function PublicarPage() {
               </button>
               <button
                 id="bt_programar"
-                onClick={() => {
-                  setStatus("programado");
-                  setIsProgrammed(true);
-                }}
+                onClick={() => setStatus("programado")}
                 className={`${
-                  isProgrammed ? "bg-blue-500" : "bg-gray-300"
+                  status === "programado" ? "bg-blue-500" : "bg-gray-300"
                 } text-white px-4 py-2 rounded flex items-center`}
               >
                 <ClockIcon className="h-5 w-5 mr-2" />
                 Programar
               </button>
             </div>
-            <div className={`mt-4 ${isProgrammed ? '' : 'hidden'}`}>
-              <label className="block text-black mb-2">
-                Fecha y hora para publicar:
-              </label>
-              <input
-                type="datetime-local"
-                value={programmed_post_time}
-                onChange={(e) => {
-                  console.log('Post Time:', e.target.value);
-                  setPost_time(e.target.value);
-                }}
-                className="w-full p-2 border rounded"
-                min={new Date().toISOString().slice(0, -8)}
-              />
-            </div>
+
+            {/* Mostrar campo de fecha solo si el estado es 'programado' */}
+            {status === "programado" && (
+              <div className="mt-4">
+                <label className="block text-black mb-2">
+                  Fecha y hora para publicar:
+                </label>
+                <input
+                  type="datetime-local"
+                  value={postTime}
+                  onChange={(e) => setPostTime(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  min={new Date().toISOString().slice(0, -8)}
+                />
+              </div>
+            )}
           </div>
 
+        
           <div className="flex justify-end space-x-4 mt-4">
             <button
               className="bg-gray-500 text-white px-4 py-2 rounded"
