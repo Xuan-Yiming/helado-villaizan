@@ -41,16 +41,13 @@ export type User = {
 
 export type Post = {
   id: string;
-  social_media: string; //fb,ig,tk
+  social_media: string[]; //fb,ig,tk
   type: string; //video,photos
   status: string; //publicado, programado, eliminado, borrador 
-  preview?: string; //enlace
-  media?: string; //enlace
+  thumbnail?: string; //enlace
+  media?: string[]; //enlace
   content?: string; //texto
   post_time?: string; 
-  link?: string; //enlace al post
-  is_programmed: boolean;
-  programmed_post_time?: string;
 }
 
 export type calendarEvent = {

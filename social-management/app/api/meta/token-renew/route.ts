@@ -6,7 +6,7 @@ import axios from 'axios';
 export async function POST() {
     try {
         // 1. Obtener la cuenta principal ('La Rana Max' en Facebook)
-        const account = await get_social_account('VillaizanPruebas', 'facebook');
+        const account = await get_social_account('facebook');
         if (!account) {
             return NextResponse.json(
                 { error: 'No se encontró la cuenta principal para renovar el token.' },
