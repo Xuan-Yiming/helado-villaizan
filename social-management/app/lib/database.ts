@@ -224,10 +224,10 @@ export async function check_survey_response(surveyId: string, userIP: string): P
         throw new Error('Database client is not initialized');
     }
 
+    console.log('Checking survey response:', surveyId, userIP);
     const responsesResult = await client.sql`
         SELECT * FROM responses WHERE encuesta_id = ${surveyId} AND ip = ${userIP}
     `;
-    return false;
     return responsesResult.rows.length > 0;
 }
 

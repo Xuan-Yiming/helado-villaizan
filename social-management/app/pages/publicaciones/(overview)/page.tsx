@@ -135,6 +135,8 @@ const Page = () => {
                             { value: 'all', label: 'Ver todo' },
                             { value: 'publicado', label: 'Publicado' },
                             { value: 'programado', label: 'Programado' },
+                            { value: 'borrador', label: 'Borrador' },
+
                         ]}
                         value={responseFilter}
                         onChange={setResponseFilter}

@@ -43,7 +43,7 @@ export type Post = {
   id: string;
   social_media: string[]; //fb,ig,tk
   type: string; //video,photos
-  status: string; //publicado, programado, eliminado, borrador 
+  status: string; //publicado, programado, borrador 
   thumbnail?: string; //enlace
   media?: string[]; //enlace
   content?: string; //texto
