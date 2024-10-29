@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
+import Image from 'next/image';
 import { useSearchParams, useRouter } from "next/navigation";
 import type { PutBlobResult } from "@vercel/blob";
 
@@ -26,7 +27,7 @@ function PublicarPage() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isVideoSelected, setIsVideoSelected] = useState(false);
   const [isImageSelected, setIsImageSelected] = useState(false);
-  const [mediaFiles, setMediaFiles] = useState<MediaFILE>();
+  const [mediaFiles, setMediaFiles] = useState<MediaFILE[]>([]); // Inicializado como un array vacío
   const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
 
   const [postStatus, setPostStatus] = useState<string>("");
@@ -62,58 +63,59 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
   };
 
   useEffect(() => {
-    // si es programado
-    const postTimeParam = searchParams.get("postTime");
-    if (postTimeParam) {
-      const date = new Date(postTimeParam);
-      const formattedPostTime = date.toISOString();      
-      setPostTime(formattedPostTime);
-      console.log('Post Time:', formattedPostTime);
-      const button = document.getElementById("bt_programar");
-      if (button) {
-        button.click();
-        
-      }
-    }
-
-    const fetchData = async () => {
-      const socialAccounts = await load_all_social_accounts();
-      const filteredSocialAccounts = socialAccounts.filter(
-        (account) => account.red_social.toLowerCase() !== "google"
-      );
-      setSocialAccounts(filteredSocialAccounts);
-    };
-
     const fetchPosts = async () => {
       if (id) {
         try {
           const data = await load_post_by_id(id);
-    
+  
+          console.log("Datos del post cargados:", data);
+  
+          // Asignamos los valores recibidos a los estados correspondientes
           setPosts(data);
-          setSocialMedia(data.social_media);
-          setType(data.type);
-          setStatus(data.status);
-          setThumbnail(data.thumbnail); 
-          setMedia(data.media);
-          setContent(data.content);
-          setPostTime(data.post_time);
+          setSocialMedia(data.social_media || []); // Aseguramos que siempre sea un array
+          setType(data.type || ""); 
+          setStatus(data.status || "borrador");
+          setThumbnail(data.thumbnail || ""); 
+          setMedia(data.media?.filter(link => link) || []); // Filtramos valores nulos
+          setContent(data.content || "");
+          setPostTime(formatDateForInput(data.post_time || new Date().toISOString()));
         } catch (error) {
           console.error("Error fetching posts:", error);
         }
       }
     };
-
-    const createNewProgrammedPost = async () => {
-      if (searchParams.get("postTime")) {
-        setPostTime(searchParams.get("postTime")!);
-        setStatus("programado");
+  
+    const fetchData = async () => {
+      try {
+        const socialAccounts = await load_all_social_accounts();
+        const filteredSocialAccounts = socialAccounts.filter(
+          (account) => account.red_social.toLowerCase() !== "google"
+        );
+        setSocialAccounts(filteredSocialAccounts);
+      } catch (error) {
+        console.error("Error loading social accounts:", error);
       }
     };
-
+  
+    const createNewProgrammedPost = () => {
+      const postTimeParam = searchParams.get("postTime");
+      if (postTimeParam) {
+        const formattedPostTime = formatDateForInput(postTimeParam);
+        setPostTime(formattedPostTime);
+        setStatus("programado");
+        
+        // Simula el click en el botón "Programar"
+        const button = document.getElementById("bt_programar");
+        if (button) button.click();
+      }
+    };
+  
+    // Llamamos a las funciones al cargar el componente
     fetchData();
     fetchPosts();
     createNewProgrammedPost();
-  }, []);
+  }, [id, searchParams]);
+  
 
   const generateUniqueID = () => {
     return `${Date.now()}-${Math.random()}`;
@@ -121,46 +123,64 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
 
   const handleMediaUpload = (
     event: React.ChangeEvent<HTMLInputElement>,
-    mediaType: "image" | "video"
+    mediaType: 'image' | 'video'
   ) => {
     const files = event.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-
-      // Check file size
+  
+    if (files) {
       const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
-      if (file.size > maxSizeInBytes) {
-        alert("El archivo debe ser menor a 4.5MB");
-        return;
-      }
-
-      const newFile: MediaFILE = {
-        id: generateUniqueID(),
-        file,
-        url: URL.createObjectURL(file),
-        type: mediaType,
-        name: file.name,
-      };
-
-      setMediaFiles(newFile); // Only allow one file to be uploaded
-
-      if (mediaType === "video") {
+      const newFiles = Array.from(files)
+        .map((file) => {
+          if (file.size > maxSizeInBytes) {
+            alert("El archivo debe ser menor a 4.5MB");
+            return null; // Ignoramos archivos grandes
+          }
+          return {
+            id: generateUniqueID(),
+            file,
+            url: URL.createObjectURL(file),
+            type: mediaType,
+            name: file.name,
+          };
+        })
+        .filter(Boolean) as MediaFILE[]; // Aseguramos que solo queden archivos válidos
+  
+      if (mediaType === 'video') {
+        // Si es video, sobrescribimos mediaFiles para permitir solo uno
+        setMediaFiles([...newFiles]);
         setIsVideoSelected(true);
-        setIsImageSelected(true); // Disable the option to add images when a video is selected
-      } else if (mediaType === "image") {
-        setIsImageSelected(true); // Keep the option to add more images activated
+        setIsImageSelected(true); // Deshabilita imágenes si hay video
+      } else {
+        // Agregamos múltiples imágenes sin sobrescribir las existentes
+        setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
+        setIsImageSelected(true);
       }
-
-      // Reset the input value to allow re-uploading the same file
-      event.target.value = ""; // This line ensures the file input is reset
+  
+      // Restablecemos el input para permitir subir el mismo archivo nuevamente
+      event.target.value = '';
     }
   };
+  
+  
 
-  const handleRemoveMedia = () => {
-    setMediaFiles(undefined);
-    setIsVideoSelected(false);
-    setIsImageSelected(false);
+  const handleRemoveMedia = (id: string) => {
+    const updatedMediaFiles = mediaFiles.filter((file) => file.id !== id);
+  
+    const fileToRemove = mediaFiles.find((file) => file.id === id);
+    if (fileToRemove) {
+      URL.revokeObjectURL(fileToRemove.url); // Liberamos la URL del objeto
+    }
+  
+    setMediaFiles(updatedMediaFiles);
+  
+    // Restablecemos los estados si no quedan archivos multimedia
+    if (updatedMediaFiles.length === 0) {
+      setIsVideoSelected(false);
+      setIsImageSelected(false);
+    }
   };
+  
+  
 
   const handlePost = async () => {
     if (selectedAccount.length === 0) {
@@ -171,43 +191,53 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
     setLoading(true);
   
     try {
-      let uploadedMediaURL: string | undefined = undefined;
+      let uploadedMediaURLs: string[] = []; // Array para almacenar URLs subidas
   
-      if (mediaFiles) {
-        const response = await fetch(
-          `/api/media/upload?filename=${mediaFiles.name}`,
-          {
-            method: "POST",
-            body: mediaFiles.file,
+      // Subir archivos multimedia (imágenes o video)
+      if (mediaFiles.length > 0) {
+        for (const file of mediaFiles) {
+          const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
+          if (file.file.size > maxSizeInBytes) {
+            alert(`El archivo ${file.name} debe ser menor a 4.5MB`);
+            continue; // Saltar este archivo si supera el tamaño máximo
           }
-        );
-        const newBlob = (await response.json()) as PutBlobResult;
   
-        setBlob(newBlob);
-        console.log("Response: ", newBlob.url);
+          const response = await fetch(
+            `/api/media/upload?filename=${file.name}`,
+            {
+              method: "POST",
+              body: file.file,
+            }
+          );
   
-        uploadedMediaURL = newBlob.url;
-        setMedia([uploadedMediaURL]); // Ajustamos para que sea un array
+          const newBlob = await response.json();
+          console.log("Response:", newBlob.url);
+  
+          uploadedMediaURLs.push(newBlob.url); // Agregar URL al array
+        }
+  
+        setMedia(uploadedMediaURLs); // Ajustamos para ser un array de URLs
       }
   
+      // Crear el post para cada cuenta seleccionada
       for (const account of selectedAccount) {
         const newPost: Post = {
-          id: id || generateUniqueID(), // Generamos ID si no existe
+          id: id || generateUniqueID(), // Generar ID si no existe
           social_media: [account.red_social], // Ajustamos para ser un array
           type,
           status,
           thumbnail, // Alineado con el tipo Post
-          media: uploadedMediaURL ? [uploadedMediaURL] : undefined, // En array si existe
+          media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined, // Si existen URLs
           content,
           post_time: postTime || new Date().toISOString(), // Usamos postTime correctamente
         };
   
-        console.log("New Post :", newPost);
-        console.log("New Post json:", JSON.stringify(newPost));
-        await create_post(newPost);
+        console.log("New Post:", newPost);
+        console.log("New Post JSON:", JSON.stringify(newPost));
+        await create_post(newPost); // Llamar a la función para crear el post
       }
   
-      router.push("/pages/publicaciones");
+      router.push("/pages/publicaciones"); // Redirigir a publicaciones
     } catch (error) {
       console.error("Error al intentar realizar la publicación:", error);
       setPostStatus(
@@ -216,7 +246,8 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
     } finally {
       setLoading(false);
     }
-  };  
+  };
+   
 
   const handleAccountSelect = (account: SocialAccount) => {
     if (selectedAccount.includes(account)) {
@@ -285,80 +316,74 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
 
             {/* Mostrar cola de archivos multimedia */}
             <div className="flex items-center space-x-4 mt-4">
-              {mediaFiles && (
-                <div key={mediaFiles.id} className="relative">
-                  {mediaFiles.type === "image" ? (
+              {mediaFiles.map((file) => (
+                <div key={file.id} className="relative">
+                  {file.type === 'image' ? (
                     <img
-                      src={mediaFiles.url}
-                      alt={mediaFiles.name}
+                      src={file.url}
+                      alt={file.name}
                       className="w-16 h-16 object-cover rounded"
                     />
                   ) : (
                     <video
-                      src={mediaFiles.url}
+                      src={file.url}
                       className="w-16 h-16 object-cover rounded"
+                      controls
                     />
                   )}
                   <button
-                    onClick={handleRemoveMedia}
-                    className="absolute top-0 right-0 text-red-500"
+                    onClick={() => handleRemoveMedia(file.id)}
+                    className="absolute top-0 right-0 m-1 text-red-500 bg-white rounded-full p-1"
                     title="Remove Media"
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                 </div>
-              )}
+              ))}
             </div>
 
             {/* Botones para subir archivos */}
             <div className="flex items-center space-x-4 mt-4">
               <label
                 className={`flex items-center cursor-pointer ${
-                  isVideoSelected ? "opacity-50 cursor-not-allowed" : ""
+                  isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <CameraIcon
                   className={`h-6 w-6 ${
-                    isVideoSelected ? "text-gray-300" : "text-gray-500"
+                    isVideoSelected ? 'text-gray-300' : 'text-gray-500'
                   }`}
                 />
                 <input
                   type="file"
                   accept="image/*"
+                  multiple
                   className="hidden"
-                  onChange={(e) => {
-                    handleMediaUpload(e, "image");
-                    setType("image");
-                  }}
-                  disabled={isVideoSelected} // Deshabilitar si hay un video seleccionado
+                  onChange={(e) => handleMediaUpload(e, 'image')}
+                  disabled={isVideoSelected} // Deshabilitamos si hay video
                 />
               </label>
+
               <label
                 className={`flex items-center cursor-pointer ${
-                  isImageSelected || isVideoSelected
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
+                  isImageSelected || isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <VideoCameraIcon
                   className={`h-6 w-6 ${
-                    isImageSelected || isVideoSelected
-                      ? "text-gray-300"
-                      : "text-gray-500"
+                    isImageSelected || isVideoSelected ? 'text-gray-300' : 'text-gray-500'
                   }`}
                 />
                 <input
                   type="file"
                   accept="video/*"
                   className="hidden"
-                  onChange={(e) => {
-                    handleMediaUpload(e, "video");
-                    setType("video");
-                  }}
-                  disabled={isImageSelected || isVideoSelected} // Deshabilitar si hay una imagen o un video seleccionado
+                  onChange={(e) => handleMediaUpload(e, 'video')}
+                  disabled={isImageSelected || isVideoSelected} // Deshabilitamos si hay imagen o video
                 />
               </label>
             </div>
+
           </div>
 
           {/* Seleccionar cuándo publicar */}
@@ -509,3 +534,14 @@ export default function Page() {
     </Suspense>
   );
 }
+
+const formatDateForInput = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
