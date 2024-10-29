@@ -27,7 +27,7 @@ function PublicarPage() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isVideoSelected, setIsVideoSelected] = useState(false);
   const [isImageSelected, setIsImageSelected] = useState(false);
-  const [mediaFiles, setMediaFiles] = useState<MediaFILE[]>([]); // Inicializado como un array vacío
+  const [mediaFiles, setMediaFiles] = useState<MediaFILE[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
 
   const [postStatus, setPostStatus] = useState<string>("");
@@ -70,13 +70,30 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
   
           console.log("Datos del post cargados:", data);
   
-          // Asignamos los valores recibidos a los estados correspondientes
+          // Verificamos que cada medio tenga el tipo correcto
+          const loadedMediaFiles = (data.media || []).map((url, index) => ({
+            id: generateUniqueID(),
+            file: null,
+            url,
+            type: url.endsWith(".mp4") || url.endsWith(".mov") ? "video" : "image", // Verificación del tipo
+            name: `media-${index + 1}`,
+          }));
+  
+          setMediaFiles(loadedMediaFiles);
+  
+          // Ajustamos los estados según el tipo
+          if (loadedMediaFiles.some((file) => file.type === "video")) {
+            setIsVideoSelected(true);
+            setIsImageSelected(true);
+          } else if (loadedMediaFiles.length > 0) {
+            setIsImageSelected(true);
+          }
+  
           setPosts(data);
-          setSocialMedia(data.social_media || []); // Aseguramos que siempre sea un array
-          setType(data.type || ""); 
+          setSocialMedia(data.social_media || []);
+          setType(data.type || "");
           setStatus(data.status || "borrador");
-          setThumbnail(data.thumbnail || ""); 
-          setMedia(data.media?.filter(link => link) || []); // Filtramos valores nulos
+          setThumbnail(data.thumbnail || "");
           setContent(data.content || "");
           setPostTime(formatDateForInput(data.post_time || new Date().toISOString()));
         } catch (error) {
@@ -85,38 +102,9 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
       }
     };
   
-    const fetchData = async () => {
-      try {
-        const socialAccounts = await load_all_social_accounts();
-        const filteredSocialAccounts = socialAccounts.filter(
-          (account) => account.red_social.toLowerCase() !== "google"
-        );
-        setSocialAccounts(filteredSocialAccounts);
-      } catch (error) {
-        console.error("Error loading social accounts:", error);
-      }
-    };
-  
-    const createNewProgrammedPost = () => {
-      const postTimeParam = searchParams.get("postTime");
-      if (postTimeParam) {
-        const formattedPostTime = formatDateForInput(postTimeParam);
-        setPostTime(formattedPostTime);
-        setStatus("programado");
-        
-        // Simula el click en el botón "Programar"
-        const button = document.getElementById("bt_programar");
-        if (button) button.click();
-      }
-    };
-  
-    // Llamamos a las funciones al cargar el componente
-    fetchData();
     fetchPosts();
-    createNewProgrammedPost();
-  }, [id, searchParams]);
+  }, [id, searchParams]);  
   
-
   const generateUniqueID = () => {
     return `${Date.now()}-${Math.random()}`;
   };
@@ -132,7 +120,7 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
       const newFiles = Array.from(files)
         .map((file) => {
           if (file.size > maxSizeInBytes) {
-            alert("El archivo debe ser menor a 4.5MB");
+            alert(`El archivo ${file.name} debe ser menor a 4.5MB`);
             return null; // Ignoramos archivos grandes
           }
           return {
@@ -143,42 +131,53 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
             name: file.name,
           };
         })
-        .filter(Boolean) as MediaFILE[]; // Aseguramos que solo queden archivos válidos
+        .filter(Boolean) as MediaFILE[];
   
+      // Si es un video, sobrescribimos
       if (mediaType === 'video') {
-        // Si es video, sobrescribimos mediaFiles para permitir solo uno
         setMediaFiles([...newFiles]);
         setIsVideoSelected(true);
-        setIsImageSelected(true); // Deshabilita imágenes si hay video
+        setIsImageSelected(true);
       } else {
-        // Agregamos múltiples imágenes sin sobrescribir las existentes
+        // Agregamos imágenes sin sobrescribir las existentes
         setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
         setIsImageSelected(true);
       }
   
-      // Restablecemos el input para permitir subir el mismo archivo nuevamente
-      event.target.value = '';
+      event.target.value = ''; // Restablecemos el input
     }
   };
   
+  const handleRemoveMedia = async (id: string, url: string) => {
+    try {
+      // Llamada al backend para eliminar el archivo de S3
+      await fetch(`/api/media/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
   
-
-  const handleRemoveMedia = (id: string) => {
-    const updatedMediaFiles = mediaFiles.filter((file) => file.id !== id);
+      // Eliminar del estado
+      const updatedMediaFiles = mediaFiles.filter((file) => file.id !== id);
+      setMediaFiles(updatedMediaFiles);
   
-    const fileToRemove = mediaFiles.find((file) => file.id === id);
-    if (fileToRemove) {
-      URL.revokeObjectURL(fileToRemove.url); // Liberamos la URL del objeto
-    }
+      // Liberar el objeto URL si fue generado localmente
+      const fileToRemove = mediaFiles.find((file) => file.id === id);
+      if (fileToRemove) {
+        URL.revokeObjectURL(fileToRemove.url);
+      }
   
-    setMediaFiles(updatedMediaFiles);
-  
-    // Restablecemos los estados si no quedan archivos multimedia
-    if (updatedMediaFiles.length === 0) {
-      setIsVideoSelected(false);
-      setIsImageSelected(false);
+      // Restablecer estados si no quedan medios
+      if (updatedMediaFiles.length === 0) {
+        setIsVideoSelected(false);
+        setIsImageSelected(false);
+      }
+    } catch (error) {
+      console.error('Error eliminando el archivo:', error);
+      alert('No se pudo eliminar el archivo del servidor.');
     }
   };
+  
   
   
 
@@ -197,9 +196,11 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
       if (mediaFiles.length > 0) {
         for (const file of mediaFiles) {
           const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
-          if (file.file.size > maxSizeInBytes) {
-            alert(`El archivo ${file.name} debe ser menor a 4.5MB`);
-            continue; // Saltar este archivo si supera el tamaño máximo
+  
+          // Verificación segura del tamaño del archivo
+          if (!file.file || file.file.size > maxSizeInBytes) {
+            alert(`El archivo ${file.name} debe ser menor a 4.5MB o es inválido`);
+            continue; // Saltamos archivos inválidos
           }
   
           const response = await fetch(
@@ -213,18 +214,25 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
           const newBlob = await response.json();
           console.log("Response:", newBlob.url);
   
-          uploadedMediaURLs.push(newBlob.url); // Agregar URL al array
+          uploadedMediaURLs.push(newBlob.url); // Agregamos la URL al array
         }
   
         setMedia(uploadedMediaURLs); // Ajustamos para ser un array de URLs
       }
+  
+      // Determinar el tipo del post basado en los archivos subidos
+      const postType = mediaFiles.some((file) =>
+        file.url.endsWith(".mp4") || file.url.endsWith(".mov")
+      )
+        ? "video"
+        : "image"; // Si hay un video, será "video"; de lo contrario, "image"
   
       // Crear el post para cada cuenta seleccionada
       for (const account of selectedAccount) {
         const newPost: Post = {
           id: id || generateUniqueID(), // Generar ID si no existe
           social_media: [account.red_social], // Ajustamos para ser un array
-          type,
+          type: postType, // Usamos el tipo basado en los archivos subidos
           status,
           thumbnail, // Alineado con el tipo Post
           media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined, // Si existen URLs
@@ -247,6 +255,7 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
       setLoading(false);
     }
   };
+  
    
 
   const handleAccountSelect = (account: SocialAccount) => {
@@ -332,7 +341,7 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
                     />
                   )}
                   <button
-                    onClick={() => handleRemoveMedia(file.id)}
+                    onClick={() => handleRemoveMedia(file.id, file.url)}
                     className="absolute top-0 right-0 m-1 text-red-500 bg-white rounded-full p-1"
                     title="Remove Media"
                   >
