@@ -22,31 +22,37 @@ async function connectToDatabase() {
   }
 }
 
+// Posts
 export async function load_posts(offset: number, limit: number, redSocial: string, tipoPublicacion: string, estado: string): Promise<Post[]> {
     
     let sqlQuery = `
-    SELECT * FROM posts 
-    WHERE id IS NOT NULL
+    SELECT posts.*, array_agg(social_media.platform) as social_media
+    FROM posts
+    LEFT JOIN social_media ON posts.id = social_media.post_id
+    WHERE posts.id IS NOT NULL
     `;
     
     const params: any[] = [];
     
     if (redSocial !== 'all') {
-        sqlQuery += ` AND social_media = $${params.length + 1}`;
+        sqlQuery += ` AND social_media.platform = $${params.length + 1}`;
         params.push(redSocial);
     }
     
     if (tipoPublicacion !== 'all') {
-        sqlQuery += ` AND type = $${params.length + 1}`;
+        sqlQuery += ` AND posts.type = $${params.length + 1}`;
         params.push(tipoPublicacion);
     }
     
     if (estado !== 'all') {
-        sqlQuery += ` AND status = $${params.length + 1}`;
+        sqlQuery += ` AND posts.status = $${params.length + 1}`;
         params.push(estado);
     }
     
-    sqlQuery += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    sqlQuery += `
+    GROUP BY posts.id
+    LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `;
     params.push(limit, offset);
     
     console.log(sqlQuery);
@@ -67,12 +73,23 @@ export async function load_post_by_id(postId: string): Promise<Post> {
         throw new Error('Database client is not initialized');
     }
 
+    // Query to get the post along with its social media platforms and media links
     const result = await client.sql`
-        SELECT * FROM posts WHERE id = ${postId}
+        SELECT 
+            posts.*, 
+            array_agg(DISTINCT social_media.platform) AS social_media,
+            array_agg(DISTINCT media.link) AS media
+        FROM posts
+        LEFT JOIN social_media ON posts.id = social_media.post_id
+        LEFT JOIN media ON posts.id = media.post_id
+        WHERE posts.id = ${postId}
+        GROUP BY posts.id
     `;
+
     if (result.rows.length === 0) {
         throw new Error(`Post with id ${postId} not found`);
     }
+
     return result.rows[0] as Post;
 }
 
@@ -81,11 +98,41 @@ export async function create_post(newPost: Post): Promise<Post> {
     if (!client) {
         throw new Error('Database client is not initialized');
     }
-    const result = await client.sql`
-        INSERT INTO posts (social_media, type, status, preview, media, content, post_time, link, is_programmed, programmed_post_time)
-        VALUES (${newPost.social_media}, ${newPost.type}, ${newPost.status}, ${newPost.preview}, ${newPost.media}, ${newPost.content}, ${newPost.post_time}, ${newPost.link}, ${newPost.is_programmed}, ${newPost.programmed_post_time})
-        RETURNING *
+
+    const { id, type, status, thumbnail, content, post_time, social_media, media } = newPost;
+
+    // Insert into posts table
+    const postResult = await client.sql`
+        INSERT INTO posts (type, status, thumbnail, content, post_time)
+        VALUES (${type}, ${status}, ${thumbnail}, ${content}, ${post_time})
+        RETURNING id;
     `;
+
+    const postId = postResult.rows[0].id;
+
+    // Insert into social_media table
+    for (const platform of social_media) {
+        await client.sql`
+            INSERT INTO social_media (post_id, platform)
+            VALUES (${postId}, ${platform});
+        `;
+    }
+
+    // Insert into media table
+    if (media) {
+        for (const link of media) {
+            await client.sql`
+                INSERT INTO media (post_id, link)
+                VALUES (${postId}, ${link});
+            `;
+        }
+    }
+
+    // Fetch the created post
+    const result = await client.sql`
+        SELECT * FROM posts WHERE id = ${postId};
+    `;
+
     return result.rows[0] as Post;
 }
 
@@ -94,12 +141,20 @@ export async function load_programmed_posts(): Promise<Post[]> {
     if (!client) {
         throw new Error('Database client is not initialized');
     }
+
+    // Query to get the programmed posts along with their social media platforms
     const result = await client.sql`
-        SELECT * FROM posts WHERE is_programmed = true
+        SELECT 
+            posts.*, 
+            array_agg(social_media.platform) AS social_media
+        FROM posts
+        LEFT JOIN social_media ON posts.id = social_media.post_id
+        WHERE posts.status = 'programado'
+        GROUP BY posts.id
     `;
+
     return result.rows as Post[];
 }
-
 // encuestas
 export async function load_all_survey(offset: number, limit: number, estado: string, isQuestion: boolean, isResponse:boolean): Promise<Encuesta[]> {
     let sqlQuery = `
@@ -361,7 +416,7 @@ export async function logout_social_account(red_social: string): Promise<void> {
     `;
 }
 
-export async function get_social_account(usuario: string, red_social: string): Promise<SocialAccount | null> {
+export async function get_social_account(red_social: string): Promise<SocialAccount | null> {
     await connectToDatabase();
     if (!client) {
         throw new Error('Database client is not initialized');
@@ -369,7 +424,7 @@ export async function get_social_account(usuario: string, red_social: string): P
 
     const result = await client.sql`
         SELECT * FROM social_accounts 
-        WHERE usuario = ${usuario} AND red_social = ${red_social}
+        WHERE red_social = ${red_social}
     `;
     return result.rows.length > 0 ? (result.rows[0] as SocialAccount) : null;
 }
@@ -384,5 +439,18 @@ export async function update_meta_tokens(nuevoToken: string, nuevaFechaExpiracio
         UPDATE social_accounts 
         SET token_autenticacion = ${nuevoToken}, fecha_expiracion_token = ${nuevaFechaExpiracion}
         WHERE red_social IN ('facebook', 'instagram');
+    `;
+}
+
+export async function update_social_account(social_account: SocialAccount) {
+    await connectToDatabase();
+    if (!client) {
+        throw new Error('Database client is not initialized');
+    }
+
+    await client.sql`
+        UPDATE social_accounts 
+        SET usuario = ${social_account.usuario}, page_id = ${social_account.page_id}, open_id = ${social_account.open_id}, refresh_token = ${social_account.refresh_token}, token_autenticacion = ${social_account.token_autenticacion}, instagram_business_account = ${social_account.instagram_business_account}, fecha_expiracion_token = ${social_account.fecha_expiracion_token}, fecha_expiracion_refresh = ${social_account.fecha_expiracion_refresh}, linked = ${social_account.linked}
+        WHERE red_social = ${social_account.red_social}
     `;
 }

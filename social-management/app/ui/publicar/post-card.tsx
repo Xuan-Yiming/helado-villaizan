@@ -29,15 +29,15 @@ export default function PostCard ({post}:PostCardProps ) {
             <div className='flex flex-row justify-between '>
             <div className="flex justify-between w-full md:w-auto">
                 <div className="flex items-center">
-                <div className="w-10 text-black md:w-10">
-                    {post.social_media.toLowerCase() === 'facebook' && <FacebookLogo />}
-                    {post.social_media.toLowerCase() === 'tiktok' && <TiktokLogo />}
-                    {post.social_media.toLowerCase() === 'instagram' && <InstagramLogo />}
+                <div className="flex items-center space-x-4 w-50 md:w-50">
+                    {post.social_media.includes('facebook') && <FacebookLogo />}
+                    {post.social_media.includes('tiktok') && <TiktokLogo />}
+                    {post.social_media.includes('instagram') && <InstagramLogo />}
                 </div>
         
-                {post.media && (
+                {post.thumbnail && (
                     <Image 
-                    src={post.media} 
+                    src={post.thumbnail}
                     alt="Post image" 
                     className="mt-4 md:mt-0 md:ml-4 border rounded-md" 
                     width={50}
@@ -58,12 +58,14 @@ export default function PostCard ({post}:PostCardProps ) {
             </div>
             </div>
         
-            <Link 
-            href={post.link || '#'}
-            className="flex items-center text-blue-500 hover:text-blue-700">
-            {post.status === 'publicado' ? <ArrowTopRightOnSquareIcon className="h-5 w-5 mr-1" /> : <PaperAirplaneIcon className="h-5 w-5 mr-1" /> } 
-            <span>{post.status === 'publicado' ? 'Abrir' : 'Publicar'}</span>
-            </Link>
+            {post.status !== 'publicado' && (
+                <Link 
+                    href= {`/pages/publicaciones/crear?id=${post.id}`}
+                    className="flex items-center text-blue-500 hover:text-blue-700">
+                    <PaperAirplaneIcon className="h-5 w-5 mr-1" />
+                    <span>Publicar</span>
+                </Link>
+            )}
         </li>
     );
 };

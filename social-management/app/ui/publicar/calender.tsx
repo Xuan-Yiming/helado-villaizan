@@ -43,19 +43,20 @@ export default function Calendar() {
         const fetchEvents = async () => {
             try {
                 const data = await load_programmed_posts();
+                console.log('Programmed posts:', data);
                 const _events: calendarEvent[] = data.map((post): calendarEvent | undefined => {
-                    if (post.is_programmed) {
-                        const start = post.programmed_post_time;
-                        const end = start ? new Date(new Date(start).getTime() + 60 * 60 * 1000).toISOString() : '';
-                        return {
-                            id: post.id,
-                            title: post.social_media,
-                            start: start?.toString() || '',
-                            end: end,
-                            url: `/pages/publicaciones/crear?id=${post.id}`,
-                            allDay: false,
-                            overlap: false,
-                        };
+                    const start = post.post_time ? new Date(post.post_time).toISOString().slice(0, 16) : '';
+                    const end = start ? new Date(new Date(start).getTime() + 60 * 60 * 1000).toISOString().slice(0, 16) : '';
+                    console.log('Start:', start);
+                    console.log('End:', end);
+                    return {
+                        id: post.id,
+                        title: post.content || '',
+                        start: start || '',
+                        end: end,
+                        url: `/pages/publicaciones/crear?id=${post.id}`,
+                        allDay: false,
+                        overlap: false,
                     }
                 }).filter(Boolean) as calendarEvent[];
                 setEvents(_events);
