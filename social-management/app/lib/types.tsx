@@ -1,3 +1,17 @@
+export type UserAccount = {
+  id: string;
+  username: string;
+  password: string;
+  nombre: string;
+  apellido: string;
+  role: string; // admin, social_manager, survy_creator
+  token?: string;
+  token_expiration_date?: Date;
+  active: boolean;
+  photo?:string;
+}
+
+
 export type SocialAccount = {
   id?: number;
   red_social: string;
