@@ -52,13 +52,15 @@ export async function GET(request: Request) {
                 }
             });
     
-            console.log('TikTok User Info:', userInfoResponse.data.user.username);
+            const username = userInfoResponse.data.data.user.username;
+            console.log('Username:', username);
+            console.log('TikTok User Info Response:', userInfoResponse.data);
 
             // Create the social account object
             const socialAccount: SocialAccount = {
                 red_social: 'tiktok',
                 tipo_autenticacion: 'OAuth2',
-                usuario: userInfoResponse.data.user.username,
+                usuario: username,
                 open_id: open_id,
                 token_autenticacion: access_token,
                 refresh_token: refresh_token,
