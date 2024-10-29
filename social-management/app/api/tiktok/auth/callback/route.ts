@@ -52,7 +52,7 @@ export async function GET(request: Request) {
                 }
             });
     
-            const username = userInfoResponse.data.user.username;
+            const username = userInfoResponse.data.data.user.username;
             console.log('Username:', username);
             console.log('TikTok User Info Response:', userInfoResponse.data);
 
