@@ -10,6 +10,8 @@ export async function GET(req: NextRequest) {
     req.ip || 
     'IP not found';
 
+    console.log('Client IP:', clientIp);
+
     if (clientIp === 'IP not found') {
         return NextResponse.error();
     } else {

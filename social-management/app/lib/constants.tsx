@@ -3,7 +3,8 @@ import {
   InboxArrowDownIcon,
   PaperAirplaneIcon,
   PresentationChartLineIcon,
-  Cog8ToothIcon
+  Cog8ToothIcon,
+  UserIcon
 } from '@heroicons/react/24/solid';
 
 import { SideNavItem } from './types';
@@ -50,6 +51,16 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
   {
     title: 'Cuentas',
+    path: '/pages/cuentas/redes',
+    icon: <UserIcon className='w-6' />,
+    submenu: true,
+    subMenuItems: [
+      { title: 'Redes', path: '/pages/cuentas/redes' },
+      { title: 'Empleados', path: '/pages/cuentas/empleados' },
+    ],
+  },
+  {
+    title: 'Configuración',
     path: '/pages/cuentas-configuraciones',
     icon: <Cog8ToothIcon className='w-6' />,
   },

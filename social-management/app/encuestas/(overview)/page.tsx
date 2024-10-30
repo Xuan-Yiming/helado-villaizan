@@ -9,9 +9,10 @@ import EncuestaNode from '../encuesta-node';
 import Error from '@/app/ui/error'; // Import the Error component
 
 import { Encuesta, Question, Response,Answer } from '@/app/lib/types';
-import { load_survey_by_id } from '@/app/lib/database';
+import { is_survey_available, load_survey_by_id } from '@/app/lib/database';
 import { submit_survey_response } from '@/app/lib/database';
 import { check_survey_response } from '@/app/lib/database';
+
 function EncuestaPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
@@ -50,8 +51,14 @@ function EncuestaPage() {
                     if (await check_survey_response(id, ip)) {
                         return router.push('/encuestas/respondido');   
                     }else{
-                        const data = await load_survey_by_id(id);
-                        setEncuesta(data);
+                        
+                        if ( await is_survey_available(id)){
+                            const data = await load_survey_by_id(id, false);
+                            setEncuesta(data);
+                            console.log("data: ", data)
+                        }else{
+                            return router.push('/encuestas/error'); 
+                        }
                     }
 
                 } catch (error) {
@@ -81,9 +88,7 @@ function EncuestaPage() {
                 })) as Answer[] // Add type assertion here
             });
 
-            console.log('Initializing response:', response);
         }
-        console.log('Encuesta:', encuesta);
     }
 
     function handleUpdateAnswer(updatedAnswer: Answer) {

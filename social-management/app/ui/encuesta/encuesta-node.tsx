@@ -13,6 +13,13 @@ export default function EncuestaNode({ question, onDelete, onUpdate, isEditable 
     const [questionType, setQuestionType] = useState(question.type);
     const [options, setOptions] = useState(question.options || []);
     const [title, setTitle] = useState(question.title);
+    const [isRequired, setIsRequired] = useState(question.required);
+
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const updatedRequired = event.target.checked;
+      setIsRequired(updatedRequired);
+      onUpdate({ ...question, required: updatedRequired });
+    };
 
     function handleDeleteNode() {
         if (question.id)
@@ -62,7 +69,6 @@ export default function EncuestaNode({ question, onDelete, onUpdate, isEditable 
                                     type="radio"
                                     name={question.title}
                                     value={option}
-                                    required={question.required}
                                 />
                                 <input
                                     type="text"
@@ -95,7 +101,6 @@ export default function EncuestaNode({ question, onDelete, onUpdate, isEditable 
                                     type="checkbox"
                                     name={question.title}
                                     value={option}
-                                    required={question.required}
                                 />
                                 <input
                                     type="text"
@@ -131,7 +136,10 @@ export default function EncuestaNode({ question, onDelete, onUpdate, isEditable 
                     
                     {(question.required || isEditable) &&(
                         <div className="flex items-center">
-                            <input type="checkbox" name="requiredCheck" id="" checked={question.required} />
+                            <input type="checkbox" name="requiredCheck" id=""             
+                            checked={isRequired}
+                            onChange={handleCheckboxChange} 
+                        />
                             <label className="ml-2">Obligatorio</label>
                         </div>
                     )}
