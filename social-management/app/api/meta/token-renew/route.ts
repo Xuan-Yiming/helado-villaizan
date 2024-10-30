@@ -5,7 +5,6 @@ import axios from 'axios';
 // Verificar y renovar los tokens de Meta para todas las cuentas de Facebook e Instagram
 export async function POST() {
     try {
-        // 1. Obtener la cuenta principal ('La Rana Max' en Facebook)
         const account = await get_social_account('facebook');
         if (!account) {
             return NextResponse.json(

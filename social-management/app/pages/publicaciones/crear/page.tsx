@@ -7,8 +7,7 @@ import type { PutBlobResult } from "@vercel/blob";
 
 import {PaperAirplaneIcon,  ClockIcon,  CameraIcon,  VideoCameraIcon,  CheckIcon,  CheckCircleIcon,  XMarkIcon,} from "@heroicons/react/24/outline";
 
-import { MediaFILE, SocialAccount } from "@/app/lib/types";
-import { Post } from "@/app/lib/types";
+import { MediaFILE, SocialAccount, Post } from "@/app/lib/types";
 
 import FacebookLogo from "@/app/ui/icons/facebook";
 import InstagramLogo from "@/app/ui/icons/instagram";
@@ -271,9 +270,10 @@ function PublicarPage() {
         console.log("New Post:", newPost);
         console.log("New Post JSON:", JSON.stringify(newPost));
         await create_post(newPost); // Llamar a la función para crear el post
+        await publishToSocialMedia(account.red_social, newPost); // Publicar en la red social
       }
   
-      router.push("/pages/publicaciones"); // Redirigir a publicaciones
+      //router.push("/pages/publicaciones"); // Redirigir a publicaciones
     } catch (error) {
       console.error("Error al intentar realizar la publicación:", error);
       setPostStatus(
@@ -578,4 +578,35 @@ const formatDateForInput = (dateString: string) => {
   const minutes = String(date.getMinutes()).padStart(2, '0');
 
   return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+const publishToSocialMedia = async (network: string, post: Post) => {
+  try {
+    // Esto es para arreglar momentaneamente acá el error de que pasa de video a image el type
+    const adjustedPost = {
+      ...post,
+      type: post.media && post.media.length > 0 && post.media[0].endsWith('.mp4')
+        ? 'video'
+        : 'image', // Verificamos si es video o imagen
+    };
+
+    console.log("Post ajustado para enviar:", adjustedPost); // LOG para verificar
+
+    const response = await fetch(`/api/${network.toLowerCase()}/post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(adjustedPost),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al publicar en la red social');
+    }
+
+    const data = await response.json();
+    console.log(`Publicado en ${network} con éxito. ID: ${data.postId}`);
+  } catch (error) {
+    console.error(`Error al publicar en ${network}:`, error);
+  }
 };
+
