@@ -18,7 +18,7 @@ export type SocialAccount = {
 
 export type MediaFILE = {
   id: string;
-  file: File;
+  file: File | null;
   url: string;
   type: string;
   name: string;

@@ -1,18 +1,11 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
+import Image from 'next/image';
 import { useSearchParams, useRouter } from "next/navigation";
 import type { PutBlobResult } from "@vercel/blob";
 
-import {
-  PaperAirplaneIcon,
-  ClockIcon,
-  CameraIcon,
-  VideoCameraIcon,
-  CheckIcon,
-  CheckCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import {PaperAirplaneIcon,  ClockIcon,  CameraIcon,  VideoCameraIcon,  CheckIcon,  CheckCircleIcon,  XMarkIcon,} from "@heroicons/react/24/outline";
 
 import { MediaFILE, SocialAccount } from "@/app/lib/types";
 import { Post } from "@/app/lib/types";
@@ -22,7 +15,7 @@ import InstagramLogo from "@/app/ui/icons/instagram";
 import TiktokLogo from "@/app/ui/icons/tiktok";
 import Preview from "@/app/ui/publicar/preview";
 
-import { load_all_social_accounts } from "@/app/lib/database";
+import { delete_media_by_url, load_all_social_accounts } from "@/app/lib/database";
 import { load_post_by_id } from "@/app/lib/database";
 import { create_post } from "@/app/lib/database";
 
@@ -34,7 +27,7 @@ function PublicarPage() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isVideoSelected, setIsVideoSelected] = useState(false);
   const [isImageSelected, setIsImageSelected] = useState(false);
-  const [mediaFiles, setMediaFiles] = useState<MediaFILE>();
+  const [mediaFiles, setMediaFiles] = useState<MediaFILE[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
 
   const [postStatus, setPostStatus] = useState<string>("");
@@ -47,16 +40,14 @@ function PublicarPage() {
   const [selectedSocialAccountName, setSelectedSocialAccountName] =
     useState<string>("");
   // PostDetail
-  const [socialMedia, setSocialMedia] = useState<string>("fb");
-  const [type, setType] = useState<string>("video");
-  const [status, setStatus] = useState<string>("publicado");
-  const [preview, setPreview] = useState<string | undefined>(undefined);
-  const [media, setMedia] = useState<string | undefined>(undefined);
-  const [content, setContent] = useState<string | undefined>(undefined);
-  const [postTime, setPostTime] = useState<string | undefined>(undefined);
-  const [link, setLink] = useState<string | undefined>(undefined);
-  const [isProgrammed, setIsProgrammed] = useState<boolean>(false);
-  const [programmed_post_time, setPost_time] = useState<string>();
+  const [originalMediaURLs, setOriginalMediaURLs] = useState<string[]>([]); // URLs originales del backend
+  const [socialMedia, setSocialMedia] = useState<string[]>([]); // Es un array
+  const [type, setType] = useState<string>("video"); 
+  const [status, setStatus] = useState<string>("publicado"); 
+  const [thumbnail, setThumbnail] = useState<string | undefined>(undefined); 
+  const [media, setMedia] = useState<string[] | undefined>(undefined); 
+  const [content, setContent] = useState<string | undefined>(undefined); 
+  const [postTime, setPostTime] = useState<string | undefined>(undefined); 
 
   const getLogo = (name: string) => {
     switch (name.toLowerCase()) {
@@ -72,104 +63,150 @@ function PublicarPage() {
   };
 
   useEffect(() => {
-    // si es programado
-    const postTimeParam = searchParams.get("postTime");
-    if (postTimeParam) {
-      const date = new Date(postTimeParam);
-      const formattedPostTime = date.toISOString();      
-      setPost_time(formattedPostTime);
-      console.log('Post Time:', formattedPostTime);
-      const button = document.getElementById("bt_programar");
-      if (button) {
-        button.click();
-        
-      }
-    }
-
-    const fetchData = async () => {
-      const socialAccounts = await load_all_social_accounts();
-      const filteredSocialAccounts = socialAccounts.filter(
-        (account) => account.red_social.toLowerCase() !== "google"
-      );
-      setSocialAccounts(filteredSocialAccounts);
-    };
-
     const fetchPosts = async () => {
-      if (id)
+      if (id) {
         try {
           const data = await load_post_by_id(id);
+  
+          console.log("Datos del post cargados:", data);
+  
+          // Verificamos que cada medio tenga el tipo correcto
+          const loadedMediaFiles = (data.media || []).map((url, index) => ({
+            id: generateUniqueID(),
+            file: null,
+            url,
+            type: url.endsWith(".mp4") || url.endsWith(".mov") ? "video" : "image", // Verificación del tipo
+            name: `media-${index + 1}`,
+          }));
+  
+          setMediaFiles(loadedMediaFiles);
+          // Guardamos las URLs originales en el estado
+          setOriginalMediaURLs(data.media || []);
+          
+          // Ajustamos los estados según el tipo
+          if (loadedMediaFiles.some((file) => file.type === "video")) {
+            setIsVideoSelected(true);
+            setIsImageSelected(true);
+          } else if (loadedMediaFiles.length > 0) {
+            setIsImageSelected(true);
+          }
+  
           setPosts(data);
-          setType(data.type);
-          setStatus(data.status);
-          setPreview(data.preview);
-          setMedia(data.media);
-          setContent(data.content);
-          setPostTime(data.post_time);
-          setLink(data.link);
-          setIsProgrammed(data.is_programmed);
-          setPost_time(data.programmed_post_time);
+          setSocialMedia(data.social_media || []);
+          setType(data.type || "");
+          setStatus(data.status || "borrador");
+          setThumbnail(data.thumbnail || "");
+          setContent(data.content || "");
+          setPostTime(formatDateForInput(data.post_time || new Date().toISOString()));
         } catch (error) {
           console.error("Error fetching posts:", error);
         }
-    };
-
-    const createNewProgrammedPost = async () => {
-      if (searchParams.get("postTime")) {
-        setPost_time(searchParams.get("postTime")!);
-        setStatus("programado");
       }
     };
 
-    fetchData();
+    const fetchSocialAccounts = async () => {
+      try {
+        const socialAccounts = await load_all_social_accounts(); // Llamada a la BD
+        const filteredSocialAccounts = socialAccounts.filter(
+          (account) => account.red_social.toLowerCase() !== "google" // Filtro de Google
+        );
+        setSocialAccounts(filteredSocialAccounts); // Actualizamos el estado con las cuentas filtradas
+      } catch (error) {
+        console.error("Error fetching social accounts:", error);
+      }
+    };
+  
     fetchPosts();
-    createNewProgrammedPost();
-  }, []);
+    fetchSocialAccounts(); 
 
+  }, [id, searchParams]);  
+  
   const generateUniqueID = () => {
     return `${Date.now()}-${Math.random()}`;
   };
 
   const handleMediaUpload = (
     event: React.ChangeEvent<HTMLInputElement>,
-    mediaType: "image" | "video"
+    mediaType: 'image' | 'video'
   ) => {
     const files = event.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-
-      // Check file size
+  
+    if (files) {
       const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
-      if (file.size > maxSizeInBytes) {
-        alert("El archivo debe ser menor a 4.5MB");
-        return;
-      }
-
-      const newFile: MediaFILE = {
-        id: generateUniqueID(),
-        file,
-        url: URL.createObjectURL(file),
-        type: mediaType,
-        name: file.name,
-      };
-
-      setMediaFiles(newFile); // Only allow one file to be uploaded
-
-      if (mediaType === "video") {
+      const newFiles = Array.from(files)
+        .map((file) => {
+          if (file.size > maxSizeInBytes) {
+            alert(`El archivo ${file.name} debe ser menor a 4.5MB`);
+            return null; // Ignoramos archivos grandes
+          }
+          return {
+            id: generateUniqueID(),
+            file,
+            url: URL.createObjectURL(file),
+            type: mediaType,
+            name: file.name,
+          };
+        })
+        .filter(Boolean) as MediaFILE[];
+  
+      // Si es un video, sobrescribimos
+      if (mediaType === 'video') {
+        setMediaFiles([...newFiles]);
         setIsVideoSelected(true);
-        setIsImageSelected(true); // Disable the option to add images when a video is selected
-      } else if (mediaType === "image") {
-        setIsImageSelected(true); // Keep the option to add more images activated
+        setIsImageSelected(true);
+      } else {
+        // Agregamos imágenes sin sobrescribir las existentes
+        setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
+        setIsImageSelected(true);
       }
-
-      // Reset the input value to allow re-uploading the same file
-      event.target.value = ""; // This line ensures the file input is reset
+  
+      event.target.value = ''; // Restablecemos el input
     }
   };
+  
+  const handleRemoveMedia = async (id: string, url: string) => {
+    try {
+      // Verificar si la URL es parte de las originales
+      if (originalMediaURLs.includes(url)) {
+        // Llamada a la API para eliminar el archivo del servicio de Vercel
+        const response = await fetch('/api/media/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
 
-  const handleRemoveMedia = () => {
-    setMediaFiles(undefined);
-    setIsVideoSelected(false);
-    setIsImageSelected(false);
+        if (!response.ok) {
+          throw new Error('Error al eliminar el archivo del servidor.');
+        }
+        console.log(`Archivo con URL ${url} eliminado del servidor.`);
+      }
+  
+      console.log(`Archivo con URL ${url} eliminado del servidor.`);
+  
+      // Llamada a la base de datos para eliminar el registro
+      await delete_media_by_url(url);
+  
+      console.log(`Registro con URL ${url} eliminado de la base de datos.`);
+  
+      // Eliminar del estado local
+      const updatedMediaFiles = mediaFiles.filter((file) => file.id !== id);
+      setMediaFiles(updatedMediaFiles);
+  
+      // Liberar el objeto URL si fue generado localmente
+      const fileToRemove = mediaFiles.find((file) => file.id === id);
+      if (fileToRemove) {
+        URL.revokeObjectURL(fileToRemove.url);
+      }
+  
+      // Restablecer estados si no quedan medios
+      if (updatedMediaFiles.length === 0) {
+        setIsVideoSelected(false);
+        setIsImageSelected(false);
+      }
+    } catch (error) {
+      console.error('Error eliminando el archivo:', error);
+      alert('No se pudo eliminar el archivo.');
+    }
   };
 
   const handlePost = async () => {
@@ -177,49 +214,66 @@ function PublicarPage() {
       setPostStatus("Por favor, selecciona al menos un usuario para publicar.");
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
-      if (mediaFiles) {
-        const response = await fetch(
-          `/api/media/upload?filename=${mediaFiles.name}`,
-          {
-            method: "POST",
-            body: mediaFiles.file,
+      let uploadedMediaURLs: string[] = []; // Array para almacenar URLs subidas
+  
+      // Subir archivos multimedia (imágenes o video)
+      if (mediaFiles.length > 0) {
+        for (const file of mediaFiles) {
+          const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
+  
+          // Verificación segura del tamaño del archivo
+          if (!file.file || file.file.size > maxSizeInBytes) {
+            alert(`El archivo ${file.name} debe ser menor a 4.5MB o es inválido`);
+            continue; // Saltamos archivos inválidos
           }
-        );
-        const newBlob = (await response.json()) as PutBlobResult;
-
-        setBlob(newBlob);
-
-        console.log("Response: ", newBlob.url);
-
-        const uploadedMediaURL = newBlob.url;
-
-        setMedia(uploadedMediaURL);
-
-        for (const account of selectedAccount) {
-          const newPost: Post = {
-            id: id ? id : "",
-            social_media: account.red_social,
-            type: type,
-            status: status,
-            preview: preview,
-            media: uploadedMediaURL,
-            content: content,
-            post_time: new Date().toISOString(),
-            link: link,
-            is_programmed: isProgrammed,
-            programmed_post_time: programmed_post_time,
-          };
-          console.log("New Post :", newPost);
-          console.log("New Post json:", JSON.stringify(newPost));
-          await create_post(newPost);
+  
+          const response = await fetch(
+            `/api/media/upload?filename=${file.name}`,
+            {
+              method: "POST",
+              body: file.file,
+            }
+          );
+  
+          const newBlob = await response.json();
+          console.log("Response:", newBlob.url);
+  
+          uploadedMediaURLs.push(newBlob.url); // Agregamos la URL al array
         }
-        router.push("/pages/publicaciones");
-      } else {
+  
+        setMedia(uploadedMediaURLs); // Ajustamos para ser un array de URLs
       }
+  
+      // Determinar el tipo del post basado en los archivos subidos
+      const postType = mediaFiles.some((file) =>
+        file.url.endsWith(".mp4") || file.url.endsWith(".mov")
+      )
+        ? "video"
+        : "image"; // Si hay un video, será "video"; de lo contrario, "image"
+  
+      // Crear el post para cada cuenta seleccionada
+      for (const account of selectedAccount) {
+        const newPost: Post = {
+          id: id || generateUniqueID(), // Generar ID si no existe
+          social_media: [account.red_social], // Ajustamos para ser un array
+          type: postType, // Usamos el tipo basado en los archivos subidos
+          status,
+          thumbnail: uploadedMediaURLs.length > 0 ? uploadedMediaURLs[0] : undefined, // Alineado con el tipo Post
+          media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined, // Si existen URLs
+          content,
+          post_time: postTime || new Date().toISOString(), // Usamos postTime correctamente
+        };
+  
+        console.log("New Post:", newPost);
+        console.log("New Post JSON:", JSON.stringify(newPost));
+        await create_post(newPost); // Llamar a la función para crear el post
+      }
+  
+      router.push("/pages/publicaciones"); // Redirigir a publicaciones
     } catch (error) {
       console.error("Error al intentar realizar la publicación:", error);
       setPostStatus(
@@ -229,7 +283,7 @@ function PublicarPage() {
       setLoading(false);
     }
   };
-
+  
   const handleAccountSelect = (account: SocialAccount) => {
     if (selectedAccount.includes(account)) {
       setSelectedAccount(selectedAccount.filter((acc) => acc !== account));
@@ -297,80 +351,70 @@ function PublicarPage() {
 
             {/* Mostrar cola de archivos multimedia */}
             <div className="flex items-center space-x-4 mt-4">
-              {mediaFiles && (
-                <div key={mediaFiles.id} className="relative">
-                  {mediaFiles.type === "image" ? (
+              {mediaFiles.map((file) => (
+                <div key={file.id} className="relative">
+                  {file.type === 'image' ? (
                     <img
-                      src={mediaFiles.url}
-                      alt={mediaFiles.name}
+                      src={file.url}
+                      alt={file.name}
                       className="w-16 h-16 object-cover rounded"
                     />
                   ) : (
-                    <video
-                      src={mediaFiles.url}
-                      className="w-16 h-16 object-cover rounded"
-                    />
+                    <video src={file.url} className="w-16 h-16 object-cover rounded" />
                   )}
                   <button
-                    onClick={handleRemoveMedia}
-                    className="absolute top-0 right-0 text-red-500"
+                    onClick={() => handleRemoveMedia(file.id, file.url)}
+                    className="absolute top-0 right-0 m-1 text-red-500 bg-white rounded-full p-1"
                     title="Remove Media"
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                 </div>
-              )}
+              ))}
             </div>
 
             {/* Botones para subir archivos */}
             <div className="flex items-center space-x-4 mt-4">
               <label
                 className={`flex items-center cursor-pointer ${
-                  isVideoSelected ? "opacity-50 cursor-not-allowed" : ""
+                  isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <CameraIcon
                   className={`h-6 w-6 ${
-                    isVideoSelected ? "text-gray-300" : "text-gray-500"
+                    isVideoSelected ? 'text-gray-300' : 'text-gray-500'
                   }`}
                 />
                 <input
                   type="file"
                   accept="image/*"
+                  multiple
                   className="hidden"
-                  onChange={(e) => {
-                    handleMediaUpload(e, "image");
-                    setType("image");
-                  }}
-                  disabled={isVideoSelected} // Deshabilitar si hay un video seleccionado
+                  onChange={(e) => handleMediaUpload(e, 'image')}
+                  disabled={isVideoSelected} // Deshabilitamos si hay video
                 />
               </label>
+
               <label
                 className={`flex items-center cursor-pointer ${
-                  isImageSelected || isVideoSelected
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
+                  isImageSelected || isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <VideoCameraIcon
                   className={`h-6 w-6 ${
-                    isImageSelected || isVideoSelected
-                      ? "text-gray-300"
-                      : "text-gray-500"
+                    isImageSelected || isVideoSelected ? 'text-gray-300' : 'text-gray-500'
                   }`}
                 />
                 <input
                   type="file"
                   accept="video/*"
                   className="hidden"
-                  onChange={(e) => {
-                    handleMediaUpload(e, "video");
-                    setType("video");
-                  }}
-                  disabled={isImageSelected || isVideoSelected} // Deshabilitar si hay una imagen o un video seleccionado
+                  onChange={(e) => handleMediaUpload(e, 'video')}
+                  disabled={isImageSelected || isVideoSelected} // Deshabilitamos si hay imagen o video
                 />
               </label>
             </div>
+
           </div>
 
           {/* Seleccionar cuándo publicar */}
@@ -380,12 +424,9 @@ function PublicarPage() {
             </h2>
             <div className="mt-4 flex space-x-4">
               <button
-                onClick={() => {
-                  setStatus("publicado");
-                  setIsProgrammed(false);
-                }}
+                onClick={() => setStatus("publicado")}
                 className={`${
-                  !isProgrammed ? "bg-blue-500" : "bg-gray-300"
+                  status === "publicado" ? "bg-blue-500" : "bg-gray-300"
                 } text-white px-4 py-2 rounded flex items-center`}
               >
                 <PaperAirplaneIcon className="h-5 w-5 mr-2" />
@@ -393,35 +434,34 @@ function PublicarPage() {
               </button>
               <button
                 id="bt_programar"
-                onClick={() => {
-                  setStatus("programado");
-                  setIsProgrammed(true);
-                }}
+                onClick={() => setStatus("programado")}
                 className={`${
-                  isProgrammed ? "bg-blue-500" : "bg-gray-300"
+                  status === "programado" ? "bg-blue-500" : "bg-gray-300"
                 } text-white px-4 py-2 rounded flex items-center`}
               >
                 <ClockIcon className="h-5 w-5 mr-2" />
                 Programar
               </button>
             </div>
-            <div className={`mt-4 ${isProgrammed ? '' : 'hidden'}`}>
-              <label className="block text-black mb-2">
-                Fecha y hora para publicar:
-              </label>
-              <input
-                type="datetime-local"
-                value={programmed_post_time}
-                onChange={(e) => {
-                  console.log('Post Time:', e.target.value);
-                  setPost_time(e.target.value);
-                }}
-                className="w-full p-2 border rounded"
-                min={new Date().toISOString().slice(0, -8)}
-              />
-            </div>
+
+            {/* Mostrar campo de fecha solo si el estado es 'programado' */}
+            {status === "programado" && (
+              <div className="mt-4">
+                <label className="block text-black mb-2">
+                  Fecha y hora para publicar:
+                </label>
+                <input
+                  type="datetime-local"
+                  value={postTime}
+                  onChange={(e) => setPostTime(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  min={new Date().toISOString().slice(0, -8)}
+                />
+              </div>
+            )}
           </div>
 
+        
           <div className="flex justify-end space-x-4 mt-4">
             <button
               className="bg-gray-500 text-white px-4 py-2 rounded"
@@ -506,17 +546,20 @@ function PublicarPage() {
 
           {/* Componente de vista previa */}
           <Preview
-            text={content ? content : ""}
-            media={mediaFiles ? mediaFiles.url : ""}
-            mediaType={mediaFiles ? mediaFiles.type : ""}
-            selectedNetwork={selectedNetwork}
-            selectedSocialAccountName={selectedSocialAccountName}
-          />
+          text={content || ""}
+          media={mediaFiles.map((file) => file.url)} // Pasa un array de URLs
+          mediaType={mediaFiles.length > 0 && (mediaFiles[0].type === 'video' || mediaFiles[0].type === 'image') 
+            ? mediaFiles[0].type 
+            : null}
+          selectedNetwork={isValidNetwork(selectedNetwork) ? selectedNetwork : 'facebook'} // Default to 'facebook'
+        />
         </div>
       </div>
     </div>
   );
 }
+const isValidNetwork = (network: string): network is 'facebook' | 'instagram' | 'tiktok' =>
+  ['facebook', 'instagram', 'tiktok'].includes(network);
 
 export default function Page() {
   return (
@@ -525,3 +568,14 @@ export default function Page() {
     </Suspense>
   );
 }
+
+const formatDateForInput = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
