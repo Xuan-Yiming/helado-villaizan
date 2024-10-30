@@ -101,8 +101,19 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
         }
       }
     };
+
+    const fetchSocialAccounts = async () => {
+      try {
+        const accounts = await load_all_social_accounts(); // Llamada para cargar los usuarios
+        setSocialAccounts(accounts); // Actualizamos el estado con los usuarios cargados
+      } catch (error) {
+        console.error("Error fetching social accounts:", error);
+      }
+    };
   
     fetchPosts();
+    fetchSocialAccounts(); 
+
   }, [id, searchParams]);  
   
   const generateUniqueID = () => {
@@ -188,10 +199,6 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
       alert('No se pudo eliminar el archivo.');
     }
   };
-  
-  
-  
-  
 
   const handlePost = async () => {
     if (selectedAccount.length === 0) {
@@ -268,8 +275,6 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
     }
   };
   
-   
-
   const handleAccountSelect = (account: SocialAccount) => {
     if (selectedAccount.includes(account)) {
       setSelectedAccount(selectedAccount.filter((acc) => acc !== account));
