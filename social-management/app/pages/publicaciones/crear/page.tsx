@@ -132,14 +132,26 @@ function PublicarPage() {
     const files = event.target.files;
   
     if (files) {
-      const maxSizeInBytes = 4.0 * 1024 * 1024; // 4.0MB
+      const maxSizeInBytes = 4.0 * 1024 * 1024; // 4.0MB para ambos tipos
+      const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/jfif']; // Tipos permitidos para imágenes
   
       const newFiles = Array.from(files)
         .map((file) => {
+          if (mediaType === 'image') {
+            // Verificar formato de imagen
+            if (!allowedImageTypes.includes(file.type)) {
+              alert(`El archivo ${file.name} no es un formato de imagen permitido.`);
+              return null;
+            }
+          }
+  
+          // Verificar tamaño del archivo (4MB máximo)
           if (file.size > maxSizeInBytes) {
-            alert(`El archivo ${file.name} debe ser menor a 4.0MB`);
+            alert(`El archivo ${file.name} debe ser menor a 4.0MB.`);
             return null;
           }
+  
+          // Retornar objeto del archivo si pasa las validaciones
           return {
             id: generateUniqueID(),
             file,
@@ -150,28 +162,29 @@ function PublicarPage() {
         })
         .filter(Boolean) as MediaFILE[];
   
-      // Lógica para controlar la subida de imágenes
+      // Lógica para manejar imágenes
       if (mediaType === 'image') {
-        const totalImages = mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
+        const totalImages =
+          mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
   
         if (totalImages > 10) {
           alert('No puedes subir más de 10 imágenes.');
-          event.target.value = ''; // Restablecemos el input
+          event.target.value = ''; // Restablecer input
           return;
         }
   
         setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
         setDisableVideo(true); // Deshabilitar videos al subir imágenes
         setDisableTikTok(true); // Deshabilitar TikTok si hay imágenes
-      } 
-      // Lógica para subir videos
+      }
+      // Lógica para manejar videos
       else if (mediaType === 'video') {
         setMediaFiles([...newFiles]);
         setDisableImage(true); // Deshabilitar imágenes
         setDisableVideo(true); // Deshabilitar más videos
       }
   
-      event.target.value = ''; // Restablecemos el input
+      event.target.value = ''; // Restablecer input
     }
   };
   
@@ -229,116 +242,112 @@ function PublicarPage() {
   };
 
   const handlePost = async () => {
-
-    if (selectedNetwork.toLowerCase() === 'instagram' && (!mediaFiles || mediaFiles.length === 0)) {
+    if (
+      selectedNetwork.toLowerCase() === 'instagram' &&
+      (!mediaFiles || mediaFiles.length === 0)
+    ) {
       alert('Debes adjuntar al menos una imagen o video para publicar en Instagram.');
       return;
     }
-
+  
     if (selectedAccount.length === 0) {
-      alert("Por favor, selecciona al menos un usuario para publicar.");
+      alert('Por favor, selecciona al menos un usuario para publicar.');
       return;
     }
   
     // Verificación para publicaciones programadas
-    if (status === "programado") {
+    if (status === 'programado') {
       if (!postTime) {
-        alert("Por favor, selecciona una fecha y hora válidas.");
+        alert('Por favor, selecciona una fecha y hora válidas.');
         return;
       }
   
       const currentDate = new Date();
-      const scheduledDate = new Date(postTime); // postTime ya está asegurado de no ser undefined
+      const scheduledDate = new Date(postTime);
   
-      // Verificar que la fecha/hora programada sea al menos 10 minutos en el futuro
       const minValidDate = new Date(currentDate.getTime() + 10 * 60 * 1000);
   
       if (scheduledDate < minValidDate) {
-        alert(
-          "La fecha/hora programada debe ser al menos 10 minutos en el futuro. Corrige la fecha para continuar."
-        );
+        alert('La fecha/hora programada debe ser al menos 10 minutos en el futuro.');
         return;
       }
   
-      // Verificar que la fecha/hora programada no sea una fecha pasada
       if (scheduledDate < currentDate) {
-        alert("No puedes programar una publicación en una fecha pasada.");
+        alert('No puedes programar una publicación en una fecha pasada.');
         return;
       }
     }
-
+  
     if (!content?.trim() && mediaFiles.length === 0) {
-      alert("Debe haber al menos un archivo o contenido para publicar.");
+      alert('Debe haber al menos un archivo o contenido para publicar.');
       return;
     }
-
+  
     setLoading(true);
   
     try {
-      let uploadedMediaURLs: string[] = []; // Array para almacenar URLs subidas
+      let uploadedMediaURLs: string[] = [];
+      let successNetworks: string[] = []; // Redes sociales con publicación exitosa
   
-      // Subir archivos multimedia (imágenes o video)
+      // Subir archivos multimedia
       if (mediaFiles.length > 0) {
         for (const file of mediaFiles) {
-          const maxSizeInBytes = 4.0 * 1024 * 1024; // 4.0MB
+          const maxSizeInBytes = 4.0 * 1024 * 1024;
   
-          // Verificación segura del tamaño del archivo
           if (!file.file || file.file.size > maxSizeInBytes) {
             alert(`El archivo ${file.name} debe ser menor a 4.0MB o es inválido`);
-            continue; // Saltamos archivos inválidos
+            continue;
           }
   
-          const response = await fetch(
-            `/api/media/upload?filename=${file.name}`,
-            {
-              method: "POST",
-              body: file.file,
-            }
-          );
+          const response = await fetch(`/api/media/upload?filename=${file.name}`, {
+            method: 'POST',
+            body: file.file,
+          });
   
           const newBlob = await response.json();
-          console.log("Response:", newBlob.url);
-  
-          uploadedMediaURLs.push(newBlob.url); // Agregamos la URL al array
+          uploadedMediaURLs.push(newBlob.url);
         }
   
-        setMedia(uploadedMediaURLs); // Ajustamos para ser un array de URLs
+        setMedia(uploadedMediaURLs);
       }
-      
-      
-      // Determinar el tipo del post basado en los archivos subidos
-      const postType = mediaFiles.some((file) => file.type === "video") ? "video" : "image";
-
   
-      // Crear el post para cada cuenta seleccionada
+      const postType = mediaFiles.some((file) => file.type === 'video') ? 'video' : 'image';
+  
       for (const account of selectedAccount) {
         const newPost: Post = {
-          id: id || generateUniqueID(), // Generar ID si no existe
-          social_media: [account.red_social], // Ajustamos para ser un array
-          type: postType, // Usamos el tipo basado en los archivos subidos
+          id: id || generateUniqueID(),
+          social_media: [account.red_social],
+          type: postType,
           status,
-          thumbnail: uploadedMediaURLs.length > 0 ? uploadedMediaURLs[0] : undefined, // Alineado con el tipo Post
-          media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined, // Si existen URLs
+          thumbnail: uploadedMediaURLs.length > 0 ? uploadedMediaURLs[0] : undefined,
+          media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined,
           content,
-          post_time: postTime || new Date().toISOString(), // Usamos postTime correctamente
+          post_time: postTime || new Date().toISOString(),
         };
   
-        console.log("New Post:", newPost);
-        console.log("New Post JSON:", JSON.stringify(newPost));
-        await create_post(newPost); // Llamar a la función para crear el post
-        await publishToSocialMedia(account.red_social, newPost); // Publicar en la red social
+        await create_post(newPost);
+        const success = await publishToSocialMedia(account.red_social, newPost);
+  
+        if (success) {
+          successNetworks.push(account.red_social); // Agregar red exitosa
+        }
       }
   
-      //router.push("/pages/publicaciones"); // Redirigir a publicaciones
+      if (successNetworks.length > 0) {
+        setPostStatus(
+          `La publicación se ha realizado exitosamente en: ${successNetworks.join(' - ')}`
+        );
+      } else {
+        setPostStatus('No se pudo realizar la publicación en ninguna red social.');
+      }
     } catch (error) {
-      console.error("Error al intentar realizar la publicación:", error);
-      setPostStatus(
-        "Ocurrió un error al publicar en la(s) red(es) seleccionada(s)."
-      );
+      console.error('Error al intentar realizar la publicación:', error);
+      setPostStatus('Ocurrió un error al publicar en la(s) red(es) seleccionada(s).');
     } finally {
       setLoading(false);
     }
   };
+  
   
   const handleAccountSelect = (account: SocialAccount) => {
     const isTikTok = account.red_social.toLowerCase() === 'tiktok';
@@ -565,7 +574,7 @@ function PublicarPage() {
             <div className="mt-4">
               <p
                 className={`text-sm ${
-                  postStatus.includes("éxito")
+                  postStatus.includes("exitosamente")
                     ? "text-green-600"
                     : "text-red-600"
                 }`}
@@ -657,7 +666,7 @@ const formatDateForInput = (dateString: string) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-const publishToSocialMedia = async (network: string, post: Post) => {
+const publishToSocialMedia = async (network: string, post: Post): Promise<boolean> => {
   try {
     const response = await fetch(`/api/${network.toLowerCase()}/post`, {
       method: 'POST',
@@ -667,13 +676,17 @@ const publishToSocialMedia = async (network: string, post: Post) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Error al publicar en la red social');
+      console.error(`Error al publicar en ${network}:`, errorData);
+      return false; // Retorna false si hay un error
     }
 
     const data = await response.json();
     console.log(`Publicado en ${network} con éxito. ID: ${data.postId}`);
+    return true; // Retorna true si la publicación es exitosa
   } catch (error) {
     console.error(`Error al publicar en ${network}:`, error);
+    return false; // Retorna false si ocurre una excepción
   }
 };
+
 
