@@ -88,6 +88,7 @@ function PublicarPage() {
             setDisableVideo(true);  // Deshabilitar botón de video también
           } else if (loadedMediaFiles.length > 0) {
             setDisableVideo(true); // Deshabilitar solo video al subir imágenes
+            setDisableTikTok(true);
           }
   
           setPosts(data);
@@ -179,17 +180,44 @@ function PublicarPage() {
   
   const handleRemoveMedia = async (id: string, url: string) => {
     try {
+      // Verificar si la URL es parte de las originales y eliminar del servidor
+      if (originalMediaURLs.includes(url)) {
+        const response = await fetch('/api/media/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Error al eliminar el archivo del servidor.');
+        }
+        console.log(`Archivo con URL ${url} eliminado del servidor.`);
+  
+        await delete_media_by_url(url);
+        console.log(`Registro con URL ${url} eliminado de la base de datos.`);
+      }
+  
+      // Actualizar la lista de archivos locales
       const updatedMediaFiles = mediaFiles.filter((file) => file.id !== id);
       setMediaFiles(updatedMediaFiles);
   
       const hasVideo = updatedMediaFiles.some((file) => file.type === 'video');
       const hasImage = updatedMediaFiles.some((file) => file.type === 'image');
   
-      // Restablecer estados con base en los archivos restantes
-      setDisableImage(hasVideo); // Deshabilitar imágenes si queda un video
-      setDisableVideo(hasImage); // Deshabilitar videos si quedan imágenes
+      // Verificar si TikTok sigue seleccionado
+      const isTikTokSelected = selectedAccount.some(
+        (account) => account.red_social.toLowerCase() === 'tiktok'
+      );
+  
+      // Restablecer estados según los archivos restantes y selección de TikTok
+      if (!hasVideo) {
+        setDisableVideo(hasImage); // Deshabilitar videos si quedan imágenes
+        setDisableImage(isTikTokSelected || hasVideo); // Deshabilitar imágenes si TikTok sigue seleccionado o si hay videos
+      }
+  
       setDisableTikTok(hasImage); // Deshabilitar TikTok si quedan imágenes
   
+      // Liberar la URL si fue generada localmente
       const fileToRemove = mediaFiles.find((file) => file.id === id);
       if (fileToRemove) {
         URL.revokeObjectURL(fileToRemove.url);
@@ -199,6 +227,8 @@ function PublicarPage() {
       alert('No se pudo eliminar el archivo.');
     }
   };
+  
+  
   
   
 
