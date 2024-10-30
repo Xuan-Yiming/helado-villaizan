@@ -64,21 +64,23 @@ export default function CuentasCard({ user }: CuentasCardProps) {
         <div className="flex justify-between w-full md:w-auto">
           <div className="flex items-center">
             {user.photo && (
-              <Image
-                src={user.photo}
-                alt="Post image"
-                className="mt-4 md:mt-0 md:ml-4 border rounded-md"
-                width={50}
-                height={50}
-                loader={({ src }) => src} // Load image from URL
-              />
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-300 mr-4">
+                <Image
+                  src={user.photo}
+                  alt="User Photo"
+                  width={100}
+                  height={100}
+                  className="object-cover w-full h-full"
+                  loader={({ src }) => src}
+                />
+                </div>
             )}
           </div>
         </div>
 
         <div className="flex flex-col justify-between w-full md:w-auto">
           <p className="p-2 pb-0 space-x-4 font-bold">
-            {user.nombre}, {user.apellido} 
+            {user.nombre}, {user.apellido}
           </p>
           <div className="p-2 pt-0 text-xs text-gray-700">
             {user.username} - {user.role}
@@ -86,8 +88,12 @@ export default function CuentasCard({ user }: CuentasCardProps) {
         </div>
       </div>
 
-{/* buttons */}
+      {/* buttons */}
       <div className="flex items-center">
+        <Link href={`/pages/cuentas/empleados/crear?id=${user.id}`} className="flex items-center text-blue-500 hover:text-blue-700 ml-5">
+          <PencilSquareIcon className="h-5 w-5 mr-2" />
+          <div>Editar</div>
+        </Link>
         <button
           onClick={handleToggle}
           className={`flex items-center ${
