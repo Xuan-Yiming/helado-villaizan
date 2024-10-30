@@ -1,24 +1,19 @@
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
 
-import FacebookLogo from '@/app/ui/icons/facebook';
-import TiktokLogo from '@/app/ui/icons/tiktok';
-import InstagramLogo from '@/app/ui/icons/instagram';
+import FacebookLogo from "@/app/ui/icons/facebook";
+import TiktokLogo from "@/app/ui/icons/tiktok";
+import InstagramLogo from "@/app/ui/icons/instagram";
 
-import { Post } from '@/app/lib/types';
+import { Post } from "@/app/lib/types";
 
-import {  
-    ArrowTopRightOnSquareIcon 
-} from '@heroicons/react/24/solid'; 
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 
-import { 
-    PaperAirplaneIcon
-} 
-from '@heroicons/react/24/outline'; 
-import Link from 'next/link';
+import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 interface PostCardProps {
-    post:Post
+  post: Post;
 }
 
 export default function PostCard({ post }: PostCardProps) {

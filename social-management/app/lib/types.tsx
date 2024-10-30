@@ -1,3 +1,17 @@
+export type UserAccount = {
+  id: string;
+  username: string;
+  password: string;
+  nombre: string;
+  apellido: string;
+  role: string; // admin, social_manager, survy_creator
+  token?: string;
+  token_expiration_date?: Date;
+  active: boolean;
+  photo?:string;
+}
+
+
 export type SocialAccount = {
   id?: number;
   red_social: string;
@@ -43,7 +57,7 @@ export type Post = {
   id: string;
   social_media: string[]; //fb,ig,tk
   type: string; //video,photos
-  status: string; //publicado, programado, eliminado, borrador 
+  status: string; //publicado, programado, borrador 
   thumbnail?: string; //enlace
   media?: string[]; //enlace
   content?: string; //texto
