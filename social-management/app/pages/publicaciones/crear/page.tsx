@@ -222,11 +222,11 @@ function PublicarPage() {
       // Subir archivos multimedia (imágenes o video)
       if (mediaFiles.length > 0) {
         for (const file of mediaFiles) {
-          const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
+          const maxSizeInBytes = 4.0 * 1024 * 1024; // 4.0MB
   
           // Verificación segura del tamaño del archivo
           if (!file.file || file.file.size > maxSizeInBytes) {
-            alert(`El archivo ${file.name} debe ser menor a 4.5MB o es inválido`);
+            alert(`El archivo ${file.name} debe ser menor a 4.0MB o es inválido`);
             continue; // Saltamos archivos inválidos
           }
   
@@ -246,13 +246,11 @@ function PublicarPage() {
   
         setMedia(uploadedMediaURLs); // Ajustamos para ser un array de URLs
       }
-  
+      
+      
       // Determinar el tipo del post basado en los archivos subidos
-      const postType = mediaFiles.some((file) =>
-        file.url.endsWith(".mp4") || file.url.endsWith(".mov")
-      )
-        ? "video"
-        : "image"; // Si hay un video, será "video"; de lo contrario, "image"
+      const postType = mediaFiles.some((file) => file.type === "video") ? "video" : "image";
+
   
       // Crear el post para cada cuenta seleccionada
       for (const account of selectedAccount) {
@@ -582,20 +580,10 @@ const formatDateForInput = (dateString: string) => {
 
 const publishToSocialMedia = async (network: string, post: Post) => {
   try {
-    // Esto es para arreglar momentaneamente acá el error de que pasa de video a image el type
-    const adjustedPost = {
-      ...post,
-      type: post.media && post.media.length > 0 && post.media[0].endsWith('.mp4')
-        ? 'video'
-        : 'image', // Verificamos si es video o imagen
-    };
-
-    console.log("Post ajustado para enviar:", adjustedPost); // LOG para verificar
-
     const response = await fetch(`/api/${network.toLowerCase()}/post`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(adjustedPost),
+      body: JSON.stringify(post),
     });
 
     if (!response.ok) {
