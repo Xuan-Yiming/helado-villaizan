@@ -419,6 +419,8 @@ export async function add_social_account(social_account: SocialAccount): Promise
 }
 
 export async function logout_social_account(red_social: string): Promise<void> {
+    console.log("SE INTENTÓ BORRAR REDES SOCIALES")
+    /*
     await connectToDatabase();
     if (!client) {
         throw new Error('Database client is not initialized');
@@ -426,6 +428,7 @@ export async function logout_social_account(red_social: string): Promise<void> {
     await client.sql`
         DELETE FROM social_accounts WHERE red_social = ${red_social}
     `;
+    */
 }
 
 export async function get_social_account(red_social: string): Promise<SocialAccount | null> {
