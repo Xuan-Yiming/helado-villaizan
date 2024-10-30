@@ -15,7 +15,7 @@ import InstagramLogo from "@/app/ui/icons/instagram";
 import TiktokLogo from "@/app/ui/icons/tiktok";
 import Preview from "@/app/ui/publicar/preview";
 
-import { load_all_social_accounts } from "@/app/lib/database";
+import { delete_media_by_url, load_all_social_accounts } from "@/app/lib/database";
 import { load_post_by_id } from "@/app/lib/database";
 import { create_post } from "@/app/lib/database";
 
@@ -150,14 +150,25 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
   
   const handleRemoveMedia = async (id: string, url: string) => {
     try {
-      // Llamada al backend para eliminar el archivo de S3
-      await fetch(`/api/media/delete`, {
+      // Llamada a la API para eliminar el archivo del servicio de Vercel
+      const response = await fetch('/api/media/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       });
   
-      // Eliminar del estado
+      if (!response.ok) {
+        throw new Error('Error al eliminar el archivo del servidor.');
+      }
+  
+      console.log(`Archivo con URL ${url} eliminado del servidor.`);
+  
+      // Llamada a la base de datos para eliminar el registro
+      await delete_media_by_url(url);
+  
+      console.log(`Registro con URL ${url} eliminado de la base de datos.`);
+  
+      // Eliminar del estado local
       const updatedMediaFiles = mediaFiles.filter((file) => file.id !== id);
       setMediaFiles(updatedMediaFiles);
   
@@ -174,9 +185,10 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
       }
     } catch (error) {
       console.error('Error eliminando el archivo:', error);
-      alert('No se pudo eliminar el archivo del servidor.');
+      alert('No se pudo eliminar el archivo.');
     }
   };
+  
   
   
   
