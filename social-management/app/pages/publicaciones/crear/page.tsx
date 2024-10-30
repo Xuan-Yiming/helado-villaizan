@@ -40,14 +40,14 @@ function PublicarPage() {
   const [selectedSocialAccountName, setSelectedSocialAccountName] =
     useState<string>("");
   // PostDetail
-// PostDetail - Estados alineados con el tipo Post
-const [socialMedia, setSocialMedia] = useState<string[]>([]); // Es un array
-const [type, setType] = useState<string>("video"); 
-const [status, setStatus] = useState<string>("publicado"); 
-const [thumbnail, setThumbnail] = useState<string | undefined>(undefined); 
-const [media, setMedia] = useState<string[] | undefined>(undefined); 
-const [content, setContent] = useState<string | undefined>(undefined); 
-const [postTime, setPostTime] = useState<string | undefined>(undefined); 
+  const [originalMediaURLs, setOriginalMediaURLs] = useState<string[]>([]); // URLs originales del backend
+  const [socialMedia, setSocialMedia] = useState<string[]>([]); // Es un array
+  const [type, setType] = useState<string>("video"); 
+  const [status, setStatus] = useState<string>("publicado"); 
+  const [thumbnail, setThumbnail] = useState<string | undefined>(undefined); 
+  const [media, setMedia] = useState<string[] | undefined>(undefined); 
+  const [content, setContent] = useState<string | undefined>(undefined); 
+  const [postTime, setPostTime] = useState<string | undefined>(undefined); 
 
   const getLogo = (name: string) => {
     switch (name.toLowerCase()) {
@@ -80,7 +80,9 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
           }));
   
           setMediaFiles(loadedMediaFiles);
-  
+          // Guardamos las URLs originales en el estado
+          setOriginalMediaURLs(data.media || []);
+          
           // Ajustamos los estados según el tipo
           if (loadedMediaFiles.some((file) => file.type === "video")) {
             setIsVideoSelected(true);
@@ -164,15 +166,19 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
   
   const handleRemoveMedia = async (id: string, url: string) => {
     try {
-      // Llamada a la API para eliminar el archivo del servicio de Vercel
-      const response = await fetch('/api/media/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Error al eliminar el archivo del servidor.');
+      // Verificar si la URL es parte de las originales
+      if (originalMediaURLs.includes(url)) {
+        // Llamada a la API para eliminar el archivo del servicio de Vercel
+        const response = await fetch('/api/media/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al eliminar el archivo del servidor.');
+        }
+        console.log(`Archivo con URL ${url} eliminado del servidor.`);
       }
   
       console.log(`Archivo con URL ${url} eliminado del servidor.`);
@@ -354,11 +360,7 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
                       className="w-16 h-16 object-cover rounded"
                     />
                   ) : (
-                    <video
-                      src={file.url}
-                      className="w-16 h-16 object-cover rounded"
-                      controls
-                    />
+                    <video src={file.url} className="w-16 h-16 object-cover rounded" />
                   )}
                   <button
                     onClick={() => handleRemoveMedia(file.id, file.url)}
@@ -544,13 +546,13 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
 
           {/* Componente de vista previa */}
           <Preview
-            text={content || ""}
-            media={mediaFiles.map((file) => file.url)} // Pasa un array de URLs
-            mediaType={mediaFiles.length > 0 && (mediaFiles[0].type === 'video' || mediaFiles[0].type === 'image') 
-              ? mediaFiles[0].type 
-              : null}
-            selectedNetwork={isValidNetwork(selectedNetwork) ? selectedNetwork : 'facebook'} // Default to 'facebook'
-          />
+          text={content || ""}
+          media={mediaFiles.map((file) => file.url)} // Pasa un array de URLs
+          mediaType={mediaFiles.length > 0 && (mediaFiles[0].type === 'video' || mediaFiles[0].type === 'image') 
+            ? mediaFiles[0].type 
+            : null}
+          selectedNetwork={isValidNetwork(selectedNetwork) ? selectedNetwork : 'facebook'} // Default to 'facebook'
+        />
         </div>
       </div>
     </div>
