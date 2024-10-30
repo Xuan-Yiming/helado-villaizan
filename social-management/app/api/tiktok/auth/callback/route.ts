@@ -44,11 +44,23 @@ export async function GET(request: Request) {
             console.log('TikTok Access Token:', access_token);
             console.log('TikTok Refresh Token:', refresh_token)
             // Example: Set a cookie with the TikTok account link (or store in database)
+            
+            //get username
+            const userInfoResponse = await axios.get(process.env.TIKTOK_API_URL + '/user/info/?fields=username', {
+                headers: {
+                    'Authorization': `Bearer ${access_token}`
+                }
+            });
+    
+            const username = userInfoResponse.data.data.user.username;
+            console.log('Username:', username);
+            console.log('TikTok User Info Response:', userInfoResponse.data);
 
             // Create the social account object
             const socialAccount: SocialAccount = {
                 red_social: 'tiktok',
                 tipo_autenticacion: 'OAuth2',
+                usuario: username,
                 open_id: open_id,
                 token_autenticacion: access_token,
                 refresh_token: refresh_token,

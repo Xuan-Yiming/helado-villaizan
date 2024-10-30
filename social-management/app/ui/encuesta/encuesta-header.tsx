@@ -12,6 +12,8 @@ export default function EncuestaHeader({ encuesta, onUpdate }: EncuestaHeaderPro
     const [startDate, setStartDate] = useState(encuesta?.start_date || '');
     const [endDate, setEndDate] = useState(encuesta?.end_date || '');
 
+    const today = new Date().toISOString().split('T')[0];
+
     useEffect(() => {
         // console.log('head: ',encuesta?.title, encuesta?.description, encuesta?.start_date, encuesta?.end_date)
         onUpdate({
@@ -44,11 +46,12 @@ export default function EncuestaHeader({ encuesta, onUpdate }: EncuestaHeaderPro
                 <div className="flex justify-between mb-4">
                     <p className="font-bold"> Fecha de encuesta </p>
                     <div className="flex items-center">
-                        <input
+                    <input
                             type="date"
                             placeholder="Start Date"
                             className="w-1/2 p-2 mr-2"
                             required
+                            min={today}
                             defaultValue={startDate ? new Date(startDate).toISOString().split('T')[0] : ''}
                             onChange={(e) => setStartDate(e.target.value)}
                         />
@@ -58,6 +61,7 @@ export default function EncuestaHeader({ encuesta, onUpdate }: EncuestaHeaderPro
                             placeholder="End Date"
                             className="w-1/2 p-2 ml-2"
                             required
+                            min={startDate || today}
                             defaultValue={endDate ? new Date(endDate).toISOString().split('T')[0] : ''}
                             onChange={(e) => setEndDate(e.target.value)}
                         />

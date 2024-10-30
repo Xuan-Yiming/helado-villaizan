@@ -12,6 +12,7 @@ export async function GET(req: Request) {
         'video.upload',
         'video.publish',
         'video.list',
+        'user.info.profile',
     ];
 
     // TikTok's OAuth URL to initiate login

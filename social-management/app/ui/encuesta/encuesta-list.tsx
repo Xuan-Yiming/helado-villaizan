@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Encuesta } from '@/app/lib/types';
 import EncuestaCard from './encuesta-card';
 import { useEffect, useState } from 'react';
-import { useInView } from 'react-intersection-observer';
 
-import { load_all_survey } from '@/app/lib/data';
+import { load_all_survey } from '@/app/lib/database';
 
 interface EncuestaListProps {
     initialEncuestas: Encuesta[];
@@ -20,14 +18,17 @@ export default function EncuestaList({
 }: EncuestaListProps) {
     const [offset, setOffset] = useState(0);
     const [encuestas, setEncuestas] = useState<Encuesta[]>(initialEncuestas);
-    const { ref, inView } = useInView();
+    const [isLoading, setIsLoading] = useState(false);
 
     const loadMoreEncuestas = async () => {
+        setIsLoading(true);
         try {
             const apiEncuestas = await load_all_survey(
                 offset,
                 NUMBER_OF_POSTS_TO_FETCH,
-                estadoFilter
+                estadoFilter,
+                false,
+                false
             );
             if (Array.isArray(apiEncuestas)) {
                 setEncuestas(encuestas => [...encuestas, ...apiEncuestas]);
@@ -37,23 +38,34 @@ export default function EncuestaList({
             }
         } catch (error) {
             console.error('Error loading more encuestas:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        if (inView) {
-            loadMoreEncuestas();
-        }
-    }, [inView]);
+        // Clear encuestas and reset offset when estadoFilter changes
+        setEncuestas([]);
+        setOffset(0);
+        loadMoreEncuestas();
+    }, [estadoFilter]);
 
     return (
-        <ul className="mt-6 flex flex-col gap-2 list-none p-0 min-w-full">
-            {encuestas.map(encuesta => (
-                <EncuestaCard key={encuesta.id} encuesta={encuesta} />
-            ))}
-            <div ref={ref} className="flex justify-center mt-10">
-                Loading...
+        <div>
+            <ul className="mt-6 flex flex-col gap-2 list-none p-0 min-w-full">
+                {encuestas.map(encuesta => (
+                    <EncuestaCard key={encuesta.id} encuesta={encuesta} />
+                ))}
+            </ul>
+            <div className="flex justify-center mt-10">
+                <button
+                    onClick={loadMoreEncuestas}
+                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Loading...' : 'Load More'}
+                </button>
             </div>
-        </ul>
+        </div>
     );
 }

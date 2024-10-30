@@ -1,3 +1,17 @@
+export type UserAccount = {
+  id: string;
+  username: string;
+  password: string;
+  nombre: string;
+  apellido: string;
+  role: string; // admin, social_manager, survy_creator
+  token?: string;
+  token_expiration_date?: Date;
+  active: boolean;
+  photo?:string;
+}
+
+
 export type SocialAccount = {
   id?: number;
   red_social: string;
@@ -18,7 +32,7 @@ export type SocialAccount = {
 
 export type MediaFILE = {
   id: string;
-  file: File;
+  file: File | null;
   url: string;
   type: string;
   name: string;
@@ -41,16 +55,13 @@ export type User = {
 
 export type Post = {
   id: string;
-  social_media: string; //fb,ig,tk
+  social_media: string[]; //fb,ig,tk
   type: string; //video,photos
-  status: string; //publicado, programado, eliminado, borrador 
-  preview?: string; //enlace
-  media?: string; //enlace
+  status: string; //publicado, programado, borrador 
+  thumbnail?: string; //enlace
+  media?: string[]; //enlace
   content?: string; //texto
   post_time?: string; 
-  link?: string; //enlace al post
-  is_programmed: boolean;
-  programmed_post_time?: string;
 }
 
 export type calendarEvent = {

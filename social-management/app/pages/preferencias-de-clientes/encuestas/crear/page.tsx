@@ -16,7 +16,6 @@ function EncuestaPage() {
     const id = searchParams.get('id');
     const router = useRouter();
     
-    const [isActive, setIsActive] = useState(true);
     const [encuesta, setEncuesta] = useState<Encuesta | null>(null);
 
     useEffect(() => {
@@ -33,7 +32,7 @@ function EncuestaPage() {
                 return;
             }
             try {
-                const data = await load_survey_by_id(id);
+                const data = await load_survey_by_id(id,false);
                 console.log('Encuesta:', data);
                 setEncuesta(data);
             } catch (error) {
@@ -103,12 +102,6 @@ function EncuestaPage() {
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Detalle de la Encuesta</h1>
 
-                <button
-                    onClick={() => setIsActive(!isActive)}
-                    className={`flex items-center ml-5 rounded px-4 py-2 ${isActive ? 'bg-black text-white' : 'border border-black bg-transparent text-black'}`}
-                >
-                    {isActive ? 'Desactivar' : 'Activar'}
-                </button>
             </div>
 
             <form className="p-4 mx-auto sm:w-full lg:w-1/2" onSubmit={handleSubmit}>

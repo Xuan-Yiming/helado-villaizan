@@ -8,6 +8,8 @@ import Link from 'next/link';
 // Registrar el idioma español para DatePicker (descomentarlo si deseas activar el idioma español)
 // import { es } from 'date-fns/locale';
 // registerLocale('es', es);
+// Registrar el idioma español para DatePicker
+//registerLocale('es', es);
 
 const SalesDataItem = () => {
     const [startDate, setStartDate] = useState<Date | null>(new Date());
