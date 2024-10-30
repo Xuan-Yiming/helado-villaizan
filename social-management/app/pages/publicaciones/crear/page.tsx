@@ -227,10 +227,6 @@ function PublicarPage() {
       alert('No se pudo eliminar el archivo.');
     }
   };
-  
-  
-  
-  
 
   const handlePost = async () => {
     if (selectedAccount.length === 0) {
@@ -238,6 +234,33 @@ function PublicarPage() {
       return;
     }
   
+    // Verificación para publicaciones programadas
+    if (status === "programado") {
+      if (!postTime) {
+        alert("Por favor, selecciona una fecha y hora válidas.");
+        return;
+      }
+  
+      const currentDate = new Date();
+      const scheduledDate = new Date(postTime); // postTime ya está asegurado de no ser undefined
+  
+      // Verificar que la fecha/hora programada sea al menos 10 minutos en el futuro
+      const minValidDate = new Date(currentDate.getTime() + 10 * 60 * 1000);
+  
+      if (scheduledDate < minValidDate) {
+        alert(
+          "La fecha/hora programada debe ser al menos 10 minutos en el futuro. Corrige la fecha para continuar."
+        );
+        return;
+      }
+  
+      // Verificar que la fecha/hora programada no sea una fecha pasada
+      if (scheduledDate < currentDate) {
+        alert("No puedes programar una publicación en una fecha pasada.");
+        return;
+      }
+    }
+
     setLoading(true);
   
     try {
