@@ -104,8 +104,11 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
 
     const fetchSocialAccounts = async () => {
       try {
-        const accounts = await load_all_social_accounts(); // Llamada para cargar los usuarios
-        setSocialAccounts(accounts); // Actualizamos el estado con los usuarios cargados
+        const socialAccounts = await load_all_social_accounts(); // Llamada a la BD
+        const filteredSocialAccounts = socialAccounts.filter(
+          (account) => account.red_social.toLowerCase() !== "google" // Filtro de Google
+        );
+        setSocialAccounts(filteredSocialAccounts); // Actualizamos el estado con las cuentas filtradas
       } catch (error) {
         console.error("Error fetching social accounts:", error);
       }
