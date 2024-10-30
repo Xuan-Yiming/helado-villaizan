@@ -353,7 +353,19 @@ export async function load_programmed_posts(): Promise<Post[]> {
 
   return result.rows as Post[];
 }
-// encuestas
+
+export async function delete_media_by_url(url: string): Promise<void> {
+    await connectToDatabase();
+    if (!client) {
+        throw new Error('Database client is not initialized');
+    }
+
+    await client.sql`
+        DELETE FROM media WHERE link = ${url}
+    `;
+}
+
+// ENCUESTAS
 export async function load_all_survey(
   offset: number,
   limit: number,
@@ -608,7 +620,7 @@ export async function is_survey_available(surveyId: string): Promise<boolean> {
   return result.rows.length > 0;
 }
 
-//cuentas
+// SOCIAL ACCOUNTS
 export async function load_all_social_accounts(): Promise<SocialAccount[]> {
   await connectToDatabase();
   if (!client) {
