@@ -44,7 +44,7 @@ const Dashboard = () => {
   // Función para obtener la cantidad total de ventas desde la API
   const fetchTotalVentas = async () => {
     try {
-      const response = await axios.get(`https://villaizan-social.onrender.com/cantidades-totales/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
+      const response = await axios.get(`http://villaizan-social.onrender.com/cantidades-totales/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
       setTotalVentas(response.data.total_ventas); // Suponiendo que la API devuelve { total_ventas: <número> }
     } catch (error) {
       console.error("Error fetching total ventas:", error);
@@ -55,7 +55,7 @@ const Dashboard = () => {
   const fetchBarData = async () => {
     try {
       if (startDate && endDate) {
-      const response = await axios.get(`https://villaizan-social.onrender.com/ventas-totales/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
+      const response = await axios.get(`https://villaizan-social.onrender.com/ventas-por-producto/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
       // Formatear los datos según la estructura de la API
       const formattedData = response.data.map((item: ProductoData) => ({
         name: item.id_producto, // Utiliza 'id_producto' para el eje X
