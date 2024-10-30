@@ -261,6 +261,11 @@ function PublicarPage() {
       }
     }
 
+    if (!content?.trim() && mediaFiles.length === 0) {
+      alert("Debe haber al menos un archivo o contenido para publicar.");
+      return;
+    }
+
     setLoading(true);
   
     try {
