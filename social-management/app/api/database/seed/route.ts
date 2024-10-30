@@ -109,6 +109,23 @@ async function seedDatabase() {
     );
   `;
 
+  // create user account table
+  await client.sql`
+    CREATE TABLE IF NOT EXISTS user_accounts (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      username VARCHAR(255) NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      nombre VARCHAR(255),
+      apellido VARCHAR(255),
+      role VARCHAR(255) NOT NULL,
+      token TEXT,
+      token_expiration_date TIMESTAMP,
+      active BOOLEAN
+    );
+
+        ALTER TABLE user_accounts
+    ADD COLUMN photo VARCHAR(255);
+  `;
       
 
   // Insert initial data (example)
