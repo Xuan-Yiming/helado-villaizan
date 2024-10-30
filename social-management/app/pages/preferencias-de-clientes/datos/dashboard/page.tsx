@@ -4,6 +4,7 @@ import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell,
 } from 'recharts';
 import axios from 'axios';
+import { useSearchParams } from 'next/navigation';
 
 interface ProductoData {
   id_producto: string;
@@ -30,20 +31,38 @@ const dataPie = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
+  const searchParams = useSearchParams();
   // Estado para almacenar los datos del gráfico de barras
   const [barData, setBarData] = useState([]);
+  const [totalVentas, setTotalVentas] = useState<number | null>(null); // Estado para cantidad de ventas
+
+
+  // Obtener las fechas de los parámetros de consulta
+  const startDate = searchParams.get('startDate');
+  const endDate = searchParams.get('endDate');
+
+  // Función para obtener la cantidad total de ventas desde la API
+  const fetchTotalVentas = async () => {
+    try {
+      const response = await axios.get(`https://villaizan-social.onrender.com/cantidades-totales/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
+      setTotalVentas(response.data.total_ventas); // Suponiendo que la API devuelve { total_ventas: <número> }
+    } catch (error) {
+      console.error("Error fetching total ventas:", error);
+    }
+  };
 
   // Función para obtener datos de la API
   const fetchBarData = async () => {
     try {
-      const response = await axios.get('https://villaizan-social.onrender.com/ventas-por-producto/');
+      if (startDate && endDate) {
+      const response = await axios.get(`https://villaizan-social.onrender.com/ventas-totales/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
       // Formatear los datos según la estructura de la API
       const formattedData = response.data.map((item: ProductoData) => ({
         name: item.id_producto, // Utiliza 'id_producto' para el eje X
         value: item.total_ventas, // Utiliza 'total_ventas' para el eje Y
       }));
-      
       setBarData(formattedData); // Actualiza el estado con los datos formateados
+    }
     } catch (error) {
       console.error("Error fetching bar chart data:", error);
     }
@@ -51,22 +70,26 @@ const Dashboard = () => {
 
   // useEffect para obtener los datos de la API cuando el componente se monta
   useEffect(() => {
+    fetchTotalVentas();
     fetchBarData();
-  }, []);
+  }, [startDate, endDate]); 
 
   return (
     <div className="container mx-auto p-4">
       <div className="bg-green-200 rounded-lg p-4 mb-6">
         <div className="flex items-center">
           <div className="bg-green-500 rounded-full h-4 w-4 mr-2"></div>
-          <h2 className="font-bold text-xl">Temporada Verano 2024 (Enero 01, 2024 - Abril 01, 2024)</h2>
+          <h2 className="font-bold text-xl">Procesamiento de Datos de Ventas
+             ({startDate ? startDate : "Fecha de inicio no disponible"} - {endDate ? endDate : "Fecha de fin no disponible"})</h2>
         </div>
         <p className="text-gray-600">Data procesada</p>
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-red-100 rounded-lg p-4 text-center">
-          <p className="text-red-500 font-bold text-2xl">7,265</p>
+          <p className="text-red-500 font-bold text-2xl">
+          {totalVentas !== null ? totalVentas.toLocaleString() : "Cargando..."}
+          </p>
           <p className="text-gray-600">Cantidad de ventas</p>
         </div>
         <div className="bg-blue-100 rounded-lg p-4 text-center">
