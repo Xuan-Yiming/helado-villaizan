@@ -262,7 +262,7 @@ function PublicarPage() {
           social_media: [account.red_social], // Ajustamos para ser un array
           type: postType, // Usamos el tipo basado en los archivos subidos
           status,
-          thumbnail, // Alineado con el tipo Post
+          thumbnail: uploadedMediaURLs.length > 0 ? uploadedMediaURLs[0] : undefined, // Alineado con el tipo Post
           media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined, // Si existen URLs
           content,
           post_time: postTime || new Date().toISOString(), // Usamos postTime correctamente
