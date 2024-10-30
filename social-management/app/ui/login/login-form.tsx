@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
+
 export default function LoginForm() {
 
   const [email, setEmail] = useState('');
@@ -22,6 +23,7 @@ export default function LoginForm() {
       e.preventDefault();
       setError('');
       try {
+
           const response = await axios.post('/api/auth/login', { email, password });
           if (response.data.success) {
               router.push('/pages');
