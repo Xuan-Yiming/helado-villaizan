@@ -18,35 +18,107 @@ export async function POST(req: Request) {
 
     let mediaIds: string[] = [];
 
-    // Subir cada imagen/vídeo si hay medios asociados
+    // Manejo de Videos
+    if (post.type === 'video' && post.media && post.media.length > 0) {
+      const videoUrl = post.media[0]; // Asumimos que hay un solo video
+      console.log("Subiendo video:", videoUrl);
+
+      const formData = new FormData();
+      formData.append('file_url', videoUrl);
+      formData.append('access_token', accessToken);
+      if (post.content) {
+        formData.append('description', post.content);
+      }
+
+      const videoResponse = await fetch(
+        `https://graph-video.facebook.com/v20.0/${pageId}/videos`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const videoData = await videoResponse.json();
+
+      if (!videoData.id) {
+        console.error('Error al subir video:', videoData);
+        throw new Error('Error al subir video a Facebook');
+      }
+
+      console.log(`Video subido con éxito. ID: ${videoData.id}`);
+      return new Response(
+        JSON.stringify({ success: true, postId: videoData.id }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Manejo de Imágenes
     if (post.media && post.media.length > 0) {
       for (const mediaUrl of post.media) {
+        console.log("Subiendo imagen:", mediaUrl);
+
+        const formData = new FormData();
+        formData.append('url', mediaUrl);
+        formData.append('published', 'false');
+        formData.append('access_token', accessToken);
+
         const mediaResponse = await fetch(
           `https://graph.facebook.com/v20.0/${pageId}/photos`,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              url: mediaUrl,
-              published: false, // No se publica inmediatamente
-              access_token: accessToken,
-            }),
+            body: formData,
           }
         );
 
         const mediaData = await mediaResponse.json();
 
         if (!mediaData.id) {
-          console.error('Error al subir media:', mediaData);
-          throw new Error('Error al subir media a Facebook');
+          console.error('Error al subir imagen:', mediaData);
+          throw new Error('Error al subir imagen a Facebook');
         }
 
-        mediaIds.push(mediaData.id); // Guardar los IDs de los medios subidos
+        mediaIds.push(mediaData.id); // Guardar los IDs de las imágenes subidas
       }
+
+      console.log(`Imágenes subidas con éxito. IDs: ${mediaIds}`);
+
+      // Crear la publicación en el feed con las imágenes subidas
+      const postResponse = await fetch(
+        `https://graph.facebook.com/v20.0/${pageId}/feed`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: post.content,
+            access_token: accessToken,
+            attached_media: mediaIds.map((id) => ({ media_fbid: id })),
+          }),
+        }
+      );
+
+      const postData = await postResponse.json();
+
+      if (!postData.id) {
+        console.error('Error al publicar en Facebook:', postData);
+        throw new Error('Error al publicar en Facebook');
+      }
+
+      console.log(`Publicación realizada con éxito. ID: ${postData.id}`);
+
+      return new Response(
+        JSON.stringify({ success: true, postId: postData.id }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    // Crear la publicación en Facebook
-    const postResponse = await fetch(
+    // Publicación de solo texto
+    const textPostResponse = await fetch(
       `https://graph.facebook.com/v20.0/${pageId}/feed`,
       {
         method: 'POST',
@@ -54,30 +126,34 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           message: post.content,
           access_token: accessToken,
-          attached_media: mediaIds.map((id) => ({ media_fbid: id })),
         }),
       }
     );
 
-    const postData = await postResponse.json();
+    const textPostData = await textPostResponse.json();
 
-    if (!postData.id) {
-      console.error('Error al publicar en Facebook:', postData);
-      throw new Error('Error al publicar en Facebook');
+    if (!textPostData.id) {
+      console.error('Error al publicar texto:', textPostData);
+      throw new Error('Error al publicar solo texto en Facebook');
     }
 
-    console.log(`Publicación realizada con éxito. ID: ${postData.id}`);
+    console.log(`Publicación de texto realizada con éxito. ID: ${textPostData.id}`);
 
-    return new Response(JSON.stringify({ success: true, postId: postData.id }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
+    return new Response(
+      JSON.stringify({ success: true, postId: textPostData.id }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
-    return new Response(JSON.stringify({ error: 'Error al publicar en Facebook' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: 'Error al procesar la solicitud' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }

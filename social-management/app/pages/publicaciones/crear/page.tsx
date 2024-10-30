@@ -582,10 +582,20 @@ const formatDateForInput = (dateString: string) => {
 
 const publishToSocialMedia = async (network: string, post: Post) => {
   try {
+    // Esto es para arreglar momentaneamente acá el error de que pasa de video a image el type
+    const adjustedPost = {
+      ...post,
+      type: post.media && post.media.length > 0 && post.media[0].endsWith('.mp4')
+        ? 'video'
+        : 'image', // Verificamos si es video o imagen
+    };
+
+    console.log("Post ajustado para enviar:", adjustedPost); // LOG para verificar
+
     const response = await fetch(`/api/${network.toLowerCase()}/post`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(post),
+      body: JSON.stringify(adjustedPost),
     });
 
     if (!response.ok) {
@@ -599,3 +609,4 @@ const publishToSocialMedia = async (network: string, post: Post) => {
     console.error(`Error al publicar en ${network}:`, error);
   }
 };
+
