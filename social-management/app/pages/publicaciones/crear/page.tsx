@@ -544,17 +544,20 @@ const [postTime, setPostTime] = useState<string | undefined>(undefined);
 
           {/* Componente de vista previa */}
           <Preview
-            text={content ? content : ""}
-            media={mediaFiles ? mediaFiles.url : ""}
-            mediaType={mediaFiles ? mediaFiles.type : ""}
-            selectedNetwork={selectedNetwork}
-            selectedSocialAccountName={selectedSocialAccountName}
+            text={content || ""}
+            media={mediaFiles.map((file) => file.url)} // Pasa un array de URLs
+            mediaType={mediaFiles.length > 0 && (mediaFiles[0].type === 'video' || mediaFiles[0].type === 'image') 
+              ? mediaFiles[0].type 
+              : null}
+            selectedNetwork={isValidNetwork(selectedNetwork) ? selectedNetwork : 'facebook'} // Default to 'facebook'
           />
         </div>
       </div>
     </div>
   );
 }
+const isValidNetwork = (network: string): network is 'facebook' | 'instagram' | 'tiktok' =>
+  ['facebook', 'instagram', 'tiktok'].includes(network);
 
 export default function Page() {
   return (
