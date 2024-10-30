@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { MediaFILE, UserAccount } from "@/app/lib/types";
 import Image from "next/image";
 import { PutBlobResult } from "@vercel/blob";
@@ -13,7 +13,7 @@ import { createOrUpdateUserAccount } from "@/app/lib/database";
 import { useEffect } from "react";
 import { get_user_by_id } from "@/app/lib/database";
 
-export default function CreateUserPage() {
+function UserPage() {
   const [mediaFiles, setMediaFiles] = useState<MediaFILE>();
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -32,8 +32,6 @@ export default function CreateUserPage() {
     photo:
       "https://bap4ouaenh9ktlwp.public.blob.vercel-storage.com/default-profile-account-unknown-icon-black-silhouette-free-vector-lOfodT0L1kfsKmIpBeof3vKeWBhmr6.jpg",
   });
-
-
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -277,5 +275,13 @@ export default function CreateUserPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+      <Suspense fallback={<div>Loading...</div>}>
+          <UserPage />
+      </Suspense>
   );
 }
