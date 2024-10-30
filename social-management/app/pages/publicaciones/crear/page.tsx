@@ -24,8 +24,8 @@ function PublicarPage() {
   const id = searchParams.get("id");
 
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  const [isVideoSelected, setIsVideoSelected] = useState(false);
-  const [isImageSelected, setIsImageSelected] = useState(false);
+  const [disableVideo, setDisableVideo] = useState(false); // Controla el botón de video
+  const [disableImage, setDisableImage] = useState(false); // Controla el botón de imagen
   const [mediaFiles, setMediaFiles] = useState<MediaFILE[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
 
@@ -36,8 +36,8 @@ function PublicarPage() {
   const [posts, setPosts] = useState<Post>();
   const [selectedAccount, setSelectedAccount] = useState<SocialAccount[]>([]);
   const [selectedNetwork, setSelectedNetwork] = useState<string>("");
-  const [selectedSocialAccountName, setSelectedSocialAccountName] =
-    useState<string>("");
+  const [selectedSocialAccountName, setSelectedSocialAccountName] = useState<string>("");
+  const [disableTikTok, setDisableTikTok] = useState(false);
   // PostDetail
   const [originalMediaURLs, setOriginalMediaURLs] = useState<string[]>([]); // URLs originales del backend
   const [socialMedia, setSocialMedia] = useState<string[]>([]); // Es un array
@@ -84,10 +84,11 @@ function PublicarPage() {
           
           // Ajustamos los estados según el tipo
           if (loadedMediaFiles.some((file) => file.type === "video")) {
-            setIsVideoSelected(true);
-            setIsImageSelected(true);
+            setDisableImage(true);  // Deshabilitar botón de imagen
+            setDisableVideo(true);  // Deshabilitar botón de video también
           } else if (loadedMediaFiles.length > 0) {
-            setIsImageSelected(true);
+            setDisableVideo(true); // Deshabilitar solo video al subir imágenes
+            setDisableTikTok(true);
           }
   
           setPosts(data);
@@ -131,12 +132,13 @@ function PublicarPage() {
     const files = event.target.files;
   
     if (files) {
-      const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
+      const maxSizeInBytes = 4.0 * 1024 * 1024; // 4.0MB
+  
       const newFiles = Array.from(files)
         .map((file) => {
           if (file.size > maxSizeInBytes) {
-            alert(`El archivo ${file.name} debe ser menor a 4.5MB`);
-            return null; // Ignoramos archivos grandes
+            alert(`El archivo ${file.name} debe ser menor a 4.0MB`);
+            return null;
           }
           return {
             id: generateUniqueID(),
@@ -148,59 +150,77 @@ function PublicarPage() {
         })
         .filter(Boolean) as MediaFILE[];
   
-      // Si es un video, sobrescribimos
-      if (mediaType === 'video') {
-        setMediaFiles([...newFiles]);
-        setIsVideoSelected(true);
-        setIsImageSelected(true);
-      } else {
-        // Agregamos imágenes sin sobrescribir las existentes
+      // Lógica para controlar la subida de imágenes
+      if (mediaType === 'image') {
+        const totalImages = mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
+  
+        if (totalImages > 10) {
+          alert('No puedes subir más de 10 imágenes.');
+          event.target.value = ''; // Restablecemos el input
+          return;
+        }
+  
         setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
-        setIsImageSelected(true);
+        setDisableVideo(true); // Deshabilitar videos al subir imágenes
+        setDisableTikTok(true); // Deshabilitar TikTok si hay imágenes
+      } 
+      // Lógica para subir videos
+      else if (mediaType === 'video') {
+        setMediaFiles([...newFiles]);
+        setDisableImage(true); // Deshabilitar imágenes
+        setDisableVideo(true); // Deshabilitar más videos
       }
   
       event.target.value = ''; // Restablecemos el input
     }
   };
   
+  
+  
+  
   const handleRemoveMedia = async (id: string, url: string) => {
     try {
-      // Verificar si la URL es parte de las originales
+      // Verificar si la URL es parte de las originales y eliminar del servidor
       if (originalMediaURLs.includes(url)) {
-        // Llamada a la API para eliminar el archivo del servicio de Vercel
         const response = await fetch('/api/media/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url }),
         });
-
+  
         if (!response.ok) {
           throw new Error('Error al eliminar el archivo del servidor.');
         }
         console.log(`Archivo con URL ${url} eliminado del servidor.`);
+  
+        await delete_media_by_url(url);
+        console.log(`Registro con URL ${url} eliminado de la base de datos.`);
       }
   
-      console.log(`Archivo con URL ${url} eliminado del servidor.`);
-  
-      // Llamada a la base de datos para eliminar el registro
-      await delete_media_by_url(url);
-  
-      console.log(`Registro con URL ${url} eliminado de la base de datos.`);
-  
-      // Eliminar del estado local
+      // Actualizar la lista de archivos locales
       const updatedMediaFiles = mediaFiles.filter((file) => file.id !== id);
       setMediaFiles(updatedMediaFiles);
   
-      // Liberar el objeto URL si fue generado localmente
+      const hasVideo = updatedMediaFiles.some((file) => file.type === 'video');
+      const hasImage = updatedMediaFiles.some((file) => file.type === 'image');
+  
+      // Verificar si TikTok sigue seleccionado
+      const isTikTokSelected = selectedAccount.some(
+        (account) => account.red_social.toLowerCase() === 'tiktok'
+      );
+  
+      // Restablecer estados según los archivos restantes y selección de TikTok
+      if (!hasVideo) {
+        setDisableVideo(hasImage); // Deshabilitar videos si quedan imágenes
+        setDisableImage(isTikTokSelected || hasVideo); // Deshabilitar imágenes si TikTok sigue seleccionado o si hay videos
+      }
+  
+      setDisableTikTok(hasImage); // Deshabilitar TikTok si quedan imágenes
+  
+      // Liberar la URL si fue generada localmente
       const fileToRemove = mediaFiles.find((file) => file.id === id);
       if (fileToRemove) {
         URL.revokeObjectURL(fileToRemove.url);
-      }
-  
-      // Restablecer estados si no quedan medios
-      if (updatedMediaFiles.length === 0) {
-        setIsVideoSelected(false);
-        setIsImageSelected(false);
       }
     } catch (error) {
       console.error('Error eliminando el archivo:', error);
@@ -214,6 +234,38 @@ function PublicarPage() {
       return;
     }
   
+    // Verificación para publicaciones programadas
+    if (status === "programado") {
+      if (!postTime) {
+        alert("Por favor, selecciona una fecha y hora válidas.");
+        return;
+      }
+  
+      const currentDate = new Date();
+      const scheduledDate = new Date(postTime); // postTime ya está asegurado de no ser undefined
+  
+      // Verificar que la fecha/hora programada sea al menos 10 minutos en el futuro
+      const minValidDate = new Date(currentDate.getTime() + 10 * 60 * 1000);
+  
+      if (scheduledDate < minValidDate) {
+        alert(
+          "La fecha/hora programada debe ser al menos 10 minutos en el futuro. Corrige la fecha para continuar."
+        );
+        return;
+      }
+  
+      // Verificar que la fecha/hora programada no sea una fecha pasada
+      if (scheduledDate < currentDate) {
+        alert("No puedes programar una publicación en una fecha pasada.");
+        return;
+      }
+    }
+
+    if (!content?.trim() && mediaFiles.length === 0) {
+      alert("Debe haber al menos un archivo o contenido para publicar.");
+      return;
+    }
+
     setLoading(true);
   
     try {
@@ -222,11 +274,11 @@ function PublicarPage() {
       // Subir archivos multimedia (imágenes o video)
       if (mediaFiles.length > 0) {
         for (const file of mediaFiles) {
-          const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
+          const maxSizeInBytes = 4.0 * 1024 * 1024; // 4.0MB
   
           // Verificación segura del tamaño del archivo
           if (!file.file || file.file.size > maxSizeInBytes) {
-            alert(`El archivo ${file.name} debe ser menor a 4.5MB o es inválido`);
+            alert(`El archivo ${file.name} debe ser menor a 4.0MB o es inválido`);
             continue; // Saltamos archivos inválidos
           }
   
@@ -246,13 +298,11 @@ function PublicarPage() {
   
         setMedia(uploadedMediaURLs); // Ajustamos para ser un array de URLs
       }
-  
+      
+      
       // Determinar el tipo del post basado en los archivos subidos
-      const postType = mediaFiles.some((file) =>
-        file.url.endsWith(".mp4") || file.url.endsWith(".mov")
-      )
-        ? "video"
-        : "image"; // Si hay un video, será "video"; de lo contrario, "image"
+      const postType = mediaFiles.some((file) => file.type === "video") ? "video" : "image";
+
   
       // Crear el post para cada cuenta seleccionada
       for (const account of selectedAccount) {
@@ -285,13 +335,27 @@ function PublicarPage() {
   };
   
   const handleAccountSelect = (account: SocialAccount) => {
+    const isTikTok = account.red_social.toLowerCase() === 'tiktok';
+  
     if (selectedAccount.includes(account)) {
-      setSelectedAccount(selectedAccount.filter((acc) => acc !== account));
+      const updatedAccounts = selectedAccount.filter((acc) => acc !== account);
+      setSelectedAccount(updatedAccounts);
+  
+      // Si se deselecciona TikTok, verificar si se deben habilitar imágenes.
+      // No habilitar imágenes si ya hay un video en los archivos subidos.
+      if (isTikTok && !mediaFiles.some((file) => file.type === 'video')) {
+        setDisableImage(false); 
+      }
     } else {
       setSelectedAccount([...selectedAccount, account]);
+  
+      // Si se selecciona TikTok, deshabilitar imágenes.
+      if (isTikTok) {
+        setDisableImage(true);
+      }
     }
   };
-
+  
   const handleSocialPreviewSelect = (socialMedia: string) => {
     setSelectedNetwork(socialMedia);
     setSelectedSocialAccountName(
@@ -321,12 +385,19 @@ function PublicarPage() {
             <ul className="mt-4 space-y-2">
               {socialAccounts.map((account) => (
                 <li
-                  onClick={() => handleAccountSelect(account)} // Manejar la selección de la cuenta
-                  className={`flex items-center p-2 rounded cursor-pointer text-black border border-gray-300 hover:bg-gray-100`}
+                  key={account.red_social}
+                  onClick={() =>
+                    !disableTikTok || account.red_social.toLowerCase() !== 'tiktok'
+                      ? handleAccountSelect(account)
+                      : null
+                  }
+                  className={`flex items-center p-2 rounded cursor-pointer text-black border border-gray-300 hover:bg-gray-100 ${
+                    account.red_social.toLowerCase() === 'tiktok' && disableTikTok
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
                 >
-                  <div className="w-8 h-8 mr-2">
-                    {getLogo(account.red_social)}
-                  </div>
+                  <div className="w-8 h-8 mr-2">{getLogo(account.red_social)}</div>
                   <div className="flex-grow">{account.usuario}</div>
                   {selectedAccount.includes(account) && (
                     <CheckCircleIcon className="h-5 w-5 text-[#BD181E]" />
@@ -334,6 +405,7 @@ function PublicarPage() {
                 </li>
               ))}
             </ul>
+
           </div>
 
           {/* Área de texto y multimedia */}
@@ -377,12 +449,12 @@ function PublicarPage() {
             <div className="flex items-center space-x-4 mt-4">
               <label
                 className={`flex items-center cursor-pointer ${
-                  isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''
+                  disableImage ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <CameraIcon
                   className={`h-6 w-6 ${
-                    isVideoSelected ? 'text-gray-300' : 'text-gray-500'
+                    disableImage ? 'text-gray-300' : 'text-gray-500'
                   }`}
                 />
                 <input
@@ -391,18 +463,18 @@ function PublicarPage() {
                   multiple
                   className="hidden"
                   onChange={(e) => handleMediaUpload(e, 'image')}
-                  disabled={isVideoSelected} // Deshabilitamos si hay video
+                  disabled={disableImage}
                 />
               </label>
 
               <label
                 className={`flex items-center cursor-pointer ${
-                  isImageSelected || isVideoSelected ? 'opacity-50 cursor-not-allowed' : ''
+                  disableVideo ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <VideoCameraIcon
                   className={`h-6 w-6 ${
-                    isImageSelected || isVideoSelected ? 'text-gray-300' : 'text-gray-500'
+                    disableVideo ? 'text-gray-300' : 'text-gray-500'
                   }`}
                 />
                 <input
@@ -410,11 +482,10 @@ function PublicarPage() {
                   accept="video/*"
                   className="hidden"
                   onChange={(e) => handleMediaUpload(e, 'video')}
-                  disabled={isImageSelected || isVideoSelected} // Deshabilitamos si hay imagen o video
+                  disabled={disableVideo}
                 />
               </label>
             </div>
-
           </div>
 
           {/* Seleccionar cuándo publicar */}
@@ -582,20 +653,10 @@ const formatDateForInput = (dateString: string) => {
 
 const publishToSocialMedia = async (network: string, post: Post) => {
   try {
-    // Esto es para arreglar momentaneamente acá el error de que pasa de video a image el type
-    const adjustedPost = {
-      ...post,
-      type: post.media && post.media.length > 0 && post.media[0].endsWith('.mp4')
-        ? 'video'
-        : 'image', // Verificamos si es video o imagen
-    };
-
-    console.log("Post ajustado para enviar:", adjustedPost); // LOG para verificar
-
     const response = await fetch(`/api/${network.toLowerCase()}/post`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(adjustedPost),
+      body: JSON.stringify(post),
     });
 
     if (!response.ok) {
