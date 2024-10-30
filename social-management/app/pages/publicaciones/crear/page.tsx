@@ -229,8 +229,14 @@ function PublicarPage() {
   };
 
   const handlePost = async () => {
+
+    if (selectedNetwork.toLowerCase() === 'instagram' && (!mediaFiles || mediaFiles.length === 0)) {
+      alert('Debes adjuntar al menos una imagen o video para publicar en Instagram.');
+      return;
+    }
+
     if (selectedAccount.length === 0) {
-      setPostStatus("Por favor, selecciona al menos un usuario para publicar.");
+      alert("Por favor, selecciona al menos un usuario para publicar.");
       return;
     }
   
