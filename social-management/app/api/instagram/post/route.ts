@@ -20,29 +20,57 @@ export async function POST(req: Request) {
 
     const mediaUrls = post.media;
     const isSingleMedia = mediaUrls.length === 1;
+    const isReel = post.type === 'video'; // Verificación para subir como Reel si el tipo es video
 
-    // Caso 1: Publicación de una sola imagen o video
-    if (isSingleMedia) {
+    // Caso 1: Publicación de un Reel
+    if (isSingleMedia && isReel) {
       const mediaUrl = mediaUrls[0];
-      const isVideo = mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.mov');
       const formData = new FormData();
 
-      if (isVideo) {
-        formData.append('video_url', mediaUrl);
-        formData.append('media_type', 'VIDEO');
-      } else {
-        formData.append('image_url', mediaUrl);
-      }
-
+      formData.append('video_url', mediaUrl);
+      formData.append('media_type', 'REELS');
       formData.append('access_token', accessToken);
+
       if (post.content) {
         formData.append('caption', post.content);
       }
 
-      console.log('Creando contenedor individual para:', mediaUrl);
+      console.log('Creando contenedor para Reel:', mediaUrl);
 
       const response = await fetch(
-        `https://graph.facebook.com/v14.0/${instagramBusinessId}/media`,
+        `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
+        { method: 'POST', body: formData }
+      );
+
+      const data = await response.json();
+
+      if (!data.id) {
+        console.error('Error al crear contenedor de Reel:', data);
+        throw new Error('Error al crear contenedor de Reel en Instagram');
+      }
+
+      const creationId = data.id;
+      console.log(`Contenedor de Reel creado con éxito. ID: ${creationId}`);
+
+      return await publishMedia(creationId, accessToken, post, instagramBusinessId);
+    }
+
+    // Caso 2: Publicación de una sola imagen
+    if (isSingleMedia) {
+      const mediaUrl = mediaUrls[0];
+      const formData = new FormData();
+
+      formData.append('image_url', mediaUrl);
+      formData.append('access_token', accessToken);
+
+      if (post.content) {
+        formData.append('caption', post.content);
+      }
+
+      console.log('Creando contenedor individual para imagen:', mediaUrl);
+
+      const response = await fetch(
+        `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
         { method: 'POST', body: formData }
       );
 
@@ -59,27 +87,20 @@ export async function POST(req: Request) {
       return await publishMedia(creationId, accessToken, post, instagramBusinessId);
     }
 
-    // Caso 2: Publicación de un carrusel con múltiples imágenes/videos
+    // Caso 3: Publicación de un carrusel con múltiples imágenes
     const mediaIds: string[] = [];
 
     for (const mediaUrl of mediaUrls) {
-      const isVideo = mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.mov');
       const formData = new FormData();
 
-      if (isVideo) {
-        formData.append('video_url', mediaUrl);
-        formData.append('media_type', 'VIDEO');
-      } else {
-        formData.append('image_url', mediaUrl);
-        formData.append('is_carousel_item', 'true');
-      }
-
+      formData.append('image_url', mediaUrl);
+      formData.append('is_carousel_item', 'true');
       formData.append('access_token', accessToken);
 
-      console.log('Creando contenedor para:', mediaUrl);
+      console.log('Creando contenedor para imagen en carrusel:', mediaUrl);
 
       const response = await fetch(
-        `https://graph.facebook.com/v14.0/${instagramBusinessId}/media`,
+        `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
         { method: 'POST', body: formData }
       );
 
@@ -90,7 +111,7 @@ export async function POST(req: Request) {
         throw new Error('Error al crear contenedor de medios');
       }
 
-      console.log(`Contenedor creado con éxito. ID: ${data.id}`);
+      console.log(`Contenedor de imagen en carrusel creado con éxito. ID: ${data.id}`);
       mediaIds.push(data.id);
     }
 
@@ -99,7 +120,7 @@ export async function POST(req: Request) {
     }
 
     const carouselResponse = await fetch(
-      `https://graph.facebook.com/v14.0/${instagramBusinessId}/media`,
+      `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,33 +153,50 @@ export async function POST(req: Request) {
   }
 }
 
-async function publishMedia(creationId: string,   accessToken: string,   post: Post,   instagramBusinessId: string) {
+async function publishMedia(creationId: string, accessToken: string, post: Post, instagramBusinessId: string) {
   const publishBody: any = {
     creation_id: creationId,
     access_token: accessToken,
   };
 
-  console.log('Publicando en Instagram...');
-  const publishResponse = await fetch(
-    `https://graph.facebook.com/v14.0/${instagramBusinessId}/media_publish`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(publishBody),
+  console.log('Intentando publicar en Instagram...');
+
+  const maxRetries = 5; // Número máximo de intentos
+  const delayBetweenRetries = 5000; // Tiempo en milisegundos entre intentos (5 segundos)
+  let attempt = 0;
+  let publishData: any;
+
+  while (attempt < maxRetries) {
+    const publishResponse = await fetch(
+      `https://graph.facebook.com/v20.0/${instagramBusinessId}/media_publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(publishBody),
+      }
+    );
+
+    publishData = await publishResponse.json();
+
+    if (publishData.id) {
+      console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
+      return new Response(
+        JSON.stringify({ success: true, postId: publishData.id }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    } else if (publishData.error && publishData.error.error_subcode === 2207027) {
+      // Error específico indicando que el contenido aún no está listo
+      console.warn('El archivo multimedia no está listo para publicar; esperando antes de reintentar...');
+      attempt += 1;
+      await new Promise(resolve => setTimeout(resolve, delayBetweenRetries)); // Espera antes de reintentar
+    } else {
+      console.error('Error al intentar publicar en Instagram:', publishData);
+      throw new Error('Error al publicar en Instagram');
     }
-  );
-
-  const publishData = await publishResponse.json();
-
-  if (!publishData.id) {
-    console.error('Error al publicar en Instagram:', publishData);
-    throw new Error('Error al publicar en Instagram');
   }
 
-  console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
-  return new Response(
-    JSON.stringify({ success: true, postId: publishData.id }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } }
-  );
+  // Si se agotaron los intentos y aún no está listo
+  console.error('El archivo multimedia no se pudo publicar después de varios intentos.');
+  throw new Error('El archivo multimedia no se pudo publicar después de varios intentos.');
 }
 
