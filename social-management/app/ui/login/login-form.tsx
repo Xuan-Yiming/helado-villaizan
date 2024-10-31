@@ -39,6 +39,10 @@ export default function LoginForm() {
           Date.now() + 7 * 24 * 60 * 60 * 1000
         ).toUTCString()}`;
         
+        document.cookie = `rol=${user.role}; path=/; expires=${new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000
+        ).toUTCString()}`;
+        
         console.log("Logged in");
         router.push("/pages");
       } else {
