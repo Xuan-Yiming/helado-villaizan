@@ -735,13 +735,13 @@ export async function add_social_account(
 }
 
 export async function logout_social_account(red_social: string): Promise<void> {
-  await connectToDatabase();
-  if (!client) {
-    throw new Error("Database client is not initialized");
-  }
-  await client.sql`
-        DELETE FROM social_accounts WHERE red_social = ${red_social}
-    `;
+  // await connectToDatabase();
+  // if (!client) {
+  //   throw new Error("Database client is not initialized");
+  // }
+  // await client.sql`
+  //       DELETE FROM social_accounts WHERE red_social = ${red_social}
+  //   `;
 }
 
 export async function get_social_account(
