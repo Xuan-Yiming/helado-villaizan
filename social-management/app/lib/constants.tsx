@@ -155,6 +155,43 @@ export const SIDENAV_ITEMS_MOD: SideNavItem[] = [
   },
 ];
 
+
+export const ROLE_ALLOWED_PATHS: { [key: string]: string[] } = {
+  user: [
+    '/pages',
+    '/pages/publicaciones',
+    '/pages/publicaciones/crear',
+    '/pages/publicaciones/calendario',
+    '/pages/publicaciones/campanas',
+    '/pages/mensajes',
+    '/pages/cuentas-configuraciones',
+  ],
+  moderator: [
+    '/pages',
+    '/pages/publicaciones',
+    '/pages/publicaciones/crear',
+    '/pages/publicaciones/calendario',
+    '/pages/publicaciones/campanas',
+    '/pages/mensajes',
+    '/pages/preferencias-de-clientes',
+    '/pages/preferencias-de-clientes/datos',
+    '/pages/preferencias-de-clientes/encuestas',
+    '/pages/analisis-reporte',
+    '/pages/analisis-reporte/engagement',
+    '/pages/analisis-reporte/seguidores',
+    '/pages/analisis-reporte/ventas',
+    '/pages/cuentas-configuraciones',
+  ],
+  survy_creator: [
+    '/pages',
+    '/pages/preferencias-de-clientes',
+    '/pages/preferencias-de-clientes/encuestas',
+    '/pages/preferencias-de-clientes/encuestas/crear',
+    '/pages/preferencias-de-clientes/encuestas/resultado',
+    '/pages/cuentas-configuraciones',
+  ],
+};
+
 /*
 Publicaciones
     Todas

@@ -4,7 +4,8 @@ import { Post } from "./types";
 
 import { get_social_account, load_post_by_id } from '@/app/lib/database';
 
-import { SIDENAV_ITEMS_SURVY, SIDENAV_ITEMS_MOD, SIDENAV_ITEMS, SIDENAV_ITEMS_USER } from "./constants";
+import { SIDENAV_ITEMS_SURVY, SIDENAV_ITEMS_MOD, SIDENAV_ITEMS, SIDENAV_ITEMS_USER, ROLE_ALLOWED_PATHS } from "./constants";
+import { promises } from "dns";
 
 
 export async function tiktok_send_video_by_id(id: string){
@@ -141,4 +142,20 @@ export async function get_side_nav(rol: string){
         default:
             throw new Error('Invalid role');
     }
+}
+
+export async function can_access_path(role: string, path: string): Promise<boolean> {
+
+    console.log
+    (`Checking access for role: ${role} and path: ${path}`);
+
+    if (role === "admin")
+        return true;
+
+    const allowedPaths = ROLE_ALLOWED_PATHS[role];
+    if (!allowedPaths) {
+        throw new Error('Invalid role');
+    }
+    console.log("Result: ", allowedPaths.includes(path))
+    return allowedPaths.includes(path);
 }
