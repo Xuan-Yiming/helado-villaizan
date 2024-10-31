@@ -34,7 +34,7 @@ export async function tiktok_send_video_by_id(id: string){
             body: JSON.stringify({
                 "post_info": {
                     "title": post.content,
-                    "privacy_level": "MUTUAL_FOLLOW_FRIENDS",
+                    "privacy_level": "SELF_ONLY",
                     "disable_duet": false,
                     "disable_comment": true,
                     "disable_stitch": false,
@@ -78,7 +78,7 @@ export async function tiktok_send_video_by_post(post: Post){
             body: JSON.stringify({
                 "post_info": {
                     "title": post.content,
-                    "privacy_level": "MUTUAL_FOLLOW_FRIENDS",
+                    "privacy_level": "SELF_ONLY",
                     "disable_duet": false,
                     "disable_comment": true,
                     "disable_stitch": false,
