@@ -2,7 +2,7 @@
 
 import { Post } from "./types";
 
-import { get_social_account, load_post_by_id } from '@/app/lib/database';
+import { get_social_account, load_post_by_id, update_post_status } from '@/app/lib/database';
 
 import { SIDENAV_ITEMS_SURVY, SIDENAV_ITEMS_MOD, SIDENAV_ITEMS, SIDENAV_ITEMS_USER, ROLE_ALLOWED_PATHS } from "./constants";
 import { promises } from "dns";
@@ -48,7 +48,7 @@ export async function tiktok_send_video_by_id(id: string){
         });
 
         if (response.ok) {
-            throw new Error('Error publishing post');
+            update_post_status(id, 'publicado')
         } else {
             throw new Error('Error loading post');
         }
@@ -92,7 +92,7 @@ export async function tiktok_send_video_by_post(post: Post){
         });
 
         if (response.ok) {
-            throw new Error('Error publishing post');
+            update_post_status(post.id, 'publicado')
         } else {
             throw new Error('Error loading post');
         }

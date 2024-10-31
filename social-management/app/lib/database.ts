@@ -443,6 +443,17 @@ export async function delete_media_by_url(url: string): Promise<void> {
     `;
 }
 
+export async function update_post_status(postId: string, status: string): Promise<void> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  await client.sql`
+    UPDATE posts SET status = ${status} WHERE id = ${postId}
+  `;
+}
+
 // ENCUESTAS
 export async function load_all_survey(
   offset: number,
