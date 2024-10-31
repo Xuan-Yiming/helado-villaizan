@@ -41,10 +41,10 @@ export async function authenticate_user(
   }
   const sql = `SELECT * FROM user_accounts WHERE username = ${username} AND password = ${password}`;
   console.log(sql);
-  const result = await client.query(
-    "SELECT * FROM user_accounts WHERE username = $1 AND password = $2",
+const result = await client.query(
+    "SELECT * FROM user_accounts WHERE username = $1 AND password = $2 AND active = true",
     [username, password]
-  );
+);
   if (result.rows.length > 0) {
     const auth = await generateToken(result.rows[0].id);
     result.rows[0].token = auth.token;
