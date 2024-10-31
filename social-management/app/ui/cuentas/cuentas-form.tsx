@@ -4,7 +4,8 @@ import { ArrowUpOnSquareIcon } from "@heroicons/react/24/solid";
 import { MediaFILE, UserAccount } from "@/app/lib/types";
 import ProfilePhotoUpload from "./profile-foto";
 import FormField from "../components/form-item";
-import { createOrUpdateUserAccount } from "@/app/lib/database";
+import { createOrUpdateUserAccount, is_email_available } from "@/app/lib/database";
+import { check_password_requirement } from "@/app/lib/actions";
 
 const DEFAULT_PROFILE_PHOTO =
   "https://bap4ouaenh9ktlwp.public.blob.vercel-storage.com/default-profile-account-unknown-icon-black-silhouette-free-vector-lOfodT0L1kfsKmIpBeof3vKeWBhmr6.jpg";
@@ -21,6 +22,15 @@ const CuentasForm: React.FC<CuentasFormProps> = ({ user, setUser }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!check_password_requirement(user.password, user.password)) {
+      return;
+    }
+
+    if (!is_email_available(user.username)) {
+      return;
+    }
+
     setIsUploading(true);
 
     console.log("mediaFiles: ", mediaFiles);

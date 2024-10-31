@@ -1,6 +1,5 @@
 "use server";
 
-
 import { db } from "@vercel/postgres";
 import { VercelPoolClient } from "@vercel/postgres";
 import {
@@ -35,22 +34,27 @@ async function connectToDatabase() {
 export async function authenticate_user(
   username: string,
   password: string
-): Promise<string> {
+): Promise<UserAccount> {
   await connectToDatabase();
   if (!client) {
     throw new Error("Database client is not initialized");
   }
-
-  const result = await client.sql`
-        SELECT * FROM user_accounts WHERE username = ${username} AND password = ${password}
-    `;
-
+  const sql = `SELECT * FROM user_accounts WHERE username = ${username} AND password = ${password}`;
+  console.log(sql);
+  const result = await client.query(
+    "SELECT * FROM user_accounts WHERE username = $1 AND password = $2",
+    [username, password]
+  );
   if (result.rows.length > 0) {
     const auth = await generateToken(result.rows[0].id);
-    return auth.token;
+    result.rows[0].token = auth.token;
+    result.rows[0].token_expiration = auth.expirationDate;
+    result.rows[0].password = "";
+    console.log(result.rows[0]);
+    return result.rows[0] as UserAccount;
+  } else {
+    throw new Error("User not found");
   }
-
-  return "";
 }
 
 export async function generateToken(
@@ -70,12 +74,12 @@ export async function generateToken(
     throw new Error("Database client is not initialized");
   }
 
-  await client.sql`
-        UPDATE user_accounts 
-        SET token = ${token}, token_expiration = ${expirationDate.toISOString()}
-        WHERE id = ${userID}
-    `;
+    await client.query(
+        'UPDATE user_accounts SET token = $1, token_expiration_date = $2 WHERE id = $3',
+        [token, expirationDate.toISOString(), userID]
+    );
 
+        console.log("Token updated in database");
   return { token, expirationDate };
 }
 
@@ -150,6 +154,20 @@ export async function is_email_available(email: string): Promise<boolean> {
 //   return isMatch;
 // }
 
+export async function update_password(
+  userId: string,
+  newPassword: string
+): Promise<void> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  await client.sql`
+        UPDATE user_accounts SET password = ${newPassword} WHERE id = ${userId}
+    `;
+}
+
 export async function createOrUpdateUserAccount(
   userAccount: UserAccount
 ): Promise<void> {
@@ -177,17 +195,21 @@ export async function createOrUpdateUserAccount(
     } else {
       await client.sql`
         INSERT INTO user_accounts (username, password, nombre, apellido, role, active, photo)
-        VALUES (${userAccount.username}, ${userAccount.password
-        }, ${userAccount.nombre}, ${userAccount.apellido}, ${userAccount.role
-        },${true}, ${userAccount.photo})
+        VALUES (${userAccount.username}, ${userAccount.password}, ${
+        userAccount.nombre
+      }, ${userAccount.apellido}, ${userAccount.role},${true}, ${
+        userAccount.photo
+      })
         `;
     }
   } else {
     await client.sql`
     INSERT INTO user_accounts (username, password, nombre, apellido, role, active, photo)
-    VALUES (${userAccount.username}, ${userAccount.password
-      }, ${userAccount.nombre}, ${userAccount.apellido}, ${userAccount.role
-      },${true}, ${userAccount.photo})
+    VALUES (${userAccount.username}, ${userAccount.password}, ${
+      userAccount.nombre
+    }, ${userAccount.apellido}, ${userAccount.role},${true}, ${
+      userAccount.photo
+    })
 `;
   }
 }
@@ -512,8 +534,9 @@ export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
   for (const question of newSurvey.questions || []) {
     await client.sql`
             INSERT INTO questions (encuesta_id, title, type, required, options)
-            VALUES (${encuesta.id}, ${question.title}, ${question.type}, ${question.required
-      }, ARRAY[${question.options?.map((option) => `'${option}'`).join(", ")}])
+            VALUES (${encuesta.id}, ${question.title}, ${question.type}, ${
+      question.required
+    }, ARRAY[${question.options?.map((option) => `'${option}'`).join(", ")}])
         `;
   }
 
@@ -535,8 +558,8 @@ async function load_questions_by_encuesta_id(
     options:
       row.options && row.options[0]
         ? row.options[0]
-          .split(",")
-          .map((option: string) => option.trim().replace(/^'|'$/g, ""))
+            .split(",")
+            .map((option: string) => option.trim().replace(/^'|'$/g, ""))
         : null,
   })) as Question[];
 }
