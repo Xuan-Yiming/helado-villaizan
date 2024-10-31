@@ -4,7 +4,7 @@ export type UserAccount = {
   password: string;
   nombre: string;
   apellido: string;
-  role: string; // admin, social_manager, survy_creator
+  role: string; // admin, user, moderator, survy_creator
   token?: string;
   token_expiration_date?: Date;
   active: boolean;
