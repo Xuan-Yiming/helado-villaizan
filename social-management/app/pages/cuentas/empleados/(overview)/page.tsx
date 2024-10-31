@@ -8,7 +8,7 @@ import { AdjustmentsHorizontalIcon, PlusCircleIcon, CheckCircleIcon, XMarkIcon }
 
 import { UserAccount } from '@/app/lib/types';
 
-import FilterSelect from '@/app/ui/mensajes/filter-select';
+import FilterSelect from '@/app/ui/interacciones/filter-select';
 
 import {load_all_users} from '@/app/lib/database';
 import CuentasCard from '@/app/ui/cuentas/cuentas-card';

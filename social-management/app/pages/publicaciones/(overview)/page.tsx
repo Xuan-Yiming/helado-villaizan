@@ -7,7 +7,7 @@ import { AdjustmentsHorizontalIcon, PlusCircleIcon, CheckCircleIcon, XMarkIcon }
 import { load_posts } from '@/app/lib/database';
 import { Post } from '@/app/lib/types';
 
-import FilterSelect from '@/app/ui/mensajes/filter-select';
+import FilterSelect from '@/app/ui/interacciones/filter-select';
 import PostList from '@/app/ui/publicar/post-list';
 import PostCard from '@/app/ui/publicar/post-card';
 
@@ -111,7 +111,6 @@ const Page = () => {
                             { value: 'all', label: 'Ver todo' },
                             { value: 'facebook', label: 'Facebook' },
                             { value: 'instagram', label: 'Instagram' },
-                            { value: 'tiktok', label: 'Tiktok' },
                         ]}
                         value={socialNetworkFilter}
                         onChange={setSocialNetworkFilter}

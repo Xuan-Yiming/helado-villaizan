@@ -23,8 +23,8 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     ],
   },
   {
-    title: 'Mensajes',
-    path: '/pages/mensajes',
+    title: 'Interacciones',
+    path: '/pages/interacciones',
     icon: <InboxArrowDownIcon className='w-6' />,
   },
   {
@@ -72,7 +72,7 @@ Publicaciones
     Calendario
     Campañas
 
-Mensajes
+Interacciones
 
 Preferencias de Clientes
     Datos
