@@ -1,48 +1,37 @@
-import { NextResponse } from 'next/server';
-import axios from 'axios';
+'use server';
+
+import { NextResponse } from "next/server";
+import { authenticate_user } from "@/app/lib/database";
 
 export async function POST(request: Request) {
-    const { email, password } = await request.json();
-    // para pruebas
-    const test = true;
-    // Replace with your external API URL for authentication
-    const externalAuthApiUrl = process.env.API_URL+'/auth/login';
+  const { email, password } = await request.json();
+  // para pruebas
+  // Replace with your external API URL for authentication
 
-    try {
-        if (test) {
-            // Call the external API to get the auth_token
-            const response = await axios.get('https://mocki.io/v1/469ff47e-8d39-4adb-a6c8-5ac5ec21ec75');
-            const auth_token = response.data.auth_token;
-            console.log('Token:', auth_token);
-            console.log('Response:', response.status);
-            // Use the auth_token for further processing
-            // ...
-            if (response.status === 200 && response.data.auth_token) {
-                const res = NextResponse.json({ success: true, auth_token });
-                res.cookies.set('auth_token', auth_token, { httpOnly: true, maxAge: 60 * 60 * 24 });
-                console.log('Token:', auth_token);
-                return res;
-            }
-            else {
-                return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
-            }
-        } else {
-            const response = await axios.post(externalAuthApiUrl, { email, password });
-
-            if (response.status === 200 && response.data.auth_token) {
-                // Successful authentication, return the token or set a cookie
-                const auth_token = response.data.auth_token;
-
-                // You can set a cookie or send the token to the client
-                const res = NextResponse.json({ success: true, auth_token });
-                res.cookies.set('auth_token', auth_token, { httpOnly: true, maxAge: 60 * 60 * 24 });
-                console.log('Token:', auth_token);
-                return res;
-            } else {
-                return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
-            }
-        }
-    } catch (error) {
-        return NextResponse.json({ success: false, error: 'Authentication failed' }, { status: 500 });
+  try {
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, error: "Email and password are required" },
+        { status: 400 }
+      );
     }
+    const data = await authenticate_user(email, password);
+    // Successful authentication, return the token or set a cookie
+
+    if (!data) {
+      return NextResponse.json(
+        { success: false, error: "Authentication failed" },
+        { status: 401 }
+      );
+    }
+    // You can set a cookie or send the token to the client
+    const res = NextResponse.json({ success: true, data });
+
+    return res;
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: "Authentication failed" },
+      { status: 500 }
+    );
+  }
 }

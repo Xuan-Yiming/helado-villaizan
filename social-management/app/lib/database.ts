@@ -1,5 +1,4 @@
 "use server";
-import bcrypt from 'bcrypt';
 
 import { db } from "@vercel/postgres";
 import { VercelPoolClient } from "@vercel/postgres";
@@ -35,22 +34,27 @@ async function connectToDatabase() {
 export async function authenticate_user(
   username: string,
   password: string
-): Promise<string> {
+): Promise<UserAccount> {
   await connectToDatabase();
   if (!client) {
     throw new Error("Database client is not initialized");
   }
-
-  const result = await client.sql`
-        SELECT * FROM user_accounts WHERE username = ${username} AND password = crypt(${password}, password)
-    `;
-
+  const sql = `SELECT * FROM user_accounts WHERE username = ${username} AND password = ${password}`;
+  console.log(sql);
+  const result = await client.query(
+    "SELECT * FROM user_accounts WHERE username = $1 AND password = $2",
+    [username, password]
+  );
   if (result.rows.length > 0) {
     const auth = await generateToken(result.rows[0].id);
-    return auth.token;
+    result.rows[0].token = auth.token;
+    result.rows[0].token_expiration = auth.expirationDate;
+    result.rows[0].password = "";
+    console.log(result.rows[0]);
+    return result.rows[0] as UserAccount;
+  } else {
+    throw new Error("User not found");
   }
-
-  return "";
 }
 
 export async function generateToken(
@@ -70,12 +74,12 @@ export async function generateToken(
     throw new Error("Database client is not initialized");
   }
 
-  await client.sql`
-        UPDATE user_accounts 
-        SET token = ${token}, token_expiration = ${expirationDate.toISOString()}
-        WHERE id = ${userID}
-    `;
+    await client.query(
+        'UPDATE user_accounts SET token = $1, token_expiration_date = $2 WHERE id = $3',
+        [token, expirationDate.toISOString(), userID]
+    );
 
+        console.log("Token updated in database");
   return { token, expirationDate };
 }
 
@@ -113,18 +117,6 @@ export async function deactivate_user(userId: string): Promise<void> {
         `;
 }
 
-export async function is_email_available(email: string): Promise<boolean> {
-  await connectToDatabase();
-  if (!client) {
-    throw new Error("Database client is not initialized");
-  }
-
-  const result = await client.sql`
-                SELECT * FROM user_accounts WHERE email = ${email}
-        `;
-  return result.rows.length === 0;
-}
-
 export async function delete_user(userId: string): Promise<void> {
   await connectToDatabase();
   if (!client) {
@@ -137,14 +129,43 @@ export async function delete_user(userId: string): Promise<void> {
         `;
 }
 
-export async function verify_password(userId: string, inputPassword: string): Promise<boolean> {
-  const user = await get_user_by_id(userId);
-  if (!user) {
-    throw new Error("User not found");
+export async function is_email_available(email: string): Promise<boolean> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
   }
 
-  const isMatch = await bcrypt.compare(inputPassword, user.password);
-  return isMatch;
+  const result = await client.sql`
+                SELECT * FROM user_accounts WHERE username = ${email}
+        `;
+  return result.rows.length === 0;
+}
+
+// export async function verify_password(
+//   userId: string,
+//   inputPassword: string
+// ): Promise<boolean> {
+//   const user = await get_user_by_id(userId);
+//   if (!user) {
+//     throw new Error("User not found");
+//   }
+
+//   const isMatch = await bcrypt.compare(inputPassword, user.password);
+//   return isMatch;
+// }
+
+export async function update_password(
+  userId: string,
+  newPassword: string
+): Promise<void> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  await client.sql`
+        UPDATE user_accounts SET password = ${newPassword} WHERE id = ${userId}
+    `;
 }
 
 export async function createOrUpdateUserAccount(
@@ -164,7 +185,7 @@ export async function createOrUpdateUserAccount(
       await client.sql`
         UPDATE user_accounts
         SET username = ${userAccount.username},
-                password = crypt(${userAccount.password}, gen_salt('bf', 8)),
+                password = ${userAccount.password},
                 nombre = ${userAccount.nombre},
                 apellido = ${userAccount.apellido},
                 role = ${userAccount.role},
@@ -174,21 +195,21 @@ export async function createOrUpdateUserAccount(
     } else {
       await client.sql`
         INSERT INTO user_accounts (username, password, nombre, apellido, role, active, photo)
-        VALUES (${userAccount.username}, crypt(${
-        userAccount.password
-      }, gen_salt('bf', 8)), ${userAccount.nombre}, ${userAccount.apellido}, ${
-        userAccount.role
-      },${true}, ${userAccount.photo})
+        VALUES (${userAccount.username}, ${userAccount.password}, ${
+        userAccount.nombre
+      }, ${userAccount.apellido}, ${userAccount.role},${true}, ${
+        userAccount.photo
+      })
         `;
     }
   } else {
     await client.sql`
     INSERT INTO user_accounts (username, password, nombre, apellido, role, active, photo)
-    VALUES (${userAccount.username}, crypt(${
-      userAccount.password
-    }, gen_salt('bf', 8)), ${userAccount.nombre}, ${userAccount.apellido}, ${
-      userAccount.role
-    },${true}, ${userAccount.photo})
+    VALUES (${userAccount.username}, ${userAccount.password}, ${
+      userAccount.nombre
+    }, ${userAccount.apellido}, ${userAccount.role},${true}, ${
+      userAccount.photo
+    })
 `;
   }
 }
@@ -233,7 +254,9 @@ export async function load_all_users(
   return usersResult.rows as UserAccount[];
 }
 
-export async function get_user_by_id(userId: string): Promise<UserAccount | null> {
+export async function get_user_by_id(
+  userId: string
+): Promise<UserAccount | null> {
   await connectToDatabase();
   if (!client) {
     throw new Error("Database client is not initialized");
@@ -395,12 +418,12 @@ export async function load_programmed_posts(): Promise<Post[]> {
 }
 
 export async function delete_media_by_url(url: string): Promise<void> {
-    await connectToDatabase();
-    if (!client) {
-        throw new Error('Database client is not initialized');
-    }
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
 
-    await client.sql`
+  await client.sql`
         DELETE FROM media WHERE link = ${url}
     `;
 }

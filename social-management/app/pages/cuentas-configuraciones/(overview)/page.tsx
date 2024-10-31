@@ -5,19 +5,43 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 import { ArrowRightEndOnRectangleIcon, LinkIcon, LinkSlashIcon } from '@heroicons/react/24/solid';
+import { UserAccount } from '@/app/lib/types';
+import { check_password_requirement } from '@/app/lib/actions';
+import { update_password } from '@/app/lib/database';
 
 
 export default function Page() {
     const router = useRouter();
     const [errorMessage, setErrorMessage] = useState("")
+    const [user, setUser] = useState<UserAccount>();
+    const [password, setPassword] = useState<string>('');
+    const [newPassword, setNewPassword] = useState<string>('');
 
+    useEffect(() => {
+      const cookie = document.cookie;
+      const userInformation = cookie
+          .split(';')
+          .find((c) => c.trim().startsWith('user='));
+  
+      if (userInformation) {
+          const userValue = userInformation.split('=')[1];
+          setUser(JSON.parse(decodeURIComponent(userValue)));
+      }
+  }, []);
+  
     const handleLogout = async () => {
         await axios.get('/api/auth/logout');
         router.push('/login');
     };
 
     const handleChangePassword = async () => {
-
+        try{
+            if(user){
+            check_password_requirement(password, newPassword);
+            update_password(user.id, newPassword);
+            }
+        }catch(error){
+        }
     };
 
     return (
@@ -28,9 +52,9 @@ export default function Page() {
 
                 <div className="mt-8">
                     <h3 className="font-bold text-xl mb-4">Información del Usuario</h3>
-                    <p className="text-sm text-gray-600 mb-2">Nombre: Juan Pérez</p>
-                    <p className="text-sm text-gray-600 mb-2">Apellido: González</p>
-                    <p className="text-sm text-gray-600 mb-2">Rol: Administrador</p>
+                    <p className="text-sm text-gray-600 mb-2">Nombre: {user?.nombre}</p>
+                    <p className="text-sm text-gray-600 mb-2">Apellido: {user?.apellido}</p>
+                    <p className="text-sm text-gray-600 mb-2">Rol: {user?.role}</p>
                 </div>
 
                 <div className="mt-8">

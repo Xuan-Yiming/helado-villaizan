@@ -96,3 +96,31 @@ export async function tiktok_send_video_by_post(post: Post){
         throw new Error('Error publishing post');
     }
 }
+
+
+export async function check_password_requirement(password:string, password_confirmation:string){
+    if (!password || !password_confirmation) {
+        throw new Error('Falta la contraseña');
+    }
+
+    if (password !== password_confirmation) {
+        throw new Error('Las contraseñas no coinciden');
+    }
+
+    if (password.length < 8) {
+        throw new Error('La contraseña debe tener al menos 8 caracteres');
+    }
+
+    if (!/[a-z]/.test(password)) {
+        throw new Error('La contraseña debe contener al menos una letra minúscula');
+    }
+
+    if (!/[A-Z]/.test(password)) {
+        throw new Error('La contraseña debe contener al menos una letra mayúscula');
+    }
+
+    if (!/[0-9]/.test(password)) {
+        throw new Error('La contraseña debe contener al menos un número');
+    }
+
+}
