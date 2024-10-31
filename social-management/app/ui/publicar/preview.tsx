@@ -158,7 +158,8 @@ const renderMediaForInstagram = () => {
 };
 
 const renderMediaForTikTok = () => {
-  if (!media || media.length === 0) {
+  if (mediaType !== 'video' || !media || media.length === 0) {
+    // No muestra nada si el tipo de media no es un video o si no hay contenido
     return null;
   }
 
@@ -182,8 +183,6 @@ const renderMediaForTikTok = () => {
     </div>
   );
 };
-
-
 
   return (
     <div>
@@ -265,25 +264,25 @@ const renderMediaForTikTok = () => {
         </div>
       )}
 
-{selectedNetwork === 'tiktok' && (
-      <div className="tiktok-preview border p-4 rounded bg-black max-h-[600px] overflow-y-auto">
-        {renderMediaForTikTok()}
-        <div className="flex justify-between items-center pt-4 text-gray-400">
-          <div className="flex items-center space-x-2">
-            <HeartIcon className="w-6 h-6" />
-            <span>Like</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <ChatBubbleOvalLeftIcon className="w-6 h-6" />
-            <span>Comment</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <ShareIcon className="w-6 h-6" />
-            <span>Share</span>
+      {selectedNetwork === 'tiktok' && (
+        <div className="tiktok-preview border p-4 rounded bg-black max-h-[600px] overflow-y-auto">
+          {renderMediaForTikTok()}
+          <div className="flex justify-between items-center pt-4 text-gray-400">
+            <div className="flex items-center space-x-2">
+              <HeartIcon className="w-6 h-6" />
+              <span>Like</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <ChatBubbleOvalLeftIcon className="w-6 h-6" />
+              <span>Comment</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <ShareIcon className="w-6 h-6" />
+              <span>Share</span>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
 }
