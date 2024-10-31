@@ -97,8 +97,8 @@ export const SIDENAV_ITEMS_USER: SideNavItem[] = [
     ],
   },
   {
-    title: 'Mensajes',
-    path: '/pages/mensajes',
+    title: 'Interacciones',
+    path: '/pages/interacciones',
     icon: <InboxArrowDownIcon className='w-6' />,
   },
   {
@@ -122,8 +122,8 @@ export const SIDENAV_ITEMS_MOD: SideNavItem[] = [
     ],
   },
   {
-    title: 'Mensajes',
-    path: '/pages/mensajes',
+    title: 'Interacciones',
+    path: '/pages/interacciones',
     icon: <InboxArrowDownIcon className='w-6' />,
   },
   {
@@ -163,7 +163,7 @@ export const ROLE_ALLOWED_PATHS: { [key: string]: string[] } = {
     '/pages/publicaciones/crear',
     '/pages/publicaciones/calendario',
     '/pages/publicaciones/campanas',
-    '/pages/mensajes',
+    '/pages/interacciones',
     '/pages/cuentas-configuraciones',
   ],
   moderator: [
@@ -172,7 +172,7 @@ export const ROLE_ALLOWED_PATHS: { [key: string]: string[] } = {
     '/pages/publicaciones/crear',
     '/pages/publicaciones/calendario',
     '/pages/publicaciones/campanas',
-    '/pages/mensajes',
+    '/pages/interacciones',
     '/pages/preferencias-de-clientes',
     '/pages/preferencias-de-clientes/datos',
     '/pages/preferencias-de-clientes/encuestas',
