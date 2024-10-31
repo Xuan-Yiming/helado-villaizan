@@ -129,16 +129,17 @@ export async function delete_user(userId: string): Promise<void> {
         `;
 }
 
-export async function is_email_available(email: string): Promise<boolean> {
+export async function is_email_available(email: string, userID:string): Promise<void> {
   await connectToDatabase();
   if (!client) {
     throw new Error("Database client is not initialized");
   }
-
   const result = await client.sql`
-                SELECT * FROM user_accounts WHERE username = ${email}
-        `;
-  return result.rows.length === 0;
+    SELECT * FROM user_accounts WHERE username = ${email} AND id != ${userID}
+  `;
+  if (result.rows.length > 0) {
+    throw new Error("Email repetido");
+  }
 }
 
 // export async function verify_password(
@@ -153,6 +154,20 @@ export async function is_email_available(email: string): Promise<boolean> {
 //   const isMatch = await bcrypt.compare(inputPassword, user.password);
 //   return isMatch;
 // }
+
+export async function update_profile_photo(
+  userId: string,
+  photoURL: string
+): Promise<void> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  await client.sql`
+    UPDATE user_accounts SET photo = ${photoURL} WHERE id = ${userId}
+  `;
+}
 
 export async function update_password(
   userId: string,

@@ -4,6 +4,9 @@ import { Post } from "./types";
 
 import { get_social_account, load_post_by_id } from '@/app/lib/database';
 
+import { SIDENAV_ITEMS_SURVY, SIDENAV_ITEMS_MOD, SIDENAV_ITEMS, SIDENAV_ITEMS_USER } from "./constants";
+
+
 export async function tiktok_send_video_by_id(id: string){
     if (!id) {
         throw new Error('Missing post ID');
@@ -123,4 +126,19 @@ export async function check_password_requirement(password:string, password_confi
         throw new Error('La contraseña debe contener al menos un número');
     }
 
+}
+
+export async function get_side_nav(rol: string){
+    switch (rol) {
+        case 'admin':
+            return SIDENAV_ITEMS;
+        case 'user':
+            return SIDENAV_ITEMS_USER;
+        case 'moderator':
+            return SIDENAV_ITEMS_MOD;
+        case 'survy_creator':
+            return SIDENAV_ITEMS_SURVY;
+        default:
+            throw new Error('Invalid role');
+    }
 }

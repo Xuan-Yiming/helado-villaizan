@@ -19,24 +19,17 @@ const CuentasForm: React.FC<CuentasFormProps> = ({ user, setUser }) => {
   const router = useRouter();
   const [mediaFiles, setMediaFiles] = useState<MediaFILE | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!check_password_requirement(user.password, user.password)) {
-      return;
-    }
-
-    if (!is_email_available(user.username)) {
-      return;
-    }
-
     setIsUploading(true);
 
-    console.log("mediaFiles: ", mediaFiles);
-    
-
     try {
+      if (user.id !== "")
+        await is_email_available(user.username, user.id)
+      await check_password_requirement(user.password, user.password)
+
       var photo_url = user.photo
       if (mediaFiles?.id === "new") {
         const response = await fetch(
@@ -47,20 +40,18 @@ const CuentasForm: React.FC<CuentasFormProps> = ({ user, setUser }) => {
           }
         );
         const newBlob = await response.json();
-        console.log("Uploaded Photo:", newBlob.url);
         photo_url = `${newBlob.url}`;
         // await setUser((user) => ({ ...user, photo: photo_url }));
         // console.log("Updated User Photo: ", user.photo)
       }else if(!mediaFiles){
         photo_url = DEFAULT_PROFILE_PHOTO
       }
-
-      await createOrUpdateUserAccount({ ...user, photo: photo_url });
+      const _user = { ...user, photo: photo_url }
+      console.log("user to save: ", _user);
+      await createOrUpdateUserAccount(_user);
       router.push("/pages/cuentas/empleados");
-      console.log("Form submitted:", user);
-      console.log("Upload successful");
-    } catch (error) {
-      console.error("Upload failed:", error);
+    } catch (error: any) {
+      setErrorMessage(error.message || "Ocurrio un error")
     } finally {
       setIsUploading(false);
     }
@@ -142,6 +133,7 @@ const CuentasForm: React.FC<CuentasFormProps> = ({ user, setUser }) => {
             {user.active ? "Desactivar" : "Activar"}
           </button>
         </div>
+          {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
         <div className="flex justify-end">
           <button
