@@ -17,30 +17,15 @@ interface ProductoData {
   total_ventas: number;
 }
 
-const dataLine = [
-  { name: 'Ene', esteAno: 12000, anoAnterior: 8000 },
-  { name: 'Feb', esteAno: 15000, anoAnterior: 12000 },
-  { name: 'Mar', esteAno: 20000, anoAnterior: 18000 },
-  { name: 'Abr', esteAno: 25000, anoAnterior: 22000 },
-  { name: 'May', esteAno: 30000, anoAnterior: 28000 },
-  { name: 'Jun', esteAno: 32000, anoAnterior: 30000 },
-  { name: 'Jul', esteAno: 28000, anoAnterior: 25000 },
-];
-
 const dataPie = [
   { name: 'EcoGreen', value: 38.6 },
   { name: 'Canada', value: 22.5 },
-  { name: 'Mexico', value: 30.8 },
-  { name: 'Other', value: 8.1 },
 ];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
-  if (typeof window === 'undefined') {
-    // Evitar el prerenderizado en el servidor
-    return null;
-  }
+
   // Estado para almacenar los datos del gráfico de barras
   const searchParams = useSearchParams();
   const [barData, setBarData] = useState([]);
@@ -202,12 +187,9 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg p-6 shadow-md">
           <h3 className="font-bold text-lg mb-4">Zonas y demanda</h3>
           <ul className="space-y-2">
-            <li>Tarapoto</li>
-            <li>Iquitos</li>
-            <li>Lima</li>
-            <li>Lambayeque</li>
-            <li>Pucallpa</li>
-            <li>Jaén</li>
+            <li>Tarapoto - 0</li>
+            <li>Iquitos - 0</li>
+            <li>Jaén - 0</li>
           </ul>
         </div>
       </div>
@@ -250,4 +232,4 @@ const Dashboard = () => {
   );
 };
 
-export default dynamic(() => Promise.resolve(Dashboard), { ssr: false });
+export default Dashboard;
