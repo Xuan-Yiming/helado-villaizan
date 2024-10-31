@@ -188,9 +188,6 @@ function PublicarPage() {
     }
   };
   
-  
-  
-  
   const handleRemoveMedia = async (id: string, url: string) => {
     try {
       // Verificar si la URL es parte de las originales y eliminar del servidor
@@ -242,45 +239,9 @@ function PublicarPage() {
   };
 
   const handlePost = async () => {
-    const hasInstagram = selectedAccount.some(
-      (account) => account.red_social.toLowerCase() === 'instagram'
-    );
+    const isValid = validatePost(selectedAccount, mediaFiles, status, postTime, content);
 
-    if (hasInstagram && (!mediaFiles || mediaFiles.length === 0)) {
-      alert('Debes adjuntar al menos una imagen o video para publicar en Instagram.');
-      return;
-    }
-  
-    if (selectedAccount.length === 0) {
-      alert('Por favor, selecciona al menos un usuario para publicar.');
-      return;
-    }
-  
-    // Verificación para publicaciones programadas
-    if (status === 'programado') {
-      if (!postTime) {
-        alert('Por favor, selecciona una fecha y hora válidas.');
-        return;
-      }
-  
-      const currentDate = new Date();
-      const scheduledDate = new Date(postTime);
-  
-      const minValidDate = new Date(currentDate.getTime() + 10 * 60 * 1000);
-  
-      if (scheduledDate < minValidDate) {
-        alert('La fecha/hora programada debe ser al menos 10 minutos en el futuro.');
-        return;
-      }
-  
-      if (scheduledDate < currentDate) {
-        alert('No puedes programar una publicación en una fecha pasada.');
-        return;
-      }
-    }
-  
-    if (!content?.trim() && mediaFiles.length === 0) {
-      alert('Debe haber al menos un archivo o contenido para publicar.');
+    if (!isValid) {
       return;
     }
   
@@ -327,10 +288,11 @@ function PublicarPage() {
         };
   
         await create_post(newPost);
-        const success = await publishToSocialMedia(account.red_social, newPost);
-  
-        if (success) {
-          successNetworks.push(account.red_social); // Agregar red exitosa
+        if (status === 'publicado' || (status === 'programado' && account.red_social.toLowerCase() === 'facebook')) {
+          const success = await publishToSocialMedia(account.red_social, newPost);
+          if (success) {
+            successNetworks.push(account.red_social);
+          }
         }
       }
   
@@ -348,7 +310,6 @@ function PublicarPage() {
       setLoading(false);
     }
   };
-  
   
   const handleAccountSelect = (account: SocialAccount) => {
     const isTikTok = account.red_social.toLowerCase() === 'tiktok';
@@ -645,6 +606,58 @@ function PublicarPage() {
     </div>
   );
 }
+
+function validatePost(
+  selectedAccount: any[],
+  mediaFiles: MediaFILE[],
+  status: string,
+  postTime?: string,
+  content?: string
+): boolean {
+  const hasInstagram = selectedAccount.some(
+    (account) => account.red_social.toLowerCase() === 'instagram'
+  );
+
+  if (hasInstagram && (!mediaFiles || mediaFiles.length === 0)) {
+    alert('Debes adjuntar al menos una imagen o video para publicar en Instagram.');
+    return false;
+  }
+
+  if (selectedAccount.length === 0) {
+    alert('Por favor, selecciona al menos un usuario para publicar.');
+    return false;
+  }
+
+  if (status === 'programado') {
+    if (!postTime) {
+      alert('Por favor, selecciona una fecha y hora válidas.');
+      return false;
+    }
+
+    const currentDate = new Date();
+    const scheduledDate = new Date(postTime);
+    const minValidDate = new Date(currentDate.getTime() + 10 * 60 * 1000);
+
+    if (scheduledDate < minValidDate) {
+      alert('La fecha/hora programada debe ser al menos 10 minutos en el futuro.');
+      return false;
+    }
+
+    if (scheduledDate < currentDate) {
+      alert('No puedes programar una publicación en una fecha pasada.');
+      return false;
+    }
+  }
+
+  if (!content?.trim() && mediaFiles.length === 0) {
+    alert('Debe haber al menos un archivo o contenido para publicar.');
+    return false;
+  }
+
+  return true;
+}
+
+
 const isValidNetwork = (network: string): network is 'facebook' | 'instagram' | 'tiktok' =>
   ['facebook', 'instagram', 'tiktok'].includes(network);
 
