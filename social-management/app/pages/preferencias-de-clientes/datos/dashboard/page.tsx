@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 
 interface CompraSemana {
   dia: string;
@@ -36,6 +37,10 @@ const dataPie = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
+  if (typeof window === 'undefined') {
+    // Evitar el prerenderizado en el servidor
+    return null;
+  }
   // Estado para almacenar los datos del gráfico de barras
   const searchParams = useSearchParams();
   const [barData, setBarData] = useState([]);
@@ -245,4 +250,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default dynamic(() => Promise.resolve(Dashboard), { ssr: false });
