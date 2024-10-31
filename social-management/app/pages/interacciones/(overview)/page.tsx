@@ -30,7 +30,7 @@ const interactionPublicationsData = [
 ];
 
 const Page = () => {
-    const [filtersVisible, setFiltersVisible] = useState(true);
+    const [filtersVisible, setFiltersVisible] = useState(false);
     const [socialNetworkFilter, setSocialNetworkFilter] = useState('all');
     const [interactionTypeFilter, setInteractionTypeFilter] = useState('all');
     const [selectedChat, setSelectedChat] = useState<ChatMessage[]>([]);
