@@ -239,6 +239,7 @@ function PublicarPage() {
   };
 
   const handlePost = async () => {
+    console.log(selectedAccount);
     const isValid = validatePost(selectedAccount, mediaFiles, status, postTime, content);
 
     if (!isValid) {
@@ -308,6 +309,7 @@ function PublicarPage() {
       setPostStatus('Ocurrió un error al publicar en la(s) red(es) seleccionada(s).');
     } finally {
       setLoading(false);
+      setSelectedAccount([]);
     }
   };
   
@@ -357,7 +359,7 @@ function PublicarPage() {
           {/* Selección de usuario */}
           <div className="bg-white p-4 rounded border">
             <h2 className="text-xl font-semibold text-black">
-              Seleccionar usuarios
+              Seleccionar cuentas
             </h2>
             <ul className="mt-4 space-y-2">
               {socialAccounts.map((account) => (
@@ -618,8 +620,12 @@ function validatePost(
     (account) => account.red_social.toLowerCase() === 'instagram'
   );
 
-  if (hasInstagram && (!mediaFiles || mediaFiles.length === 0)) {
-    alert('Debes adjuntar al menos una imagen o video para publicar en Instagram.');
+  const hasTikTok = selectedAccount.some(
+    (account) => account.red_social.toLowerCase() === 'tiktok'
+  );
+
+  if ((hasInstagram || hasTikTok) && (!mediaFiles || mediaFiles.length === 0)) {
+    alert('Debes adjuntar al menos una imagen o video para publicar en la red social seleccionada.');
     return false;
   }
 
