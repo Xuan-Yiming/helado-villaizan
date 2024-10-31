@@ -44,7 +44,7 @@ const NavigationBar: React.FC = () => {
             <Link href={item.href}>
               {item.label}
             </Link>
-            {index < navItems.length - 1 && <span className="mx-2">{'<'}</span>}
+            {index < navItems.length - 1 && <span className="mx-2">{'>'}</span>}
           </li>
         ))}
       </ul>
