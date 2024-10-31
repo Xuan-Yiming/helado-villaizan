@@ -1,7 +1,7 @@
 // Page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     AdjustmentsHorizontalIcon,
     CheckCircleIcon,
@@ -20,19 +20,21 @@ interface ChatMessage {
 }
 
 const interactionMessagesData = [
-    { id: 1, userName: 'Jane Doe', socialNetwork: 'Facebook', lastMessage: '¿Puedes enviarme más información?' },
-    { id: 2, userName: 'Carlos Perez', socialNetwork: 'Instagram', lastMessage: 'Gracias por la respuesta!' }
+    { id: 1, userName: 'Jane Doe', socialNetwork: 'facebook', lastMessage: '¿Puedes enviarme más información?' },
+    { id: 2, userName: 'Carlos Perez', socialNetwork: 'instagram', lastMessage: 'Gracias por la respuesta!' }
 ];
 
 const interactionPublicationsData = [
-    { id: 1, socialNetwork: 'Facebook', caption: 'Nueva promoción en productos!', commentsCount: 2 },
-    { id: 2, socialNetwork: 'Instagram', caption: 'Descubre nuestras ofertas de verano', commentsCount: 3 }
+    { id: 1, socialNetwork: 'facebook', caption: 'Nueva promoción en productos!', commentsCount: 2, publishDate: '2023-10-30', type: 'imagen' },
+    { id: 2, socialNetwork: 'instagram', caption: 'Descubre nuestras ofertas de verano', commentsCount: 3, publishDate: '2023-10-31', type: 'video' }
 ];
 
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(false);
     const [socialNetworkFilter, setSocialNetworkFilter] = useState('all');
     const [interactionTypeFilter, setInteractionTypeFilter] = useState('all');
+    const [filteredMessages, setFilteredMessages] = useState(interactionMessagesData);
+    const [filteredPublications, setFilteredPublications] = useState(interactionPublicationsData);
     const [selectedChat, setSelectedChat] = useState<ChatMessage[]>([]);
     const [chatType, setChatType] = useState('');
     const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
@@ -49,6 +51,20 @@ const Page = () => {
     const resetFilters = () => {
         setSocialNetworkFilter('all');
         setInteractionTypeFilter('all');
+        setFilteredMessages(interactionMessagesData);
+        setFilteredPublications(interactionPublicationsData);
+    };
+
+    const applyFilters = () => {
+        setFilteredMessages(interactionMessagesData.filter(msg => 
+            (socialNetworkFilter === 'all' || msg.socialNetwork === socialNetworkFilter) &&
+            (interactionTypeFilter === 'all' || interactionTypeFilter === 'direct')
+        ));
+
+        setFilteredPublications(interactionPublicationsData.filter(pub => 
+            (socialNetworkFilter === 'all' || pub.socialNetwork === socialNetworkFilter) &&
+            (interactionTypeFilter === 'all' || interactionTypeFilter === 'comment')
+        ));
     };
 
     const handleSelectMessage = (id: number, userName: string) => {
@@ -160,7 +176,7 @@ const Page = () => {
                         <div className="flex-1 h-15 mx-1 flex justify-center items-center">
                             <button
                                 className="flex items-center text-blue-500 underline px-4 py-2 hover:text-black border-none"
-                                onClick={() => { /* handle filter application */ }}
+                                onClick={applyFilters}
                             >
                                 <CheckCircleIcon className="h-5 w-5 mr-2" />
                                 <div>Aplicar el Filtro</div>
@@ -176,12 +192,12 @@ const Page = () => {
                 <div className="w-1/2 border-r p-4 overflow-y-auto">
                     <h2 className="text-md font-bold mb-2">Seleccione una interacción para atender</h2>
                     <InteractionList
-                        messages={interactionMessagesData}
-                        publications={interactionPublicationsData}
+                        messages={filteredMessages}
+                        publications={filteredPublications}
                         selectedMessageId={selectedMessageId}
                         selectedPublicationId={selectedPublicationId}
-                        onSelectMessage={(id) => handleSelectMessage(id, interactionMessagesData.find(msg => msg.id === id)?.userName || '')}
-                        onSelectPublication={(id) => handleSelectPublication(id, interactionPublicationsData.find(pub => pub.id === id)?.socialNetwork || '')}
+                        onSelectMessage={(id) => handleSelectMessage(id, filteredMessages.find(msg => msg.id === id)?.userName || '')}
+                        onSelectPublication={(id) => handleSelectPublication(id, filteredPublications.find(pub => pub.id === id)?.socialNetwork || '')}
                     />
                 </div>
 
