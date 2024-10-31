@@ -15,6 +15,7 @@ interface CompraSemana {
 interface ProductoData {
   id_producto: string;
   total_ventas: number;
+  nombre?: string; // Añadimos un campo opcional para el nombre
 }
 
 const dataLine = [
@@ -28,10 +29,8 @@ const dataLine = [
 ];
 
 const dataPie = [
-  { name: 'EcoGreen', value: 38.6 },
-  { name: 'Canada', value: 22.5 },
-  { name: 'Mexico', value: 30.8 },
-  { name: 'Other', value: 8.1 },
+  { name: 'Promocion 1', value: 38.6 },
+  { name: 'Promocion 2', value: 22.5 },
 ];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -43,7 +42,7 @@ const Dashboard = () => {
   }
   // Estado para almacenar los datos del gráfico de barras
   const searchParams = useSearchParams();
-  const [barData, setBarData] = useState([]);
+  const [barData, setBarData] = useState<ProductoData[]>([]);
   const [dataLine, setDataLine] = useState([]);
 
   const [totalVentas, setTotalVentas] = useState<number | null>(null); // Estado para cantidad de ventas
@@ -83,8 +82,10 @@ const Dashboard = () => {
 
     const fetchTotalCiudades = async () => {
       try {
-        const response = await axios.get(`https://villaizan-social.onrender.com/ciudades/`);
-        setTotalCiudades(response.data.length); // Contamos el número de elementos en la lista de ciudades
+        if (startDate && endDate) {
+        const response = await axios.get(`https://villaizan-social.onrender.com/cantidad-ciudades-ventas/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
+        setTotalCiudades(response.data.cantidad_ciudades || 0); // Contamos el número de elementos en la lista de ciudades
+        }
       } catch (error) {
         console.error("Error fetching total ciudades:", error);
         setTotalCiudades(0);
@@ -124,12 +125,24 @@ const Dashboard = () => {
       if (startDate && endDate) {
         const response = await axios.get(`https://villaizan-social.onrender.com/ventas-por-producto/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
       // Formatear los datos según la estructura de la API
-      const formattedData = response.data.map((item: ProductoData) => ({
-        name: item.id_producto, // Utiliza 'id_producto' para el eje X
-        value: item.total_ventas, // Utiliza 'total_ventas' para el eje Y
-      }));
-      
-      setBarData(formattedData); // Actualiza el estado con los datos formateados
+      const productos = response.data;
+        // Crear un array de promesas para obtener los nombres de los productos
+        const productosConNombre = await Promise.all(
+          productos.map(async (producto: ProductoData) => {
+            try {
+              const productoResponse = await axios.get(`https://villaizan-social.onrender.com/productos/${producto.id_producto}/`);
+              return {
+                ...producto,
+                nombre: productoResponse.data.nombre || producto.id_producto, // Usa el nombre obtenido o el id si falla
+              };
+            } catch (error) {
+              console.error(`Error fetching nombre for product ID ${producto.id_producto}:`, error);
+              return producto; // En caso de error, devolver el producto sin nombre
+            }
+          })
+        );
+
+        setBarData(productosConNombre);
       }
     } catch (error) {
       console.error("Error fetching bar chart data:", error);
@@ -189,10 +202,10 @@ const Dashboard = () => {
           <h3 className="font-bold text-lg mb-4">Ventas semanales</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={dataLine}>
-              <Line type="monotone" dataKey="total_pedidos" stroke="#8884d8"/>
+              <Line type="monotone" dataKey="value" stroke="#82ca9d" dot={{ r: 4 }} activeDot={{ r: 6 }} />
               <CartesianGrid stroke="#ccc" />
               <XAxis dataKey="name" label={{ value: "Día", position: "insideBottom", offset: -5 }}  />
-              <YAxis dataKey="value" label={{ value: "Total de Pedidos", angle: -90, position: "insideLeft" }} domain={[0, 'auto']} 
+              <YAxis label={{ value: "Total de Pedidos", angle: -90, position: "insideLeft" }} domain={[0, 'auto']} 
               interval={0} allowDecimals={false} tickCount={5}  />
               <Tooltip />
               <Legend />
@@ -202,12 +215,9 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg p-6 shadow-md">
           <h3 className="font-bold text-lg mb-4">Zonas y demanda</h3>
           <ul className="space-y-2">
-            <li>Tarapoto</li>
-            <li>Iquitos</li>
-            <li>Lima</li>
-            <li>Lambayeque</li>
-            <li>Pucallpa</li>
-            <li>Jaén</li>
+            <li>Tarapoto - 0</li>
+            <li>Iquitos - 0</li>
+            <li>Jaén - 0</li>
           </ul>
         </div>
       </div>
@@ -218,10 +228,10 @@ const Dashboard = () => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" label={{ value: "Producto", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Cantidad Total de Ventas", angle: -90, position: "insideCenter" }} />
+              <XAxis dataKey="nombre" label={{ value: "Producto", position: "insideBottom", offset: -5 }} />
+              <YAxis dataKey="total_ventas" label={{ value: "Cantidad Total de Ventas", angle: -90, position: "insideCenter" }} />
               <Tooltip />
-              <Bar dataKey="value" fill="#82ca9d" />
+              <Bar dataKey="total_ventas" fill="#82ca9d" />
             </BarChart>
           </ResponsiveContainer>
         </div>
