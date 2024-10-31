@@ -72,7 +72,7 @@ export async function GET(request: Request) {
             await add_social_account(socialAccount);
 
             // Redirect to /pages/cuentas-configuraciones
-            return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas-configuraciones');
+            return NextResponse.redirect('https://helado-villaizan.vercel.app/pages/cuentas/redes');
         }
 
         return NextResponse.json({ error: `Failed to retrieve TikTok access token.` }, { status: 400 });

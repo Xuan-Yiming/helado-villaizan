@@ -1,20 +1,43 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { SIDENAV_ITEMS } from '@/app/lib/constants';
-import { SideNavItem } from '@/app/lib/types';
+import { SideNavItem, UserAccount } from '@/app/lib/types';
 
 
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import SocialHubLogo from '../icons/social-hub-logo';
+import { get_side_nav } from '@/app/lib/actions';
 
 
 
 const SideNav = () => {
+  const [SideNav, setSideNav] = useState<SideNavItem[]>();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const cookie = document.cookie;
+      const userInformation = cookie
+        .split(";")
+        .find((c) => c.trim().startsWith("user="));
+
+
+      if (userInformation) {
+        const userValue = userInformation.split("=")[1];
+        console.log("menu item user load: ", JSON.parse(decodeURIComponent(userValue)))
+        const temp_user = JSON.parse(decodeURIComponent(userValue))
+        if (temp_user?.role) {
+          setSideNav(await get_side_nav(temp_user.role));
+        }
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="md:w-60 bg-white h-screen flex-1 fixed border-r border-zinc-200 hidden md:flex">
       <div className="flex flex-col w-full h-full"> {/* Asegurarse que use h-full */}
@@ -25,14 +48,14 @@ const SideNav = () => {
 
         {/* Elementos del menú */}
         <div className="flex flex-col space-y-2 md:px-6 flex-grow mt-8 text-[#515E5F]"> {/* flex-grow permite que los elementos crezcan */}
-          {SIDENAV_ITEMS.slice(0, -1).map((item, idx) => { // Renderiza todos los elementos excepto "Cuentas"
+          {SideNav?.slice(0, -1).map((item, idx) => { // Renderiza todos los elementos excepto "Cuentas"
             return <MenuItem key={idx} item={item} />;
           })}
         </div>
 
         {/* Cuentas al fondo */}
         <div className="mt-auto md:px-6 mb-4 text-[#515E5F]"> {/* mt-auto empuja este div hacia el fondo */}
-          <MenuItem item={SIDENAV_ITEMS[SIDENAV_ITEMS.length - 1]} /> {/* Cuentas */}
+          {SideNav && <MenuItem item={SideNav[SideNav.length - 1]} />} {/* Cuentas */}
         </div>
       </div>
     </div>

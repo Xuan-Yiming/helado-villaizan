@@ -8,7 +8,7 @@ import { AdjustmentsHorizontalIcon, PlusCircleIcon, CheckCircleIcon, XMarkIcon }
 
 import { Encuesta } from '@/app/lib/types';
 
-import FilterSelect from '@/app/ui/mensajes/filter-select';
+import FilterSelect from '@/app/ui/interacciones/filter-select';
 import EncuestaList from '@/app/ui/encuesta/encuesta-list';
 import EncuestaCard from '@/app/ui/encuesta/encuesta-card';
 
