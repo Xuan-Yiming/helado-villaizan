@@ -242,10 +242,11 @@ function PublicarPage() {
   };
 
   const handlePost = async () => {
-    if (
-      selectedNetwork.toLowerCase() === 'instagram' &&
-      (!mediaFiles || mediaFiles.length === 0)
-    ) {
+    const hasInstagram = selectedAccount.some(
+      (account) => account.red_social.toLowerCase() === 'instagram'
+    );
+
+    if (hasInstagram && (!mediaFiles || mediaFiles.length === 0)) {
       alert('Debes adjuntar al menos una imagen o video para publicar en Instagram.');
       return;
     }

@@ -132,16 +132,11 @@ export async function POST(req: Request) {
   }
 }
 
-async function publishMedia(creationId: string, accessToken: string, post: Post, instagramBusinessId: string) {
+async function publishMedia(creationId: string,   accessToken: string,   post: Post,   instagramBusinessId: string) {
   const publishBody: any = {
     creation_id: creationId,
     access_token: accessToken,
   };
-
-  if (post.status === 'programado' && post.post_time) {
-    const scheduledPublishTime = Math.floor(new Date(post.post_time).getTime() / 1000);
-    publishBody.scheduled_publish_time = scheduledPublishTime;
-  }
 
   console.log('Publicando en Instagram...');
   const publishResponse = await fetch(
@@ -166,3 +161,4 @@ async function publishMedia(creationId: string, accessToken: string, post: Post,
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
 }
+
