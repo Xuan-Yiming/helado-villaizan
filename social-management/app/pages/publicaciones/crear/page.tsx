@@ -162,31 +162,35 @@ function PublicarPage() {
         })
         .filter(Boolean) as MediaFILE[];
   
-      // Lógica para manejar imágenes
-      if (mediaType === 'image') {
-        const totalImages =
-          mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
+      // Solo actualizar `mediaFiles` y `disableTikTok` si los archivos pasaron las validaciones
+      if (newFiles.length > 0) {
+        // Lógica para manejar imágenes
+        if (mediaType === 'image') {
+          const totalImages =
+            mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
   
-        if (totalImages > 10) {
-          alert('No puedes subir más de 10 imágenes.');
-          event.target.value = ''; // Restablecer input
-          return;
+          if (totalImages > 10) {
+            alert('No puedes subir más de 10 imágenes.');
+            event.target.value = ''; // Restablecer input
+            return;
+          }
+  
+          setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
+          setDisableVideo(true); // Deshabilitar videos al subir imágenes válidas
+          setDisableTikTok(true); // Deshabilitar TikTok si hay imágenes válidas
         }
-  
-        setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
-        setDisableVideo(true); // Deshabilitar videos al subir imágenes
-        setDisableTikTok(true); // Deshabilitar TikTok si hay imágenes
-      }
-      // Lógica para manejar videos
-      else if (mediaType === 'video') {
-        setMediaFiles([...newFiles]);
-        setDisableImage(true); // Deshabilitar imágenes
-        setDisableVideo(true); // Deshabilitar más videos
+        // Lógica para manejar videos
+        else if (mediaType === 'video') {
+          setMediaFiles([...newFiles]);
+          setDisableImage(true); // Deshabilitar imágenes
+          setDisableVideo(true); // Deshabilitar más videos
+        }
       }
   
       event.target.value = ''; // Restablecer input
     }
   };
+  
   
   const handleRemoveMedia = async (id: string, url: string) => {
     try {
