@@ -27,7 +27,7 @@ const SideNav = () => {
 
       if (userInformation) {
         const userValue = userInformation.split("=")[1];
-        console.log("menu item user load: ", JSON.parse(decodeURIComponent(userValue)))
+        //console.log("menu item user load: ", JSON.parse(decodeURIComponent(userValue)))
         const temp_user = JSON.parse(decodeURIComponent(userValue))
         if (temp_user?.role) {
           setSideNav(await get_side_nav(temp_user.role));

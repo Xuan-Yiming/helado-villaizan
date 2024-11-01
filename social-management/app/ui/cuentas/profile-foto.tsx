@@ -62,10 +62,10 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
           }
         );
         const newBlob = await response.json();
-        console.log("Uploaded Photo:", newBlob.url);
+        // //console.log("Uploaded Photo:", newBlob.url);
         photo_url = `${newBlob.url}`;
         // await setUser((user) => ({ ...user, photo: photo_url }));
-        // console.log("Updated User Photo: ", user.photo)
+        // //console.log("Updated User Photo: ", user.photo)
         await update_profile_photo(userID, photo_url);
 
         const cookie = document.cookie;

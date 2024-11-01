@@ -16,14 +16,14 @@ export async function tiktok_send_video_by_id(id: string){
     try {
         const post = await load_post_by_id(id);
         if (!post) {
-            console.log('Post not found');
+            //console.log('Post not found');
             throw new Error('Post not found');
         }
 
         const account = await get_social_account('tiktok');
 
         if (!account) {
-            console.log('TikTok account not linked');
+            //console.log('TikTok account not linked');
             throw new Error('TikTok account not linked');
         }
 
@@ -51,13 +51,13 @@ export async function tiktok_send_video_by_id(id: string){
         });
 
         if (response.ok) {
-            console.log('Post published');
+            //console.log('Post published');
             // update_post_status(id, 'publicado')
             if (post.status !== 'publicado') {
                 update_post_status(post.id, 'publicado')
             }
         } else {
-            console.log('Error loading post');
+            //console.log('Error loading post');
             throw new Error('Error loading post');
         }
     } catch (error) {
@@ -74,11 +74,11 @@ export async function tiktok_send_video_by_post(post: Post){
         const account = await get_social_account('tiktok');
 
         if (!account) {
-            console.log('TikTok account not linked');
+            //console.log('TikTok account not linked');
             throw new Error('TikTok account not linked');
         }
 
-        console.log('Initial Post');
+        //console.log('Initial Post');
         const response = await fetch(process.env.TIKTOK_API_URL + '/post/publish/video/init/', {
             method: 'POST',
             headers: {
@@ -102,18 +102,18 @@ export async function tiktok_send_video_by_post(post: Post){
         });
 
         if (response.ok) {
-            console.log('Post published');
+            //console.log('Post published');
             if (post.status !== 'publicado') {
                 update_post_status(post.id, 'publicado')
             }
             return response;
             // update_post_status(post.id, 'publicado')
         } else {
-            console.log(response.json);
+            //console.log(response.json);
             throw new Error('Error loading post');
         }
     } catch (error:any) {
-        console.log('Error publishing post: ', error.message);
+        //console.log('Error publishing post: ', error.message);
         throw new Error('Error publishing post');
     }
 }
@@ -163,7 +163,7 @@ export async function get_side_nav(rol: string){
 
 export async function can_access_path(role: string, path: string): Promise<boolean> {
 
-    console.log
+    //console.log
     (`Checking access for role: ${role} and path: ${path}`);
 
     if (role === "admin")
@@ -173,6 +173,6 @@ export async function can_access_path(role: string, path: string): Promise<boole
     if (!allowedPaths) {
         throw new Error('Invalid role');
     }
-    console.log("Result: ", allowedPaths.includes(path))
+    //console.log("Result: ", allowedPaths.includes(path))
     return allowedPaths.includes(path);
 }

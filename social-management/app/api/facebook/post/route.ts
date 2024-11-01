@@ -5,7 +5,7 @@ import { get_social_account } from "@/app/lib/database";
 export async function POST(req: Request) {
   try {
     const post: Post = await req.json(); // Parseamos el cuerpo del request
-    console.log("Datos recibidos para Facebook:", post);
+    // //console.log("Datos recibidos para Facebook:", post);
 
     // Obtener la cuenta vinculada desde la base de datos
     const account = await get_social_account('facebook');
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     // Manejo de Videos
     if (post.type === 'video' && post.media && post.media.length > 0) {
       const videoUrl = post.media[0]; // Asumimos que hay un solo video
-      console.log("Subiendo video:", videoUrl);
+      // //console.log("Subiendo video:", videoUrl);
 
       const formData = new FormData();
       formData.append('file_url', videoUrl);
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         throw new Error('Error al subir video a Facebook');
       }
 
-      console.log(`Video subido con éxito. ID: ${videoData.id}`);
+      // //console.log(`Video subido con éxito. ID: ${videoData.id}`);
       return new Response(
         JSON.stringify({ success: true, postId: videoData.id }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     // Manejo de Imágenes
     if (post.media && post.media.length > 0) {
       for (const mediaUrl of post.media) {
-        console.log("Subiendo imagen:", mediaUrl);
+        // //console.log("Subiendo imagen:", mediaUrl);
 
         const formData = new FormData();
         formData.append('url', mediaUrl);
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
         mediaIds.push(mediaData.id); // Guardar los IDs de las imágenes subidas
       }
 
-      console.log(`Imágenes subidas con éxito. IDs: ${mediaIds}`);
+      // //console.log(`Imágenes subidas con éxito. IDs: ${mediaIds}`);
 
       const postBody: any = {
         message: post.content,
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
         throw new Error('Error al publicar en Facebook');
       }
 
-      console.log(`Publicación realizada con éxito. ID: ${postData.id}`);
+      // //console.log(`Publicación realizada con éxito. ID: ${postData.id}`);
 
       return new Response(
         JSON.stringify({ success: true, postId: postData.id }),
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
       throw new Error('Error al publicar solo texto en Facebook');
     }
 
-    console.log(`Publicación de texto realizada con éxito. ID: ${textPostData.id}`);
+    // //console.log(`Publicación de texto realizada con éxito. ID: ${textPostData.id}`);
 
     return new Response(
       JSON.stringify({ success: true, postId: textPostData.id }),

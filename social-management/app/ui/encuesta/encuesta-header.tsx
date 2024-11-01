@@ -15,7 +15,7 @@ export default function EncuestaHeader({ encuesta, onUpdate }: EncuestaHeaderPro
     const today = new Date().toISOString().split('T')[0];
 
     useEffect(() => {
-        // console.log('head: ',encuesta?.title, encuesta?.description, encuesta?.start_date, encuesta?.end_date)
+        // //console.log('head: ',encuesta?.title, encuesta?.description, encuesta?.start_date, encuesta?.end_date)
         onUpdate({
             ...encuesta,
             title,

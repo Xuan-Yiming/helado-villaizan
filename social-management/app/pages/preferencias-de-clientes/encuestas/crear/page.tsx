@@ -33,7 +33,7 @@ function EncuestaPage() {
             }
             try {
                 const data = await load_survey_by_id(id,false);
-                console.log('Encuesta:', data);
+                //console.log('Encuesta:', data);
                 setEncuesta(data);
             } catch (error) {
                 throw new Error('Error fetching encuesta:');
@@ -44,7 +44,7 @@ function EncuestaPage() {
     }, [id]);
 
     function handleSave() {
-        console.log('Guardando encuesta...');
+        //console.log('Guardando encuesta...');
     }
 
     function handleAddQuestion() {
@@ -84,7 +84,7 @@ function EncuestaPage() {
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         try {
-            console.log('Submitting encuesta:', JSON.stringify(encuesta));
+            //console.log('Submitting encuesta:', JSON.stringify(encuesta));
             
             if (encuesta) {
                 await upload_survey(encuesta);

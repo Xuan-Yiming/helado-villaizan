@@ -43,12 +43,12 @@ export default function Calendar() {
         const fetchEvents = async () => {
             try {
                 const data = await load_programmed_posts();
-                console.log('Programmed posts:', data);
+                // //console.log('Programmed posts:', data);
                 const _events: calendarEvent[] = data.map((post): calendarEvent | undefined => {
                     const start = post.post_time ? new Date(post.post_time).toISOString().slice(0, 16) : '';
                     const end = start ? new Date(new Date(start).getTime() + 60 * 60 * 1000).toISOString().slice(0, 16) : '';
-                    console.log('Start:', start);
-                    console.log('End:', end);
+                    // //console.log('Start:', start);
+                    // //console.log('End:', end);
                     return {
                         id: post.id,
                         title: post.content || '',

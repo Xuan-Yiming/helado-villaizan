@@ -6,9 +6,9 @@ import { Post } from '@/app/lib/types';
 
 export async function POST(request: Request) {
     const post: Post = await request.json();
-    // console.log('Post:', post);
+    // //console.log('Post:', post);
     if (!post) {
-        console.log('Missing post');
+        //console.log('Missing post');
         return NextResponse.json({ error: 'Missing post' }, { status: 400 });
     }
     try {

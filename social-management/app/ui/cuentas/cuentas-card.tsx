@@ -31,10 +31,10 @@ export default function CuentasCard({ user }: CuentasCardProps) {
     try {
       if (isActive) {
         await deactivate_user(user.id);
-        console.log("Survey disabled successfully");
+        // //console.log("Survey disabled successfully");
       } else {
         await activate_user(user.id);
-        console.log("Survey activated successfully");
+        // //console.log("Survey activated successfully");
       }
       setIsActive(!isActive);
     } catch (error) {
