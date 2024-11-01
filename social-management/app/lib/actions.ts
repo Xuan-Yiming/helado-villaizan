@@ -16,14 +16,17 @@ export async function tiktok_send_video_by_id(id: string){
     try {
         const post = await load_post_by_id(id);
         if (!post) {
+            console.log('Post not found');
             throw new Error('Post not found');
         }
 
         const account = await get_social_account('tiktok');
 
         if (!account) {
+            console.log('TikTok account not linked');
             throw new Error('TikTok account not linked');
         }
+
 
         const response = await fetch(process.env.TIKTOK_API_URL + '/post/publish/video/init/', {
             method: 'POST',
@@ -42,14 +45,19 @@ export async function tiktok_send_video_by_id(id: string){
                 },
                 "source_info": {
                         "source": "PULL_FROM_URL",
-                        "video_url": post.media,
+                        "video_url": post.media![0],
                 }
             })
         });
 
         if (response.ok) {
-            update_post_status(id, 'publicado')
+            console.log('Post published');
+            // update_post_status(id, 'publicado')
+            if (post.status !== 'publicado') {
+                update_post_status(post.id, 'publicado')
+            }
         } else {
+            console.log('Error loading post');
             throw new Error('Error loading post');
         }
     } catch (error) {
@@ -66,9 +74,11 @@ export async function tiktok_send_video_by_post(post: Post){
         const account = await get_social_account('tiktok');
 
         if (!account) {
+            console.log('TikTok account not linked');
             throw new Error('TikTok account not linked');
         }
 
+        console.log('Initial Post');
         const response = await fetch(process.env.TIKTOK_API_URL + '/post/publish/video/init/', {
             method: 'POST',
             headers: {
@@ -86,17 +96,24 @@ export async function tiktok_send_video_by_post(post: Post){
                 },
                 "source_info": {
                         "source": "PULL_FROM_URL",
-                        "video_url": post.media,
+                        "video_url": post.media![0],
                 }
             })
         });
 
         if (response.ok) {
-            update_post_status(post.id, 'publicado')
+            console.log('Post published');
+            if (post.status !== 'publicado') {
+                update_post_status(post.id, 'publicado')
+            }
+            return response;
+            // update_post_status(post.id, 'publicado')
         } else {
+            console.log(response.json);
             throw new Error('Error loading post');
         }
-    } catch (error) {
+    } catch (error:any) {
+        console.log('Error publishing post: ', error.message);
         throw new Error('Error publishing post');
     }
 }
