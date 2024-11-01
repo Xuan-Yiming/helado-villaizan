@@ -49,7 +49,7 @@ export default function Page(){
                 setUsers(users => [...users, ...apiUsers]);
                 setOffset(offset => _offset + NUMBER_OF_POSTS_TO_FETCH);
 
-                console.log('Loaded users:', apiUsers);
+                //console.log('Loaded users:', apiUsers);
             } else {
                 console.error('Error: apiUsers is not an array', apiUsers);
             }

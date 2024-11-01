@@ -5,7 +5,7 @@ import { get_social_account } from "@/app/lib/database";
 export async function POST(req: Request) {
   try {
     const post: Post = await req.json();
-    console.log("Datos recibidos para Instagram:", post);
+    // //console.log("Datos recibidos para Instagram:", post);
 
     const account = await get_social_account('instagram');
     if (!account || !account.token_autenticacion || !account.instagram_business_account) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         formData.append('caption', post.content);
       }
 
-      console.log('Creando contenedor para Reel:', mediaUrl);
+      // //console.log('Creando contenedor para Reel:', mediaUrl);
 
       const response = await fetch(
         `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       }
 
       const creationId = data.id;
-      console.log(`Contenedor de Reel creado con éxito. ID: ${creationId}`);
+      // //console.log(`Contenedor de Reel creado con éxito. ID: ${creationId}`);
 
       return await publishMedia(creationId, accessToken, post, instagramBusinessId);
     }
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         formData.append('caption', post.content);
       }
 
-      console.log('Creando contenedor individual para imagen:', mediaUrl);
+      // //console.log('Creando contenedor individual para imagen:', mediaUrl);
 
       const response = await fetch(
         `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
       }
 
       const creationId = data.id;
-      console.log(`Contenedor creado con éxito. ID: ${creationId}`);
+      // //console.log(`Contenedor creado con éxito. ID: ${creationId}`);
 
       return await publishMedia(creationId, accessToken, post, instagramBusinessId);
     }
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       formData.append('is_carousel_item', 'true');
       formData.append('access_token', accessToken);
 
-      console.log('Creando contenedor para imagen en carrusel:', mediaUrl);
+      // //console.log('Creando contenedor para imagen en carrusel:', mediaUrl);
 
       const response = await fetch(
         `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
         throw new Error('Error al crear contenedor de medios');
       }
 
-      console.log(`Contenedor de imagen en carrusel creado con éxito. ID: ${data.id}`);
+      // //console.log(`Contenedor de imagen en carrusel creado con éxito. ID: ${data.id}`);
       mediaIds.push(data.id);
     }
 
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
     }
 
     const creationId = carouselData.id;
-    console.log(`Contenedor del carrusel creado con éxito. ID: ${creationId}`);
+    // //console.log(`Contenedor del carrusel creado con éxito. ID: ${creationId}`);
 
     return await publishMedia(creationId, accessToken, post, instagramBusinessId);
   } catch (error) {
@@ -159,7 +159,7 @@ async function publishMedia(creationId: string, accessToken: string, post: Post,
     access_token: accessToken,
   };
 
-  console.log('Intentando publicar en Instagram...');
+  // //console.log('Intentando publicar en Instagram...');
 
   const maxRetries = 5; // Número máximo de intentos
   const delayBetweenRetries = 5000; // Tiempo en milisegundos entre intentos (5 segundos)
@@ -179,7 +179,7 @@ async function publishMedia(creationId: string, accessToken: string, post: Post,
     publishData = await publishResponse.json();
 
     if (publishData.id) {
-      console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
+      // //console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
       return new Response(
         JSON.stringify({ success: true, postId: publishData.id }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }

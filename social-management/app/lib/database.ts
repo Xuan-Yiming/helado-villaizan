@@ -21,7 +21,7 @@ async function connectToDatabase() {
   if (!client) {
     try {
       client = await db.connect();
-      console.log("Database connected successfully");
+      //console.log("Database connected successfully");
     } catch (error) {
       console.error("Error connecting to the database:", error);
       throw new Error("Database connection failed");
@@ -40,7 +40,7 @@ export async function authenticate_user(
     throw new Error("Database client is not initialized");
   }
   const sql = `SELECT * FROM user_accounts WHERE username = ${username} AND password = ${password}`;
-  console.log(sql);
+  //console.log(sql);
 const result = await client.query(
     "SELECT * FROM user_accounts WHERE username = $1 AND password = $2 AND active = true",
     [username, password]
@@ -50,7 +50,7 @@ const result = await client.query(
     result.rows[0].token = auth.token;
     result.rows[0].token_expiration = auth.expirationDate;
     result.rows[0].password = "";
-    console.log(result.rows[0]);
+    //console.log(result.rows[0]);
     return result.rows[0] as UserAccount;
   } else {
     throw new Error("User not found");
@@ -79,7 +79,7 @@ export async function generateToken(
         [token, expirationDate.toISOString(), userID]
     );
 
-        console.log("Token updated in database");
+        //console.log("Token updated in database");
   return { token, expirationDate };
 }
 
@@ -257,8 +257,8 @@ export async function load_all_users(
     LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
   params.push(limit, offset);
 
-  console.log(sqlQuery);
-  console.log(params);
+  //console.log(sqlQuery);
+  //console.log(params);
 
   await connectToDatabase();
   if (!client) {
@@ -322,8 +322,8 @@ export async function load_posts(
     `;
   params.push(limit, offset);
 
-  console.log(sqlQuery);
-  console.log(params);
+  //console.log(sqlQuery);
+  //console.log(params);
 
   await connectToDatabase();
   if (!client) {
@@ -479,8 +479,8 @@ export async function load_all_survey(
     LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
   params.push(limit, offset);
 
-  console.log(sqlQuery);
-  console.log(params);
+  //console.log(sqlQuery);
+  //console.log(params);
 
   await connectToDatabase();
   if (!client) {
@@ -537,7 +537,7 @@ export async function check_survey_response(
     throw new Error("Database client is not initialized");
   }
 
-  console.log("Checking survey response:", surveyId, userIP);
+  //console.log("Checking survey response:", surveyId, userIP);
   const responsesResult = await client.sql`
         SELECT * FROM responses WHERE encuesta_id = ${surveyId} AND ip = ${userIP}
     `;

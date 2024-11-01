@@ -126,7 +126,7 @@ export async function submit_survey_response(surveyId: string, responseQ: Respon
 
 export async function load_all_social_accounts(): Promise<SocialAccount[]> {
   const apiUrl = API_URL + `/cuentas`;
-  console.log(apiUrl)
+  //console.log(apiUrl)
   const response = await fetch(apiUrl);
 
   if (!response.ok) {

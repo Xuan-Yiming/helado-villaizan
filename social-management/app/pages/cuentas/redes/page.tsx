@@ -74,13 +74,13 @@ const handleLink = async (name: string, linked: boolean) => {
                 try {
                     const authResponse = await metaLogin(); // Realiza el login
                     await handleMetaAccount(authResponse); // Guarda la cuenta en la BD
-                    console.log(`${name} vinculado exitosamente.`);
+                    //console.log(`${name} vinculado exitosamente.`);
                 } catch (error) {
                     console.error('Error durante la vinculación con Meta:', error);
                 }
                 break;
             case 'TikTok':
-                console.log('Entra a TikTok');
+                //console.log('Entra a TikTok');
                 router.push('/api/tiktok/login');
                 break;
             case 'Google':

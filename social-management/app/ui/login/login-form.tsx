@@ -28,7 +28,7 @@ export default function LoginForm() {
       const response = await axios.post("/api/auth/login", { email, password });
       if (response.data.success) {
         // Store the user in the cookies
-        console.log("response.data", response.data.data);
+        // //console.log("response.data", response.data.data);
         const user = response.data.data as UserAccount;
 
         document.cookie = `user=${JSON.stringify(user)}; path=/; expires=${new Date(
@@ -43,7 +43,7 @@ export default function LoginForm() {
           Date.now() + 7 * 24 * 60 * 60 * 1000
         ).toUTCString()}`;
         
-        console.log("Logged in");
+        // //console.log("Logged in");
         router.push("/pages");
       } else {
         const errorData = await response.data;

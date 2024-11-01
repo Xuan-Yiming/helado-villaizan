@@ -152,7 +152,7 @@ async function seedDatabase() {
 //     VALUES ('Customer Satisfaction Survey', 'active', NOW(), NOW() + INTERVAL '1 month');
 //   `;
 
-  console.log('Database seeded successfully');
+  // //console.log('Database seeded successfully');
 }
 
 export async function GET() {
