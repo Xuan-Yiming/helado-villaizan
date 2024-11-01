@@ -238,9 +238,11 @@ function PublicarPage() {
     }
   };
 
-  const handlePost = async () => {
-    console.log(selectedAccount);
-    const isValid = validatePost(selectedAccount, mediaFiles, status, postTime, content);
+  const handlePost = async (statusOverride?: string) => {
+    const currentStatus = statusOverride || status; // Usar el estado pasado o el actual
+    console.log("Estado de publicación:", currentStatus); // Confirmar el estado
+    
+    const isValid = validatePost(selectedAccount, mediaFiles, currentStatus, postTime, content);
 
     if (!isValid) {
       return;
@@ -281,15 +283,18 @@ function PublicarPage() {
           id: id || generateUniqueID(),
           social_media: [account.red_social],
           type: postType,
-          status,
+          status: currentStatus, // Usar el estado correcto
           thumbnail: uploadedMediaURLs.length > 0 ? uploadedMediaURLs[0] : undefined,
           media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined,
           content,
           post_time: postTime || new Date().toISOString(),
         };
   
+        // Solo guarda el post si el estado es "borrador"
         await create_post(newPost);
-        if (status === 'publicado' || (status === 'programado' && account.red_social.toLowerCase() === 'facebook')) {
+
+        // Si el estado no es "borrador", intenta publicar en la API de redes sociales
+        if (currentStatus !== "borrador" && (currentStatus === "publicado" || (currentStatus === "programado" && account.red_social.toLowerCase() === "facebook"))) {
           const success = await publishToSocialMedia(account.red_social, newPost);
           if (success) {
             successNetworks.push(account.red_social);
@@ -301,8 +306,10 @@ function PublicarPage() {
         setPostStatus(
           `La publicación se ha realizado exitosamente en: ${successNetworks.join(' - ')}`
         );
-      } else {
+      } else if (currentStatus !== "borrador") {
         setPostStatus('No se pudo realizar la publicación en ninguna red social.');
+      } else {
+        setPostStatus('El borrador se ha guardado correctamente.');
       }
     } catch (error) {
       console.error('Error al intentar realizar la publicación:', error);
@@ -513,17 +520,14 @@ function PublicarPage() {
 
         
           <div className="flex justify-end space-x-4 mt-4">
-            <button
+          <button
               className="bg-gray-500 text-white px-4 py-2 rounded"
-              onClick={() => {
-                setStatus("borrador");
-                handlePost();
-              }}
+              onClick={() => handlePost("borrador")}
             >
               Guardar borrador
             </button>
             <button
-              onClick={handlePost}
+              onClick={() => handlePost(status === "programado" ? "programado" : "publicado")}
               disabled={loading} // Deshabilitar el botón si está cargando
               className={`bg-red-500 text-white px-4 py-2 rounded ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
