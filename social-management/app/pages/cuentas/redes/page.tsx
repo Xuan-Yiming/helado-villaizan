@@ -43,7 +43,7 @@ export default function Page() {
                 return { ...account, socialAccount, linked: !!socialAccount };
             });
             setAccountsState(updatedAccounts);
-            document.cookie = `socialAccounts=${JSON.stringify(socialAccounts)}; path=/;`;
+            // document.cookie = `socialAccounts=${JSON.stringify(socialAccounts)}; path=/;`;
         };
 
         fetchData();
