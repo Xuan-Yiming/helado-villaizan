@@ -11,12 +11,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     const state = searchParams.get('state');
-    console.log('TikTok get callback');
+    //console.log('TikTok get callback');
     // Make sure the 'code' exists
     if (!code) {
         return NextResponse.json({ error: 'TikTok authentication failed.' }, { status: 400 });
     }
-    console.log('TikTok Authorization Code:', code);
+    //console.log('TikTok Authorization Code:', code);
     try {
         // Exchange the authorization code for an access token
         const response = await axios.post(process.env.TIKTOK_API_URL + '/oauth/token/', qs.stringify({
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
             }
         });
 
-        console.log('TikTok OAuth Response:', response.data);
+        //console.log('TikTok OAuth Response:', response.data);
 
         const access_token = response.data.access_token;
         const open_id = response.data.open_id;
@@ -40,9 +40,9 @@ export async function GET(request: Request) {
         if (access_token) {
             // You can now link the user's TikTok account in your database or session
             // Here, you'd save the TikTok `open_id` and `access_token` to your user's profile in the database.
-            console.log('TikTok Open ID:', open_id);
-            console.log('TikTok Access Token:', access_token);
-            console.log('TikTok Refresh Token:', refresh_token)
+            //console.log('TikTok Open ID:', open_id);
+            //console.log('TikTok Access Token:', access_token);
+            //console.log('TikTok Refresh Token:', refresh_token)
             // Example: Set a cookie with the TikTok account link (or store in database)
             
             //get username
@@ -53,8 +53,8 @@ export async function GET(request: Request) {
             });
     
             const username = userInfoResponse.data.data.user.username;
-            console.log('Username:', username);
-            console.log('TikTok User Info Response:', userInfoResponse.data);
+            //console.log('Username:', username);
+            //console.log('TikTok User Info Response:', userInfoResponse.data);
 
             // Create the social account object
             const socialAccount: SocialAccount = {
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
                 fecha_expiracion_token: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
             };
 
-            console.log("tiktok account: " + JSON.stringify(socialAccount))
+            //console.log("tiktok account: " + JSON.stringify(socialAccount))
             // Call the function to add the social account
             await add_social_account(socialAccount);
 

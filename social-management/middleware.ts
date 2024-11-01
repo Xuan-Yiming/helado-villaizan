@@ -4,8 +4,8 @@ import { ROLE_ALLOWED_PATHS } from './app/lib/constants';
 
 function can_access_path(role: string, path: string) {
 
-    console.log
-    (`Checking access for role: ${role} and path: ${path}`);
+    // //console.log
+    // (`Checking access for role: ${role} and path: ${path}`);
 
     if (role === "admin")
         return true;
@@ -14,7 +14,7 @@ function can_access_path(role: string, path: string) {
     if (!allowedPaths) {
         throw new Error('Invalid role');
     }
-    console.log("Result: ", allowedPaths.includes(path))
+    // //console.log("Result: ", allowedPaths.includes(path))
     return allowedPaths.includes(path);
 }
 

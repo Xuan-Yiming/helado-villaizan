@@ -40,10 +40,10 @@ export async function metaLogin(): Promise<any> {
     return new Promise((resolve, reject) => {
         window.FB.login(function (response: any) {
             if (response.authResponse) {
-                console.log('Login exitoso:', response);
+                //console.log('Login exitoso:', response);
                 resolve(response.authResponse);
             } else {
-                console.log('El usuario canceló el login o no autorizó.');
+                //console.log('El usuario canceló el login o no autorizó.');
                 reject('El usuario canceló el login o no autorizó.');
             }
         }, {
@@ -91,7 +91,7 @@ export async function handleMetaAccount(authResponse: any): Promise<void> {
 
             // Guardar la cuenta de Facebook en la BD
             await add_social_account(facebookAccount);
-            console.log('Cuenta de Facebook guardada exitosamente en la BD.');
+            //console.log('Cuenta de Facebook guardada exitosamente en la BD.');
 
             // Intentar obtener la cuenta de Instagram Business asociada
             const instagramResponse = await new Promise<any>((resolve, reject) =>
@@ -129,12 +129,12 @@ export async function handleMetaAccount(authResponse: any): Promise<void> {
 
                 // Guardar la cuenta de Instagram en la BD
                 await add_social_account(instagramAccount);
-                console.log('Cuenta de Instagram guardada exitosamente en la BD.');
+                //console.log('Cuenta de Instagram guardada exitosamente en la BD.');
             } else {
-                console.log('No se encontró una cuenta de Instagram asociada.');
+                //console.log('No se encontró una cuenta de Instagram asociada.');
             }
         } else {
-            console.log('No se encontraron páginas asociadas al usuario.');
+            //console.log('No se encontraron páginas asociadas al usuario.');
         }
     } catch (error) {
         console.error('Error al gestionar la cuenta de Meta:', error);

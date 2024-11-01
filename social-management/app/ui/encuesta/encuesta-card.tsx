@@ -20,10 +20,10 @@ export default function EncuestaCard( {encuesta}: EncuestaCardProps){
     try {
         if (isActive) {
             await disable_survey(encuesta.id);
-            console.log('Survey disabled successfully');
+            // //console.log('Survey disabled successfully');
         } else {
             await activate_survey(encuesta.id);
-            console.log('Survey activated successfully');
+            // //console.log('Survey activated successfully');
         }
         setIsActive(!isActive);
     } catch (error) {

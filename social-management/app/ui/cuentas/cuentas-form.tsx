@@ -42,12 +42,12 @@ const CuentasForm: React.FC<CuentasFormProps> = ({ user, setUser }) => {
         const newBlob = await response.json();
         photo_url = `${newBlob.url}`;
         // await setUser((user) => ({ ...user, photo: photo_url }));
-        // console.log("Updated User Photo: ", user.photo)
+        // //console.log("Updated User Photo: ", user.photo)
       }else if(!mediaFiles){
         photo_url = DEFAULT_PROFILE_PHOTO
       }
       const _user = { ...user, photo: photo_url }
-      console.log("user to save: ", _user);
+      // //console.log("user to save: ", _user);
       await createOrUpdateUserAccount(_user);
       router.push("/pages/cuentas/empleados");
     } catch (error: any) {

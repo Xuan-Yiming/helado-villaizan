@@ -1,18 +1,20 @@
 'use server'
 import { NextResponse } from 'next/server';
 
-import { tiktok_send_video_by_id } from '@/app/lib/actions';
+import { tiktok_send_video_by_id, tiktok_send_video_by_post } from '@/app/lib/actions';
+import { Post } from '@/app/lib/types';
 
 export async function POST(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-        return NextResponse.json({ error: 'Missing post ID' }, { status: 400 });
+    const post: Post = await request.json();
+    // //console.log('Post:', post);
+    if (!post) {
+        //console.log('Missing post');
+        return NextResponse.json({ error: 'Missing post' }, { status: 400 });
     }
     try {
-        const response = await tiktok_send_video_by_id(id);
+        const response = await tiktok_send_video_by_post(post);
         return response;
     }catch(error){
-        return NextResponse.json({ error: 'Error sending video' }, { status: 400 });
+        return NextResponse.json({ error: 'Error sending video' }, { status: 401 });
     }
 }

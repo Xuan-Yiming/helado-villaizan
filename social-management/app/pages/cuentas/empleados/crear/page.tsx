@@ -34,7 +34,7 @@ function UserPage() {
           if (fetchedUser) {
             setUSer(fetchedUser);
           }
-            console.log("User fetched successfully:", fetchedUser);
+            //console.log("User fetched successfully:", fetchedUser);
         } catch (error) {
           console.error("Failed to fetch user:", error);
         }

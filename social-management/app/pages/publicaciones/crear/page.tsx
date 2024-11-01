@@ -67,7 +67,7 @@ function PublicarPage() {
         try {
           const data = await load_post_by_id(id);
   
-          console.log("Datos del post cargados:", data);
+          //console.log("Datos del post cargados:", data);
   
           // Verificamos que cada medio tenga el tipo correcto
           const loadedMediaFiles = (data.media || []).map((url, index) => ({
@@ -205,10 +205,10 @@ function PublicarPage() {
         if (!response.ok) {
           throw new Error('Error al eliminar el archivo del servidor.');
         }
-        console.log(`Archivo con URL ${url} eliminado del servidor.`);
+        //console.log(`Archivo con URL ${url} eliminado del servidor.`);
   
         await delete_media_by_url(url);
-        console.log(`Registro con URL ${url} eliminado de la base de datos.`);
+        //console.log(`Registro con URL ${url} eliminado de la base de datos.`);
       }
   
       // Actualizar la lista de archivos locales
@@ -244,7 +244,7 @@ function PublicarPage() {
 
   const handlePost = async (statusOverride?: string) => {
     const currentStatus = statusOverride || status; // Usar el estado pasado o el actual
-    console.log("Estado de publicación:", currentStatus); // Confirmar el estado
+    //console.log("Estado de publicación:", currentStatus); // Confirmar el estado
     
     const isValid = validatePost(selectedAccount, mediaFiles, currentStatus, postTime, content);
 
@@ -709,7 +709,7 @@ const publishToSocialMedia = async (network: string, post: Post): Promise<boolea
     }
 
     const data = await response.json();
-    console.log(`Publicado en ${network} con éxito. ID: ${data.postId}`);
+    // //console.log(`Publicado en ${network} con éxito. ID: ${data.postId}`);
     return true; // Retorna true si la publicación es exitosa
   } catch (error) {
     console.error(`Error al publicar en ${network}:`, error);

@@ -107,7 +107,7 @@ const Dashboard = () => {
   const fetchFrecuenciaCompras = async () => {
     try {
       const response = await axios.get(`https://villaizan-social.onrender.com/frecuencia-compras-dia-semana/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
-      console.log("Datos de frecuencia de compras:", response.data);
+      //console.log("Datos de frecuencia de compras:", response.data);
       const formattedData = response.data.map((item: CompraSemana) => ({
         name: item.dia, // Días de la semana para el eje X
         value: item.total_pedidos, // Total de pedidos para el eje Y
