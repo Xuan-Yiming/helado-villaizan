@@ -23,7 +23,7 @@ export async function GET(req: Request) {
         + `&redirect_uri=${redirectUri}`
         + `&state=${state}`;
 
-    console.log('TikTok OAuth URL:', tiktokOauthUrl);
+    //console.log('TikTok OAuth URL:', tiktokOauthUrl);
 
     // Return redirect response
     return new Response(null, {

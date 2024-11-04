@@ -157,6 +157,32 @@ const renderMediaForInstagram = () => {
   }
 };
 
+const renderMediaForTikTok = () => {
+  if (mediaType !== 'video' || !media || media.length === 0) {
+    // No muestra nada si el tipo de media no es un video o si no hay contenido
+    return null;
+  }
+
+  return (
+    <div className="w-full h-[600px] bg-black flex flex-col items-center mb-2 relative">
+      <video controls className="w-full h-full object-cover">
+        <source src={media[0]} type="video/mp4" />
+        Tu navegador no soporta video.
+      </video>
+      <div className="absolute bottom-4 left-4 text-white">
+        <div className="flex items-center space-x-2 mb-2">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-white flex items-center justify-center">
+            <Logo /> {/* Logo del usuario o imagen */}
+          </div>
+          <span className="font-semibold text-sm">@villaizanpaletas</span>
+        </div>
+        <p className="text-sm" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          {text || 'Escribe algo para ver la vista previa...'}
+        </p>
+      </div>
+    </div>
+  );
+};
 
   return (
     <div>
@@ -234,6 +260,26 @@ const renderMediaForInstagram = () => {
             </div>
             <div className="text-sm text-gray-500 mt-2">Ver todos los comentarios</div>
             <div className="text-sm text-gray-500 mt-1">Agrega un comentario...</div>
+          </div>
+        </div>
+      )}
+
+      {selectedNetwork === 'tiktok' && (
+        <div className="tiktok-preview border p-4 rounded bg-black max-h-[600px] overflow-y-auto">
+          {renderMediaForTikTok()}
+          <div className="flex justify-between items-center pt-4 text-gray-400">
+            <div className="flex items-center space-x-2">
+              <HeartIcon className="w-6 h-6" />
+              <span>Like</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <ChatBubbleOvalLeftIcon className="w-6 h-6" />
+              <span>Comment</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <ShareIcon className="w-6 h-6" />
+              <span>Share</span>
+            </div>
           </div>
         </div>
       )}

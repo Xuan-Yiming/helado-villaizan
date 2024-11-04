@@ -31,7 +31,7 @@ function EncuestaPage() {
             const response = await fetch('/api/getClientIp');
             const data = await response.json();
             setIp(data.ip);
-            console.log('Client IP:', data.ip);
+            //console.log('Client IP:', data.ip);
           } catch (error) {
             console.error('Error fetching client IP:', error);
             router.push('/encuestas/error'); 
@@ -55,7 +55,7 @@ function EncuestaPage() {
                         if ( await is_survey_available(id)){
                             const data = await load_survey_by_id(id, false);
                             setEncuesta(data);
-                            console.log("data: ", data)
+                            //console.log("data: ", data)
                         }else{
                             return router.push('/encuestas/error'); 
                         }
@@ -110,7 +110,7 @@ function EncuestaPage() {
         event.preventDefault(); // Prevent form submission
 
         try {
-            console.log('Submitting response:', response);
+            //console.log('Submitting response:', response);
 
             if (encuesta && response) { // Add null check for 'response'
                 response.ip = ip;

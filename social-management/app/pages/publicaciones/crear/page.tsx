@@ -67,7 +67,7 @@ function PublicarPage() {
         try {
           const data = await load_post_by_id(id);
   
-          console.log("Datos del post cargados:", data);
+          //console.log("Datos del post cargados:", data);
   
           // Verificamos que cada medio tenga el tipo correcto
           const loadedMediaFiles = (data.media || []).map((url, index) => ({
@@ -162,31 +162,35 @@ function PublicarPage() {
         })
         .filter(Boolean) as MediaFILE[];
   
-      // Lógica para manejar imágenes
-      if (mediaType === 'image') {
-        const totalImages =
-          mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
+      // Solo actualizar `mediaFiles` y `disableTikTok` si los archivos pasaron las validaciones
+      if (newFiles.length > 0) {
+        // Lógica para manejar imágenes
+        if (mediaType === 'image') {
+          const totalImages =
+            mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
   
-        if (totalImages > 10) {
-          alert('No puedes subir más de 10 imágenes.');
-          event.target.value = ''; // Restablecer input
-          return;
+          if (totalImages > 10) {
+            alert('No puedes subir más de 10 imágenes.');
+            event.target.value = ''; // Restablecer input
+            return;
+          }
+  
+          setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
+          setDisableVideo(true); // Deshabilitar videos al subir imágenes válidas
+          setDisableTikTok(true); // Deshabilitar TikTok si hay imágenes válidas
         }
-  
-        setMediaFiles((prevFiles) => [...prevFiles, ...newFiles]);
-        setDisableVideo(true); // Deshabilitar videos al subir imágenes
-        setDisableTikTok(true); // Deshabilitar TikTok si hay imágenes
-      }
-      // Lógica para manejar videos
-      else if (mediaType === 'video') {
-        setMediaFiles([...newFiles]);
-        setDisableImage(true); // Deshabilitar imágenes
-        setDisableVideo(true); // Deshabilitar más videos
+        // Lógica para manejar videos
+        else if (mediaType === 'video') {
+          setMediaFiles([...newFiles]);
+          setDisableImage(true); // Deshabilitar imágenes
+          setDisableVideo(true); // Deshabilitar más videos
+        }
       }
   
       event.target.value = ''; // Restablecer input
     }
   };
+  
   
   const handleRemoveMedia = async (id: string, url: string) => {
     try {
@@ -201,10 +205,10 @@ function PublicarPage() {
         if (!response.ok) {
           throw new Error('Error al eliminar el archivo del servidor.');
         }
-        console.log(`Archivo con URL ${url} eliminado del servidor.`);
+        //console.log(`Archivo con URL ${url} eliminado del servidor.`);
   
         await delete_media_by_url(url);
-        console.log(`Registro con URL ${url} eliminado de la base de datos.`);
+        //console.log(`Registro con URL ${url} eliminado de la base de datos.`);
       }
   
       // Actualizar la lista de archivos locales
@@ -238,9 +242,11 @@ function PublicarPage() {
     }
   };
 
-  const handlePost = async () => {
-    console.log(selectedAccount);
-    const isValid = validatePost(selectedAccount, mediaFiles, status, postTime, content);
+  const handlePost = async (statusOverride?: string) => {
+    const currentStatus = statusOverride || status; // Usar el estado pasado o el actual
+    //console.log("Estado de publicación:", currentStatus); // Confirmar el estado
+    
+    const isValid = validatePost(selectedAccount, mediaFiles, currentStatus, postTime, content);
 
     if (!isValid) {
       return;
@@ -281,15 +287,18 @@ function PublicarPage() {
           id: id || generateUniqueID(),
           social_media: [account.red_social],
           type: postType,
-          status,
+          status: currentStatus, // Usar el estado correcto
           thumbnail: uploadedMediaURLs.length > 0 ? uploadedMediaURLs[0] : undefined,
           media: uploadedMediaURLs.length > 0 ? uploadedMediaURLs : undefined,
           content,
           post_time: postTime || new Date().toISOString(),
         };
   
+        // Solo guarda el post si el estado es "borrador"
         await create_post(newPost);
-        if (status === 'publicado' || (status === 'programado' && account.red_social.toLowerCase() === 'facebook')) {
+
+        // Si el estado no es "borrador", intenta publicar en la API de redes sociales
+        if (currentStatus !== "borrador" && (currentStatus === "publicado" || (currentStatus === "programado" && account.red_social.toLowerCase() === "facebook"))) {
           const success = await publishToSocialMedia(account.red_social, newPost);
           if (success) {
             successNetworks.push(account.red_social);
@@ -301,8 +310,10 @@ function PublicarPage() {
         setPostStatus(
           `La publicación se ha realizado exitosamente en: ${successNetworks.join(' - ')}`
         );
-      } else {
+      } else if (currentStatus !== "borrador") {
         setPostStatus('No se pudo realizar la publicación en ninguna red social.');
+      } else {
+        setPostStatus('El borrador se ha guardado correctamente.');
       }
     } catch (error) {
       console.error('Error al intentar realizar la publicación:', error);
@@ -513,17 +524,14 @@ function PublicarPage() {
 
         
           <div className="flex justify-end space-x-4 mt-4">
-            <button
+          <button
               className="bg-gray-500 text-white px-4 py-2 rounded"
-              onClick={() => {
-                setStatus("borrador");
-                handlePost();
-              }}
+              onClick={() => handlePost("borrador")}
             >
               Guardar borrador
             </button>
             <button
-              onClick={handlePost}
+              onClick={() => handlePost(status === "programado" ? "programado" : "publicado")}
               disabled={loading} // Deshabilitar el botón si está cargando
               className={`bg-red-500 text-white px-4 py-2 rounded ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
@@ -701,7 +709,7 @@ const publishToSocialMedia = async (network: string, post: Post): Promise<boolea
     }
 
     const data = await response.json();
-    console.log(`Publicado en ${network} con éxito. ID: ${data.postId}`);
+    // //console.log(`Publicado en ${network} con éxito. ID: ${data.postId}`);
     return true; // Retorna true si la publicación es exitosa
   } catch (error) {
     console.error(`Error al publicar en ${network}:`, error);

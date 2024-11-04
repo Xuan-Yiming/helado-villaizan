@@ -13,7 +13,7 @@ export async function POST() {
             );
         }
 
-        console.log(`Cuenta principal obtenida: ${account.usuario}`);
+        // //console.log(`Cuenta principal obtenida: ${account.usuario}`);
 
         // 2. Verificar si la cuenta tiene un token válido y fecha de expiración
         if (!account.token_autenticacion || !account.fecha_expiracion_token) {
@@ -24,12 +24,12 @@ export async function POST() {
         }
 
         const fechaExpiracion = new Date(account.fecha_expiracion_token);
-        console.log(`Fecha de expiración del token: ${fechaExpiracion}`);
+        // //console.log(`Fecha de expiración del token: ${fechaExpiracion}`);
 
         // 3. Si el token está por expirar, hacer la renovación
         const ahoraMas24Horas = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas desde ahora
         if (fechaExpiracion <= ahoraMas24Horas) {
-            console.log('Renovando token...');
+            // //console.log('Renovando token...');
 
             const newTokenResponse = await axios.get(
                 'https://graph.facebook.com/v20.0/oauth/access_token',
@@ -55,12 +55,12 @@ export async function POST() {
                 Date.now() + 60 * 24 * 60 * 60 * 1000 // +60 días
             ).toISOString();
 
-            console.log('Nuevo token obtenido:', newTokenData.access_token);
+            //console.log('Nuevo token obtenido:', newTokenData.access_token);
 
             // 4. Actualizar todas las cuentas de Facebook e Instagram con el nuevo token
             await update_meta_tokens(newTokenData.access_token, nuevaFechaExpiracion);
 
-            console.log('Tokens de todas las cuentas actualizados correctamente.');
+            //console.log('Tokens de todas las cuentas actualizados correctamente.');
 
             return NextResponse.json({
                 message: 'Tokens renovados exitosamente.',
