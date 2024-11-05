@@ -18,6 +18,7 @@ import {
   deactivate_user,
   activate_user,
 } from "@/app/lib/database";
+import { useError } from "@/app/context/errorContext";
 
 interface CuentasCardProps {
   user: UserAccount;
@@ -26,6 +27,7 @@ interface CuentasCardProps {
 export default function CuentasCard({ user }: CuentasCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isActive, setIsActive] = useState(user.active);
+  const { showError } = useError();
 
   const handleToggle = async () => {
     try {
@@ -38,8 +40,8 @@ export default function CuentasCard({ user }: CuentasCardProps) {
       }
       setIsActive(!isActive);
     } catch (error) {
-      console.error(
-        `Error ${isActive ? "disabling" : "activating"} survey:`,
+      showError(
+        `Error ${isActive ? "disabling" : "activating"} survey: `+
         error
       );
     }
@@ -51,7 +53,7 @@ export default function CuentasCard({ user }: CuentasCardProps) {
       const response = await delete_user(user.id);
       window.location.reload();
     } catch (error) {
-      console.error("Error deleting survey:", error);
+      showError("Error deleting survey: "+ error);
     } finally {
       setIsLoading(false);
     }
@@ -117,3 +119,4 @@ export default function CuentasCard({ user }: CuentasCardProps) {
     </li>
   );
 }
+
