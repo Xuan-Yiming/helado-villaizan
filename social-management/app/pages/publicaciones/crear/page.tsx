@@ -308,7 +308,7 @@ function PublicarPage() {
   
       if (successNetworks.length > 0) {
         setPostStatus(
-          `La publicación se ha realizado exitosamente en: ${successNetworks.join(' - ')}`
+          `La publicación se ha realizado correctamente en: ${successNetworks.join(' - ')}`
         );
       } else if (currentStatus !== "borrador") {
         setPostStatus('No se pudo realizar la publicación en ninguna red social.');
@@ -546,7 +546,7 @@ function PublicarPage() {
             <div className="mt-4">
               <p
                 className={`text-sm ${
-                  postStatus.includes("exitosamente")
+                  postStatus.includes("correctamente")
                     ? "text-green-600"
                     : "text-red-600"
                 }`}
