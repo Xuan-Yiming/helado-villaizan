@@ -5,11 +5,14 @@ import { UserAccount } from "@/app/lib/types";
 import { useSearchParams } from "next/navigation";
 import { get_user_by_id } from "@/app/lib/database";
 import CuentasForm from "@/app/ui/cuentas/cuentas-form";
+import { useError } from "@/app/context/errorContext";
 
 const DEFAULT_PROFILE_PHOTO = "https://bap4ouaenh9ktlwp.public.blob.vercel-storage.com/default-profile-account-unknown-icon-black-silhouette-free-vector-lOfodT0L1kfsKmIpBeof3vKeWBhmr6.jpg";
 
 
 function UserPage() {
+  const { showError } = useError();
+
   const [user, setUSer] = useState<UserAccount>(
     {
       id: "",
@@ -36,7 +39,8 @@ function UserPage() {
           }
             //console.log("User fetched successfully:", fetchedUser);
         } catch (error) {
-          console.error("Failed to fetch user:", error);
+          // console.error("Failed to fetch user:", error);
+          showError("Failed to fetch user:"+error);
         }
       }
     };

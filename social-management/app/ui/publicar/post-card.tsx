@@ -4,6 +4,7 @@ import Image from "next/image";
 import FacebookLogo from "@/app/ui/icons/facebook";
 import TiktokLogo from "@/app/ui/icons/tiktok";
 import InstagramLogo from "@/app/ui/icons/instagram";
+import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/solid";
 
 import { Post } from "@/app/lib/types";
 
@@ -96,6 +97,11 @@ export default function PostCard({ post }: PostCardProps) {
                   />
                 </div>
               )
+            )}
+            {!post.thumbnail && (
+              <div className="relative w-12 h-12 ml-12 flex items-center justify-center bg-gray-200 rounded-md">
+                <ChatBubbleBottomCenterTextIcon className="h-6 w-6" />
+              </div>
             )}
           </div>
   

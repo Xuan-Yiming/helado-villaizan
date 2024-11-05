@@ -14,6 +14,7 @@ import { check_password_requirement } from "@/app/lib/actions";
 import { update_password } from "@/app/lib/database";
 
 import ProfilePhotoUpload from "@/app/ui/cuentas/profile-foto";
+import { useError } from "@/app/context/errorContext";
 
 const DEFAULT_PROFILE_PHOTO = "https://bap4ouaenh9ktlwp.public.blob.vercel-storage.com/default-profile-account-unknown-icon-black-silhouette-free-vector-lOfodT0L1kfsKmIpBeof3vKeWBhmr6.jpg";
 
@@ -25,6 +26,7 @@ export default function Page() {
   const [newPassword, setNewPassword] = useState<string>("");
   const [mediaFiles, setMediaFiles] = useState<MediaFILE | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { showError } = useError();
 
   useEffect(() => {
     const cookie = document.cookie;

@@ -4,6 +4,7 @@ import EncuestaCard from './encuesta-card';
 import { useEffect, useState } from 'react';
 
 import { load_all_survey } from '@/app/lib/database';
+import { useError } from '@/app/context/errorContext';
 
 interface EncuestaListProps {
     initialEncuestas: Encuesta[];
@@ -19,6 +20,7 @@ export default function EncuestaList({
     const [offset, setOffset] = useState(0);
     const [encuestas, setEncuestas] = useState<Encuesta[]>(initialEncuestas);
     const [isLoading, setIsLoading] = useState(false);
+    const { showError } = useError();
 
     const loadMoreEncuestas = async () => {
         setIsLoading(true);
@@ -34,10 +36,10 @@ export default function EncuestaList({
                 setEncuestas(encuestas => [...encuestas, ...apiEncuestas]);
                 setOffset(offset => offset + NUMBER_OF_POSTS_TO_FETCH);
             } else {
-                console.error('Error: apiEncuestas is not an array', apiEncuestas);
+                showError('Error: apiEncuestas is not an array'+ apiEncuestas);
             }
         } catch (error) {
-            console.error('Error loading more encuestas:', error);
+            showError('Error loading more encuestas:'+ error);
         } finally {
             setIsLoading(false);
         }

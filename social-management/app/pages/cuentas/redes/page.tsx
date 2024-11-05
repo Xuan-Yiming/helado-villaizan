@@ -13,6 +13,7 @@ import TiktokLogo from '@/app/ui/icons/tiktok';
 import { load_all_social_accounts } from '@/app/lib/database';
 import { SocialAccount } from '@/app/lib/types';
 import { initMetaSdk, metaLogin, handleMetaAccount } from './meta-login'; // Importamos las funciones
+import { useError } from "@/app/context/errorContext";
 
 interface Account {
     name: string;
@@ -30,6 +31,7 @@ const initialAccounts: Account[] = [
 export default function Page() {
     const router = useRouter();
     const [accountsState, setAccountsState] = useState<Account[]>(initialAccounts);
+    const { showError } = useError();
 
     useEffect(() => {
         initMetaSdk(); // Inicializa el SDK de Meta
@@ -65,7 +67,7 @@ const handleLink = async (name: string, linked: boolean) => {
                 router.push('/api/google/logout');
                 break;
             default:
-                console.error('Plataforma desconocida para logout');
+                showError('Plataforma desconocida para logout');
         }
     } else {
         switch (name) {
@@ -76,7 +78,7 @@ const handleLink = async (name: string, linked: boolean) => {
                     await handleMetaAccount(authResponse); // Guarda la cuenta en la BD
                     //console.log(`${name} vinculado exitosamente.`);
                 } catch (error) {
-                    console.error('Error durante la vinculación con Meta:', error);
+                    showError('Error durante la vinculación con Meta: '+ error);
                 }
                 break;
             case 'TikTok':
@@ -87,7 +89,7 @@ const handleLink = async (name: string, linked: boolean) => {
                 router.push('/api/google/login');
                 break;
             default:
-                console.error('Plataforma desconocida para login');
+                showError('Plataforma desconocida para login');
         }
     }
 };
