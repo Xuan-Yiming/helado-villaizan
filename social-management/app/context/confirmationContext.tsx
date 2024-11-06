@@ -7,6 +7,7 @@ interface ConfirmationContextType {
   onConfirm: (() => void) | null;
   onCancel: (() => void) | null;
   showConfirmation: (message: string, onConfirm: () => void, onCancel?: () => void) => void;
+  showAlert: (message: string, onConfirm: () => void) => void;
   hideConfirmation: () => void;
 }
 
@@ -23,6 +24,12 @@ export function ConfirmationProvider({ children }: { children: ReactNode }) {
     setOnCancel(() => onCancel || hideConfirmation);
   };
 
+  const showAlert = (message: string, onConfirm: () => void) => {
+    setMessage(message);
+    setOnConfirm(() => onConfirm);
+    setOnCancel(null);
+  };
+
   const hideConfirmation = () => {
     setMessage(null);
     setOnConfirm(null);
@@ -30,7 +37,7 @@ export function ConfirmationProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ConfirmationContext.Provider value={{ message, onConfirm, onCancel, showConfirmation, hideConfirmation }}>
+    <ConfirmationContext.Provider value={{ message, onConfirm, onCancel, showConfirmation, showAlert, hideConfirmation }}>
       {children}
     </ConfirmationContext.Provider>
   );
