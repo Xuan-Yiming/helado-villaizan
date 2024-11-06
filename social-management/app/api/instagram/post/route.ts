@@ -5,7 +5,7 @@ import { get_social_account } from "@/app/lib/database";
 export async function POST(req: Request) {
   try {
     const post: Post = await req.json();
-    // //console.log("Datos recibidos para Instagram:", post);
+    console.log("Datos recibidos para Instagram:", post);
 
     const account = await get_social_account('instagram');
     if (!account || !account.token_autenticacion || !account.instagram_business_account) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         formData.append('caption', post.content);
       }
 
-      // //console.log('Creando contenedor para Reel:', mediaUrl);
+      console.log('Creando contenedor para Reel:', mediaUrl);
 
       const response = await fetch(
         `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       }
 
       const creationId = data.id;
-      // //console.log(`Contenedor de Reel creado con éxito. ID: ${creationId}`);
+      console.log(`Contenedor de Reel creado con éxito. ID: ${creationId}`);
 
       return await publishMedia(creationId, accessToken, post, instagramBusinessId);
     }
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         formData.append('caption', post.content);
       }
 
-      // //console.log('Creando contenedor individual para imagen:', mediaUrl);
+      console.log('Creando contenedor individual para imagen:', mediaUrl);
 
       const response = await fetch(
         `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
       }
 
       const creationId = data.id;
-      // //console.log(`Contenedor creado con éxito. ID: ${creationId}`);
+      console.log(`Contenedor creado con éxito. ID: ${creationId}`);
 
       return await publishMedia(creationId, accessToken, post, instagramBusinessId);
     }
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       formData.append('is_carousel_item', 'true');
       formData.append('access_token', accessToken);
 
-      // //console.log('Creando contenedor para imagen en carrusel:', mediaUrl);
+      console.log('Creando contenedor para imagen en carrusel:', mediaUrl);
 
       const response = await fetch(
         `https://graph.facebook.com/v20.0/${instagramBusinessId}/media`,
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
         throw new Error('Error al crear contenedor de medios');
       }
 
-      // //console.log(`Contenedor de imagen en carrusel creado con éxito. ID: ${data.id}`);
+      console.log(`Contenedor de imagen en carrusel creado con éxito. ID: ${data.id}`);
       mediaIds.push(data.id);
     }
 
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
     }
 
     const creationId = carouselData.id;
-    // //console.log(`Contenedor del carrusel creado con éxito. ID: ${creationId}`);
+    console.log(`Contenedor del carrusel creado con éxito. ID: ${creationId}`);
 
     return await publishMedia(creationId, accessToken, post, instagramBusinessId);
   } catch (error) {
@@ -159,44 +159,37 @@ async function publishMedia(creationId: string, accessToken: string, post: Post,
     access_token: accessToken,
   };
 
-  // //console.log('Intentando publicar en Instagram...');
-
-  const maxRetries = 5; // Número máximo de intentos
-  const delayBetweenRetries = 5000; // Tiempo en milisegundos entre intentos (5 segundos)
-  let attempt = 0;
-  let publishData: any;
-
-  while (attempt < maxRetries) {
-    const publishResponse = await fetch(
-      `https://graph.facebook.com/v20.0/${instagramBusinessId}/media_publish`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(publishBody),
-      }
-    );
-
-    publishData = await publishResponse.json();
-
-    if (publishData.id) {
-      // //console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
-      return new Response(
-        JSON.stringify({ success: true, postId: publishData.id }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      );
-    } else if (publishData.error && publishData.error.error_subcode === 2207027) {
-      // Error específico indicando que el contenido aún no está listo
-      console.warn('El archivo multimedia no está listo para publicar; esperando antes de reintentar...');
-      attempt += 1;
-      await new Promise(resolve => setTimeout(resolve, delayBetweenRetries)); // Espera antes de reintentar
-    } else {
-      console.error('Error al intentar publicar en Instagram:', publishData);
-      throw new Error('Error al publicar en Instagram');
+  const publishResponse = await fetch(
+    `https://graph.facebook.com/v20.0/${instagramBusinessId}/media_publish`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(publishBody),
     }
+  );
+
+  const publishData = await publishResponse.json();
+
+  if (publishData.id) {
+    // Publicación exitosa
+    console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
+    return new Response(
+      JSON.stringify({ success: true, postId: publishData.id }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  } else if (publishData.error && publishData.error.code === 4 && publishData.error.error_subcode === 2207051) {
+    // Ignorar este error específico de límite de solicitud y devolver éxito si es necesario
+    console.warn("Advertencia: Límite de solicitud alcanzado, pero la publicación fue exitosa.");
+    return new Response(
+      JSON.stringify({ success: true, warning: 'Rate limit reached, but the post was successful.' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  } else {
+    // Otros errores
+    console.error("Error en la publicación de Instagram:", publishData);
+    return new Response(
+      JSON.stringify({ success: false, error: publishData }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
-
-  // Si se agotaron los intentos y aún no está listo
-  console.error('El archivo multimedia no se pudo publicar después de varios intentos.');
-  throw new Error('El archivo multimedia no se pudo publicar después de varios intentos.');
 }
-

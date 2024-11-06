@@ -43,7 +43,9 @@ const SideNav = () => {
       <div className="flex flex-col w-full h-full"> {/* Asegurarse que use h-full */}
         {/* Logo y otros elementos */}
         <div className="flex flex-row space-x-3 items-center justify-center md:justify-start md:px-6 border-b border-zinc-200 h-20 w-full bg-[#BD181E]">
-          <SocialHubLogo height={100} width={300} />
+        <Link href="/pages" >
+            <SocialHubLogo height={100} width={200} />
+            </Link>
         </div>
 
         {/* Elementos del menú */}

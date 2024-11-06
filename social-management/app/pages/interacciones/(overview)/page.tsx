@@ -53,6 +53,7 @@ const Page = () => {
         setInteractionTypeFilter('all');
         setFilteredMessages(interactionMessagesData);
         setFilteredPublications(interactionPublicationsData);
+        applyFilters();
     };
 
     const applyFilters = () => {

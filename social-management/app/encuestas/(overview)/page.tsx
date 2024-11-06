@@ -6,12 +6,12 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
 import EncuestaHeader from '../encuesta-header';
 import EncuestaNode from '../encuesta-node';
-import Error from '@/app/ui/error'; // Import the Error component
 
 import { Encuesta, Question, Response,Answer } from '@/app/lib/types';
 import { is_survey_available, load_survey_by_id } from '@/app/lib/database';
 import { submit_survey_response } from '@/app/lib/database';
 import { check_survey_response } from '@/app/lib/database';
+import { useError } from '@/app/context/errorContext';
 
 function EncuestaPage() {
     const searchParams = useSearchParams();
@@ -19,9 +19,9 @@ function EncuestaPage() {
     const router = useRouter();
 
     const [encuesta, setEncuesta] = useState<Encuesta>();
-    const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for error message
     const [response, setResponse] = useState<Response>();
     const [isSubmitting, setIsSubmitting] = useState(false); // Add state variable for submission status
+    const { showError } = useError();
 
     const [ip, setIp] = useState<string>('');
 
@@ -33,7 +33,7 @@ function EncuestaPage() {
             setIp(data.ip);
             //console.log('Client IP:', data.ip);
           } catch (error) {
-            console.error('Error fetching client IP:', error);
+            showError('Error fetching client IP:'+ error);
             router.push('/encuestas/error'); 
           }
         };
@@ -61,9 +61,8 @@ function EncuestaPage() {
                         }
                     }
 
-                } catch (error) {
-                    console.error('Error fetching encuesta:', error);
-                    setErrorMessage('Error fetching encuesta');
+                } catch (error:any) {
+                    showError('Error fetching encuesta: '+ error.message);
                 }
             }
         };
@@ -119,18 +118,15 @@ function EncuestaPage() {
                 router.push('/encuestas/gracias');
             }
             // Perform any necessary actions, such as sending data to an API
-        } catch (error) {
-            console.error('Error guardando la encuesta:', error);
-            setErrorMessage('Error guardando la encuesta');
+        } catch (error:any) {
+            showError('Error guardando la encuesta: ' + error.message);
         } finally {
             setIsSubmitting(false); // Reset submission status to false
         }
     }
 
     return (
-        <main>
-            {errorMessage && <Error key={errorMessage} message={errorMessage} />} {/* Display the Error component */}
-            
+        <main>            
             <form className="p-4 mx-auto sm:w-full lg:w-1/2" onSubmit={handleSubmit}>
                 {encuesta && (
                     <EncuestaHeader encuesta={encuesta} />

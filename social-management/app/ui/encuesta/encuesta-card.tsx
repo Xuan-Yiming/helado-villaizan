@@ -7,6 +7,7 @@ import { inter } from "../fonts";
 import { useState } from 'react';
 
 import { delete_survey, disable_survey, activate_survey } from "@/app/lib/database";
+import { useError } from "@/app/context/errorContext";
 
 interface EncuestaCardProps {
     encuesta: Encuesta
@@ -15,6 +16,7 @@ interface EncuestaCardProps {
 export default function EncuestaCard( {encuesta}: EncuestaCardProps){
     const [isLoading, setIsLoading] = useState(false);
     const [isActive, setIsActive] = useState(encuesta.status === 'activo');
+    const { showError } = useError();
 
     const handleToggle = async () => {
     try {
@@ -27,7 +29,7 @@ export default function EncuestaCard( {encuesta}: EncuestaCardProps){
         }
         setIsActive(!isActive);
     } catch (error) {
-        console.error(`Error ${isActive ? 'disabling' : 'activating'} survey:`, error);
+        showError(`Error ${isActive ? 'disabling' : 'activating'} survey:`+ error);
     }
     };
 
@@ -37,7 +39,7 @@ export default function EncuestaCard( {encuesta}: EncuestaCardProps){
         const response = await delete_survey(encuesta.id);
         window.location.reload();
       } catch (error) {
-        console.error('Error deleting survey:', error);
+        showError('Error deleting survey:'+ error);
       } finally {
         setIsLoading(false);
       }

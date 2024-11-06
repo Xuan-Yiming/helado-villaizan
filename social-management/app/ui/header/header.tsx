@@ -7,11 +7,15 @@ import { useSelectedLayoutSegment } from "next/navigation";
 import SocialHubLogo from "../icons/social-hub-logo";
 import useScroll from "@/app/hooks/use-scroll";
 import { UserAccount } from "@/app/lib/types";
+import { ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const Header = () => {
   const scrolled = useScroll(5);
   const selectedLayout = useSelectedLayoutSegment();
   const [user, setUser] = useState<UserAccount>();
+  const router = useRouter();
 
   useEffect(() => {
     const cookie = document.cookie;
@@ -25,6 +29,11 @@ const Header = () => {
     }
   }, []);
 
+  const handleLogout = async () => {
+    await axios.get("/api/auth/logout");
+    router.push("/login");
+  };
+
   return (
     <div
       className={`sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-gray-200 ${
@@ -36,12 +45,18 @@ const Header = () => {
       <div className="flex h-[79px] items-center justify-between px-4">
         <div className="flex items-center space-x-4">
           <div className="flex flex-row space-x-3 items-center justify-center md:hidden">
+            <Link href="/pages" >
             <SocialHubLogo height={100} width={200} />
+            </Link>
           </div>
         </div>
 
         <div className="hidden md:flex text-white font-bold justify-center items-center">
-          <div>
+          <Link href="/pages/cuentas-configuraciones"
+          className="flex text-white font-bold justify-center items-center"
+          >
+          
+          <div >
             {user && (
               <div className="mr-4">
                 {user.nombre} {user.apellido}
@@ -62,6 +77,16 @@ const Header = () => {
                 />
               </div>
             )}
+          </div>
+          </Link>
+          <div className="">
+            <button
+              className="flex text-white px-4 py-2 rounded-mdfont-bold"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <ArrowRightEndOnRectangleIcon className="h-10 w-10 mr-2" />
+            </button>
           </div>
         </div>
       </div>

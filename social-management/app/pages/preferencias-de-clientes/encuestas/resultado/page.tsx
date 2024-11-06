@@ -8,10 +8,11 @@ import { load_survey_by_id } from '@/app/lib/database';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 
-import Error from '@/app/ui/error'; 
+import Error from '@/app/ui/error-popup'; 
 
 import EncuestaHeader from '@/app/ui/encuesta/resultado-header';
 import EncuestaNode from '@/app/ui/encuesta/resultado-node';
+import { useError } from '@/app/context/errorContext';
 
 async function ResultadoPage(){
     const searchParams = useSearchParams();
@@ -19,8 +20,8 @@ async function ResultadoPage(){
     const router = useRouter();
 
     const [encuesta, setEncuesta] = useState<Encuesta>();
-    const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for error message
     const [csvContent, setCsvContent] = useState<string>('');
+    const { showError } = useError();
 
     useEffect(() => {
         if(encuesta){
@@ -78,9 +79,8 @@ async function ResultadoPage(){
                 try {
                     const data = await load_survey_by_id(id,true);
                     setEncuesta(data);
-                } catch (error) {
-                    console.error('Error fetching encuesta:', error);
-                    setErrorMessage('Error fetching encuesta');
+                } catch (error:any) {
+                    showError('No se puede cargar la encuesta: '+ error.message);
                 }
             }
         };
@@ -94,7 +94,6 @@ async function ResultadoPage(){
 
     return (
         <main>
-            {errorMessage && <Error key={errorMessage} message={errorMessage} />} {/* Display the Error component */}
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Resultados de la Encuesta</h1>
 
