@@ -33,7 +33,7 @@ const Page = () => {
         setResponseFilter('all');
         setSocialNetworkFilter('all');
         setPostTypeFilter('all');
-        handleAplicarFiltro();
+        handleAplicarFiltro;
     };
 
     const loadMorePosts = async (_offset: number) => {

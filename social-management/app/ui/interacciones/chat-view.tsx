@@ -1,23 +1,18 @@
 // ChatView.tsx
 import React, { useState } from 'react';
-
-interface ChatMessage {
-    id: number;
-    text: string;
-    fromUser: boolean;
-    userName?: string;
-}
+import { ChatMessage } from '@/app/lib/types';
 
 interface ChatViewProps {
     chatContent: ChatMessage[];
     onSendMessage: (message: string) => void;
     chatType: string;
-    selectedCommentId: number | null;
+    selectedCommentId: string | null;
     selectedCommentUserName: string | null;
     selectedUserName: string | null;
     publicationInfo: string | null;
-    onSelectComment: (commentId: number, userName: string) => void;
+    onSelectComment: (commentId: string, userName: string) => void;
 }
+
 
 const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatType, selectedCommentId, selectedCommentUserName, selectedUserName, publicationInfo, onSelectComment }) => {
     const [newMessage, setNewMessage] = useState('');
@@ -30,7 +25,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
     };
 
     return (
-        <div className="border border-gray-300 rounded-xl bg-white flex flex-col h-full max-h-[600px]">
+        <div className="border border-gray-300 rounded-xl bg-white flex flex-col h-full max-h-[650px]">
             <div className="p-4 border-b text-gray-700 font-semibold">
                 {chatType === 'message' && selectedUserName && `Conversación con ${selectedUserName}`}
                 {chatType === 'comments' && publicationInfo && publicationInfo}
