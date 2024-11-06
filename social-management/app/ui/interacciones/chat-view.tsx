@@ -14,7 +14,7 @@ interface ChatViewProps {
 
 const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatType, selectedCommentId, selectedCommentUserName, selectedUserName, publicationInfo, onSelectComment }) => {
     const [newMessage, setNewMessage] = useState('');
-    const messagesContainerRef = useRef<HTMLDivElement>(null); // Ref para el contenedor de mensajes
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
 
     // Función para desplazar el scroll del contenedor de mensajes al final
     const scrollToBottom = () => {
@@ -25,7 +25,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
     };
 
     useEffect(() => {
-        // Llamamos a scrollToBottom cada vez que chatContent cambia, para desplazar el scroll solo del contenedor de mensajes al final
+        // Llamamos a scrollToBottom cada vez que chatContent cambia
         scrollToBottom();
     }, [chatContent]);
 
@@ -48,14 +48,18 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
                     chatContent.map(chat => (
                         <div
                             key={chat.id}
-                            className={`p-2 rounded-lg ${chatType === 'comments' ? 'cursor-pointer hover:bg-gray-200' : 'cursor-default'} ${chatType === 'comments' && chat.id === selectedCommentId ? 'border border-blue-500' : ''} ${chat.fromUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}
+                            className={`p-2 rounded-lg ${
+                                chatType === 'comments' ? 'cursor-pointer hover:bg-gray-200' : 'cursor-default'
+                            } ${
+                                chatType === 'comments' && chat.id === selectedCommentId ? 'border border-blue-500' : ''
+                            } ${chat.fromUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}
                             onClick={() => chatType === 'comments' && onSelectComment(chat.id, chat.userName || '')}
                         >
                             {chatType === 'comments' && chat.userName && <p className="font-semibold">{chat.userName}</p>}
                             {chatType === 'comments' && chat.formattedDate && (
                                 <p className="text-xs text-gray-500">{chat.formattedDate}</p>
                             )}
-                            {chat.text}
+                            <p>{chat.text}</p>
                         </div>
                     ))
                 ) : (

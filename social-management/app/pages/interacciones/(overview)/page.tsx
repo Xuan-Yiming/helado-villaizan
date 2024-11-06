@@ -26,7 +26,7 @@ const Page = () => {
     const [selectedPublicationId, setSelectedPublicationId] = useState<string | null>(null); // Cambio a string para que coincida con el postId
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
-
+    
     const fetchFacebookComments = async () => {
         try {
             const fbComments = await fetch('/api/facebook/comentarios').then(res => res.json());
@@ -47,6 +47,37 @@ const Page = () => {
     const resetFilters = () => {
         setSocialNetworkFilter('all');
         fetchFacebookComments();
+    };
+
+    const handleSendResponse = async (message: string) => {
+        if (!selectedCommentId) {
+            console.warn("No hay comentario seleccionado para responder.");
+            return;
+        }
+    
+        try {
+            const response = await fetch('/api/facebook/responder-comentario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    commentId: selectedCommentId,
+                    message: message
+                })
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                console.log("Respuesta enviada:", data);
+                // Aquí puedes actualizar el estado o interfaz para indicar que el comentario ha sido respondido
+            } else {
+                console.error("Error al responder el comentario:", data.error);
+            }
+        } catch (error) {
+            console.error("Error en la solicitud de respuesta:", error);
+        }
     };
 
     const handleSelectPublication = (id: string, socialNetwork: string) => {
@@ -144,19 +175,19 @@ const Page = () => {
                     </div>
                 </div>
                 <div className="w-1/2 p-4">
-                    <ChatView
-                        chatContent={selectedChat} // Asegúrate de que `selectedChat` sea ChatMessage[]
-                        onSendMessage={() => {}}
-                        chatType={chatType}
-                        selectedCommentId={selectedCommentId} // Asegúrate de que sea del tipo string | null si corresponde
-                        selectedCommentUserName={selectedCommentUserName}
-                        selectedUserName={null}
-                        publicationInfo={publicationInfo}
-                        onSelectComment={(commentId, userName) => {
-                            setSelectedCommentId(commentId);
-                            setSelectedCommentUserName(userName);
-                        }}                        
-                    />
+                <ChatView
+                    chatContent={selectedChat}
+                    onSendMessage={handleSendResponse} // Aquí estamos pasando `handleSendResponse`
+                    chatType={chatType}
+                    selectedCommentId={selectedCommentId}
+                    selectedCommentUserName={selectedCommentUserName}
+                    selectedUserName={null}
+                    publicationInfo={publicationInfo}
+                    onSelectComment={(commentId, userName) => {
+                        setSelectedCommentId(commentId);
+                        setSelectedCommentUserName(userName);
+                    }}
+                />
                 </div>
             </div>
         </div>
