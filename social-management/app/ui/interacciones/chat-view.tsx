@@ -1,5 +1,4 @@
-// ChatView.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/app/lib/types';
 
 interface ChatViewProps {
@@ -13,9 +12,22 @@ interface ChatViewProps {
     onSelectComment: (commentId: string, userName: string) => void;
 }
 
-
 const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatType, selectedCommentId, selectedCommentUserName, selectedUserName, publicationInfo, onSelectComment }) => {
     const [newMessage, setNewMessage] = useState('');
+    const messagesContainerRef = useRef<HTMLDivElement>(null); // Ref para el contenedor de mensajes
+
+    // Función para desplazar el scroll del contenedor de mensajes al final
+    const scrollToBottom = () => {
+        messagesContainerRef.current?.scrollTo({
+            top: messagesContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+        });
+    };
+
+    useEffect(() => {
+        // Llamamos a scrollToBottom cada vez que chatContent cambia, para desplazar el scroll solo del contenedor de mensajes al final
+        scrollToBottom();
+    }, [chatContent]);
 
     const handleSend = () => {
         if (newMessage.trim()) {
@@ -31,7 +43,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
                 {chatType === 'comments' && publicationInfo && publicationInfo}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-4 p-4">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 p-4">
                 {chatContent.length > 0 ? (
                     chatContent.map(chat => (
                         <div
@@ -40,6 +52,9 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
                             onClick={() => chatType === 'comments' && onSelectComment(chat.id, chat.userName || '')}
                         >
                             {chatType === 'comments' && chat.userName && <p className="font-semibold">{chat.userName}</p>}
+                            {chatType === 'comments' && chat.formattedDate && (
+                                <p className="text-xs text-gray-500">{chat.formattedDate}</p>
+                            )}
                             {chat.text}
                         </div>
                     ))
@@ -49,6 +64,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
                     </div>
                 )}
             </div>
+
             <div className="p-4 border-t">
                 {selectedCommentUserName && (
                     <div className="mb-2 text-sm text-gray-600">

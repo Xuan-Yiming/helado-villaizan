@@ -128,11 +128,13 @@ export type InteractionPublication = {
 
 
 export type ChatMessage = {
-  id: string; // Cambiado de number a string
+  id: string;
   text: string;
   fromUser: boolean;
   userName?: string;
+  formattedDate?: string; // Agregado para manejar la fecha formateada en comentarios
 };
+
 
 
 

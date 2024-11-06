@@ -1,4 +1,3 @@
-// interaction-list.tsx
 import React from 'react';
 import FacebookLogo from "@/app/ui/icons/facebook";
 import InstagramLogo from "@/app/ui/icons/instagram";
@@ -28,21 +27,23 @@ const InteractionList: React.FC<InteractionListProps> = ({ items, selectedPublic
             <li
                 key={publication.postId}
                 onClick={() => onSelectPublication(publication.postId)}
-                className={`flex items-center p-2 mb-2 rounded-lg cursor-pointer ${
+                className={`flex items-center justify-between p-2 mb-2 rounded-lg cursor-pointer ${
                     selectedPublicationId === publication.postId ? 'bg-blue-100 border border-blue-500' : 'bg-white'
                 } hover:bg-gray-100`}
             >
-                {getSocialIcon(publication.socialNetwork)}
-                <div>
-                    <p className="font-semibold">{publication.caption}</p>
-                    <p className="text-sm text-gray-500">
-                        Publicado el {publication.publishDate ? new Date(publication.publishDate).toLocaleDateString() : 'Fecha no disponible'}
-                    </p>
-                    <p className="text-sm text-gray-600">{publication.commentsCount || 0} comentarios</p>
-                    {publication.thumbnail && (
-                        <img src={publication.thumbnail} alt="Miniatura" className="w-10 h-10 object-cover rounded" />
-                    )}
+                <div className="flex items-start">
+                    {getSocialIcon(publication.socialNetwork)}
+                    <div>
+                        <p className="font-semibold">{publication.caption}</p>
+                        <p className="text-sm text-gray-500">
+                            Publicado el {publication.publishDate ? new Date(publication.publishDate).toLocaleDateString() : 'Fecha no disponible'}
+                        </p>
+                        <p className="text-sm text-gray-600">{publication.commentsCount || 0} comentarios</p>
+                    </div>
                 </div>
+                {publication.thumbnail && (
+                    <img src={publication.thumbnail} alt="Miniatura" className="w-12 h-12 object-cover rounded ml-4" />
+                )}
             </li>
         ))}
     </ul>

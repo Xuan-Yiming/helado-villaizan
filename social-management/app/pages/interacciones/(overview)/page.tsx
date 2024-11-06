@@ -12,6 +12,7 @@ import FilterSelect from '@/app/ui/interacciones/filter-select';
 import InteractionList from '@/app/ui/interacciones/interaction-list';
 import ChatView from '@/app/ui/interacciones/chat-view';
 import { InteractionPublication, ChatMessage } from '@/app/lib/types';
+import { format } from 'date-fns';
 
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(false);
@@ -50,27 +51,31 @@ const Page = () => {
 
     const handleSelectPublication = (id: string, socialNetwork: string) => {
         const selectedPublication = filteredPublications.find(pub => pub.postId === id);
-        
         setSelectedPublicationId(selectedPublicationId === id ? null : id);
+        
+        // Restablecer el comentario seleccionado
+        setSelectedCommentId(null);
+        setSelectedCommentUserName(null);
     
-        // Mapea los comentarios solo si existen
-        setSelectedChat(
-            selectedPublication && selectedPublication.comments
-                ? selectedPublication.comments.map(comment => ({
-                    id: comment.id,
-                    text: comment.text,
-                    fromUser: false,
-                    userName: comment.userName
-                }))
-                : []
-        );
+        // Ordena los comentarios en orden descendente de fecha usando el timestamp original
+        const sortedComments = selectedPublication?.comments
+            .map(comment => ({
+                id: comment.id,
+                text: comment.text,
+                fromUser: false,
+                userName: comment.userName,
+                timestamp: comment.timestamp, // Conserva el timestamp para ordenarlo
+                formattedDate: new Date(comment.timestamp).toLocaleString() // Formato de fecha amigable
+            }))
+            .sort((b, a) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()); // Orden descendente por fecha
     
+        setSelectedChat(sortedComments || []); // Si no hay comentarios, pasa un array vacío
+        console.log(sortedComments); // Verifica el orden de los comentarios en la consola
         setPublicationInfo(`Publicación de ${socialNetwork}`);
         setChatType('comments');
     };
     
-
-
+    
     const paginatedPublications = filteredPublications.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage

@@ -12,9 +12,9 @@ export async function GET() {
         const { token_autenticacion: accessToken, page_id: pageId } = account;
 
         // Paso 1: Obtener las publicaciones de la página de Facebook sin caché
-        const postsResponse = await fetch(`https://graph.facebook.com/v20.0/${pageId}/feed?access_token=${accessToken}`, { cache: "no-store" });
+        const postsResponse = await fetch(`https://graph.facebook.com/v20.0/${pageId}/feed?fields=id,message,created_time,full_picture&access_token=${accessToken}`, { cache: "no-store" });
         const postsData = await postsResponse.json();
-        
+
         console.log("Datos de publicaciones:", postsData);  // Log para ver las publicaciones obtenidas
 
         if (!postsResponse.ok || !postsData.data) {
@@ -43,14 +43,13 @@ export async function GET() {
                 const commentsResponse = await fetch(`https://graph.facebook.com/v20.0/${post.id}/comments?access_token=${accessToken}`, { cache: "no-store" });
                 const comments = await commentsResponse.json();
 
-                console.log(`Comentarios para la publicación ${post.id}:`, comments); // Log para ver los comentarios de cada publicación
-
                 return {
                     postId: post.id,
+                    socialNetwork: 'facebook',
                     caption: post.message || "", // Maneja el caso donde `message` podría estar indefinido
                     commentsCount: comments.data ? comments.data.length : 0,
                     publishDate: post.created_time,
-                    thumbnail: post.full_picture,
+                    thumbnail: post.full_picture, // Aquí se usa `full_picture` como miniatura
                     comments: comments.data ? comments.data.map((comment: FacebookComment) => ({
                         id: comment.id,
                         userName: comment.from.name,
@@ -71,9 +70,12 @@ export async function GET() {
             }
         }));
 
-        console.log("Datos finales enviados al front-end:", commentsData);  // Log para ver el resultado final antes de enviar al cliente
+        // Filtrar solo las publicaciones que tienen comentarios (commentsCount > 0)
+        const filteredCommentsData = commentsData.filter(post => post.commentsCount > 0);
 
-        return NextResponse.json(commentsData, { status: 200 });
+        console.log("Datos finales enviados al front-end (solo con comentarios):", filteredCommentsData);
+
+        return NextResponse.json(filteredCommentsData, { status: 200 });
     } catch (error) {
         console.error('Error en Facebook Comments API:', error);
         return NextResponse.json({ error: 'Error al obtener comentarios y publicaciones de Facebook' }, { status: 500 });
