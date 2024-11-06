@@ -1,3 +1,4 @@
+//chat-view.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/app/lib/types';
 

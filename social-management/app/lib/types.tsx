@@ -132,7 +132,8 @@ export type ChatMessage = {
   text: string;
   fromUser: boolean;
   userName?: string;
-  formattedDate?: string; // Agregado para manejar la fecha formateada en comentarios
+  formattedDate?: string; // Fecha formateada opcional
+  timestamp?: Date; // Agrega timestamp opcionalmente como Date
 };
 
 

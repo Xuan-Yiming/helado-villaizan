@@ -1,3 +1,4 @@
+//interaction-list.tsx
 import React from 'react';
 import FacebookLogo from "@/app/ui/icons/facebook";
 import InstagramLogo from "@/app/ui/icons/instagram";
