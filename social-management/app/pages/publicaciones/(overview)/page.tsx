@@ -10,6 +10,7 @@ import { Post } from '@/app/lib/types';
 import FilterSelect from '@/app/ui/interacciones/filter-select';
 import PostList from '@/app/ui/publicar/post-list';
 import PostCard from '@/app/ui/publicar/post-card';
+import { useError } from '@/app/context/errorContext';
 
 
   
@@ -24,6 +25,7 @@ const Page = () => {
     const [offset, setOffset] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const hasLoaded = useRef(false);
+    const { showError } = useError();
 
     const toggleFilters = () => {
         setFiltersVisible(!filtersVisible);
@@ -48,7 +50,7 @@ const Page = () => {
             setPosts(posts => [...posts, ...apiPosts]);
             setOffset(offset => _offset + NUMBER_OF_POSTS_TO_FETCH);
         } catch (error) {
-            console.error('Error loading more posts:', error);
+            showError('Error loading more posts: '+error);
         }
     };
 
@@ -154,7 +156,7 @@ const Page = () => {
                     </div>
                     <div className="flex-1 h-15 mx-1 flex justify-center items-center">
                         <button
-                            className="flex items-center text-blue-500 underline px-4 py-2 hover:text-black border-none"
+                            className="flex items-center bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-700 border-none"
                             onClick={handleAplicarFiltro}
                         >
                             <CheckCircleIcon className="h-5 w-5 mr-2" />

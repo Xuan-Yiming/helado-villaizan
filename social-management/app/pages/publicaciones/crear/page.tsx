@@ -17,6 +17,7 @@ import Preview from "@/app/ui/publicar/preview";
 import { delete_media_by_url, load_all_social_accounts } from "@/app/lib/database";
 import { load_post_by_id } from "@/app/lib/database";
 import { create_post } from "@/app/lib/database";
+import { useError } from "@/app/context/errorContext";
 
 function PublicarPage() {
   const searchParams = useSearchParams();
@@ -47,6 +48,9 @@ function PublicarPage() {
   const [media, setMedia] = useState<string[] | undefined>(undefined); 
   const [content, setContent] = useState<string | undefined>(undefined); 
   const [postTime, setPostTime] = useState<string | undefined>(undefined); 
+
+  const { showError } = useError();
+
 
   const getLogo = (name: string) => {
     switch (name.toLowerCase()) {
@@ -99,7 +103,7 @@ function PublicarPage() {
           setContent(data.content || "");
           setPostTime(formatDateForInput(data.post_time || new Date().toISOString()));
         } catch (error) {
-          console.error("Error fetching posts:", error);
+          showError("Error fetching posts: " + error);
         }
       }
     };
@@ -112,7 +116,7 @@ function PublicarPage() {
         );
         setSocialAccounts(filteredSocialAccounts); // Actualizamos el estado con las cuentas filtradas
       } catch (error) {
-        console.error("Error fetching social accounts:", error);
+        showError("Error fetching social accounts:" + error);
       }
     };
   

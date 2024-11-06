@@ -12,6 +12,7 @@ import FilterSelect from '@/app/ui/interacciones/filter-select';
 
 import {load_all_users} from '@/app/lib/database';
 import CuentasCard from '@/app/ui/cuentas/cuentas-card';
+import { useError } from "@/app/context/errorContext";
 
 const NUMBER_OF_POSTS_TO_FETCH = 20;
 
@@ -25,7 +26,7 @@ export default function Page(){
     const [isLoading, setIsLoading] = useState(false);
     const [offset, setOffset] = useState(0);
     const hasLoaded = useRef(false);
-
+    const { showError } = useError();
 
     const toggleFilters = () => {
         setFiltersVisible(!filtersVisible);
@@ -51,10 +52,11 @@ export default function Page(){
 
                 //console.log('Loaded users:', apiUsers);
             } else {
-                console.error('Error: apiUsers is not an array', apiUsers);
+                // console.error('Error: apiUsers is not an array', apiUsers);
+                showError('No se puede cargar los usuarios');
             }
-        } catch (error) {
-            console.error('Error loading more users:', error);
+        } catch (error:any) {
+            showError('No se puede cargar los usuarios: '+ error.message);
         } finally {
             setIsLoading(false);
         }
@@ -145,8 +147,8 @@ export default function Page(){
                     </div>
 
                     <div className="flex-1 h-15 mx-1 flex justify-center items-center">
-                        <button
-                            className="flex items-center text-blue-500 underline px-4 py-2 hover:text-black border-none"
+                    <button
+                            className="flex items-center bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-700 border-none"
                             onClick={handleAplicarFiltro}
                         >
                             <CheckCircleIcon className="h-5 w-5 mr-2" />

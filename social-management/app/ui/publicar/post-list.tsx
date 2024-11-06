@@ -4,6 +4,7 @@ import { Post } from '@/app/lib/types';
 
 import { load_posts } from '@/app/lib/database';
 import PostCard from './post-card';
+import { useError } from '@/app/context/errorContext';
 
 interface PostListProps {
     initialPosts: Post[];
@@ -23,6 +24,7 @@ export default function PostList({
     const [offset, setOffset] = useState(0);
     const [posts, setPosts] = useState<Post[]>(initialPosts);
     const { ref, inView } = useInView();
+    const { showError } = useError();
 
     const loadMorePosts = async () => {
         try {
@@ -36,7 +38,7 @@ export default function PostList({
             setPosts(posts => [...posts, ...apiPosts]);
             setOffset(offset => offset + NUMBER_OF_POSTS_TO_FETCH);
         } catch (error) {
-            console.error('Error loading more posts:', error);
+            showError('Error loading more posts:'+ error);
         }
     };
 
