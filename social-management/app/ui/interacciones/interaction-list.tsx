@@ -1,35 +1,17 @@
-// interaction-list.tsx
+//interaction-list.tsx
 import React from 'react';
 import FacebookLogo from "@/app/ui/icons/facebook";
 import InstagramLogo from "@/app/ui/icons/instagram";
-
-interface InteractionMessage {
-    id: number;
-    userName: string;
-    socialNetwork: string;
-    lastMessage: string;
-}
-
-interface InteractionPublication {
-    id: number;
-    socialNetwork: string;
-    caption: string;
-    commentsCount: number;
-    publishDate: string; // Nueva propiedad para la fecha de publicación
-    type?: string; // Nueva propiedad para el tipo de contenido
-}
+import { InteractionPublication } from "@/app/lib/types";
 
 interface InteractionListProps {
-    messages: InteractionMessage[];
-    publications: InteractionPublication[];
-    selectedMessageId: number | null;
-    selectedPublicationId: number | null;
-    onSelectMessage: (id: number) => void;
-    onSelectPublication: (id: number) => void;
+    items: InteractionPublication[];
+    selectedPublicationId: string | null;
+    onSelectPublication: (id: string) => void;
 }
 
-// Función para obtener el ícono de la red social
-const getSocialIcon = (socialNetwork: string) => {
+const getSocialIcon = (socialNetwork?: string) => {
+    if (!socialNetwork) return null;
     switch (socialNetwork.toLowerCase()) {
         case 'facebook':
             return <span className="w-5 h-5 mr-2"><FacebookLogo /></span>;
@@ -40,34 +22,29 @@ const getSocialIcon = (socialNetwork: string) => {
     }
 };
 
-const InteractionList: React.FC<InteractionListProps> = ({ messages, publications, selectedMessageId, selectedPublicationId, onSelectMessage, onSelectPublication }) => (
+const InteractionList: React.FC<InteractionListProps> = ({ items, selectedPublicationId, onSelectPublication }) => (
     <ul>
-        {messages.map((message) => (
+        {items.map((publication) => (
             <li
-                key={message.id}
-                onClick={() => onSelectMessage(message.id)}
-                className={`flex items-center p-2 mb-2 rounded-lg cursor-pointer ${selectedMessageId === message.id ? 'bg-blue-100 border border-blue-500' : 'bg-white'} hover:bg-gray-100`}
+                key={publication.postId}
+                onClick={() => onSelectPublication(publication.postId)}
+                className={`flex items-center justify-between p-2 mb-2 rounded-lg cursor-pointer ${
+                    selectedPublicationId === publication.postId ? 'bg-blue-100 border border-blue-500' : 'bg-white'
+                } hover:bg-gray-100`}
             >
-                {getSocialIcon(message.socialNetwork)}
-                <div>
-                    <strong>{message.userName}</strong> 
-                    <p>{message.lastMessage}</p>
+                <div className="flex items-start">
+                    {getSocialIcon(publication.socialNetwork)}
+                    <div>
+                        <p className="font-semibold">{publication.caption}</p>
+                        <p className="text-sm text-gray-500">
+                            Publicado el {publication.publishDate ? new Date(publication.publishDate).toLocaleDateString() : 'Fecha no disponible'}
+                        </p>
+                        <p className="text-sm text-gray-600">{publication.commentsCount || 0} comentarios</p>
+                    </div>
                 </div>
-            </li>
-        ))}
-        {publications.map((publication) => (
-            <li
-                key={publication.id}
-                onClick={() => onSelectPublication(publication.id)}
-                className={`flex items-center p-2 mb-2 rounded-lg cursor-pointer ${selectedPublicationId === publication.id ? 'bg-blue-100 border border-blue-500' : 'bg-white'} hover:bg-gray-100`}
-            >
-                {getSocialIcon(publication.socialNetwork)}
-                <div>
-                    <p className="font-semibold">{publication.caption}</p>
-                    <p className="text-sm text-gray-500">Publicado el {publication.publishDate}</p>
-                    <p className="text-sm text-gray-600">{publication.commentsCount} comentarios</p>
-                    {publication.type && <p className="text-sm text-gray-600">Tipo: {publication.type}</p>}
-                </div>
+                {publication.thumbnail && (
+                    <img src={publication.thumbnail} alt="Miniatura" className="w-12 h-12 object-cover rounded ml-4" />
+                )}
             </li>
         ))}
     </ul>

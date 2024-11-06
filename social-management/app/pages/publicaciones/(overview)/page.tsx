@@ -31,12 +31,12 @@ const Page = () => {
         setFiltersVisible(!filtersVisible);
     };
 
-    const resetFilters = () => {
+    const resetFilters = async () => {
         setResponseFilter('all');
         setSocialNetworkFilter('all');
         setPostTypeFilter('all');
-        handleAplicarFiltro();
     };
+    
 
     const loadMorePosts = async (_offset: number) => {
         try {
@@ -160,7 +160,7 @@ const Page = () => {
                             onClick={handleAplicarFiltro}
                         >
                             <CheckCircleIcon className="h-5 w-5 mr-2" />
-                            <div>Aplicar el Filtro</div>
+                            <div>Aplicar filtro</div>
                         </button>
                     </div>
                 </div>

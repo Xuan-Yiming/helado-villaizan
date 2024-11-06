@@ -1,26 +1,34 @@
-// ChatView.tsx
-import React, { useState } from 'react';
-
-interface ChatMessage {
-    id: number;
-    text: string;
-    fromUser: boolean;
-    userName?: string;
-}
+//chat-view.tsx
+import React, { useState, useEffect, useRef } from 'react';
+import { ChatMessage } from '@/app/lib/types';
 
 interface ChatViewProps {
     chatContent: ChatMessage[];
     onSendMessage: (message: string) => void;
     chatType: string;
-    selectedCommentId: number | null;
+    selectedCommentId: string | null;
     selectedCommentUserName: string | null;
     selectedUserName: string | null;
     publicationInfo: string | null;
-    onSelectComment: (commentId: number, userName: string) => void;
+    onSelectComment: (commentId: string, userName: string) => void;
 }
 
 const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatType, selectedCommentId, selectedCommentUserName, selectedUserName, publicationInfo, onSelectComment }) => {
     const [newMessage, setNewMessage] = useState('');
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+    // Función para desplazar el scroll del contenedor de mensajes al final
+    const scrollToBottom = () => {
+        messagesContainerRef.current?.scrollTo({
+            top: messagesContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+        });
+    };
+
+    useEffect(() => {
+        // Llamamos a scrollToBottom cada vez que chatContent cambia
+        scrollToBottom();
+    }, [chatContent]);
 
     const handleSend = () => {
         if (newMessage.trim()) {
@@ -30,22 +38,29 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
     };
 
     return (
-        <div className="border border-gray-300 rounded-xl bg-white flex flex-col h-full max-h-[600px]">
+        <div className="border border-gray-300 rounded-xl bg-white flex flex-col h-full max-h-[650px]">
             <div className="p-4 border-b text-gray-700 font-semibold">
                 {chatType === 'message' && selectedUserName && `Conversación con ${selectedUserName}`}
                 {chatType === 'comments' && publicationInfo && publicationInfo}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-4 p-4">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 p-4">
                 {chatContent.length > 0 ? (
                     chatContent.map(chat => (
                         <div
                             key={chat.id}
-                            className={`p-2 rounded-lg ${chatType === 'comments' ? 'cursor-pointer hover:bg-gray-200' : 'cursor-default'} ${chatType === 'comments' && chat.id === selectedCommentId ? 'border border-blue-500' : ''} ${chat.fromUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}
+                            className={`p-2 rounded-lg ${
+                                chatType === 'comments' ? 'cursor-pointer hover:bg-gray-200' : 'cursor-default'
+                            } ${
+                                chatType === 'comments' && chat.id === selectedCommentId ? 'border border-blue-500' : ''
+                            } ${chat.fromUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}
                             onClick={() => chatType === 'comments' && onSelectComment(chat.id, chat.userName || '')}
                         >
                             {chatType === 'comments' && chat.userName && <p className="font-semibold">{chat.userName}</p>}
-                            {chat.text}
+                            {chatType === 'comments' && chat.formattedDate && (
+                                <p className="text-xs text-gray-500">{chat.formattedDate}</p>
+                            )}
+                            <p>{chat.text}</p>
                         </div>
                     ))
                 ) : (
@@ -54,6 +69,7 @@ const ChatView: React.FC<ChatViewProps> = ({ chatContent, onSendMessage, chatTyp
                     </div>
                 )}
             </div>
+
             <div className="p-4 border-t">
                 {selectedCommentUserName && (
                     <div className="mb-2 text-sm text-gray-600">

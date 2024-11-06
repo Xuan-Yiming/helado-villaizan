@@ -105,3 +105,70 @@ export type Answer = {
   question_id: string;
   answer: string;
 }
+
+/* INTERACCIONES */
+
+export type InteractionMessage = {
+  id: number;
+  userName: string;
+  socialNetwork: 'facebook' | 'instagram';
+  lastMessage: string;
+};
+
+export type InteractionPublication = {
+  postId: string; // Cambiado a string para coincidir con los postId de las APIs
+  socialNetwork: 'facebook' | 'instagram';
+  caption: string;
+  commentsCount: number;
+  thumbnail?: string; // URL de la miniatura de la imagen o video
+  publishDate?: string;  // Fecha de la publicación
+  mediaType?: 'image' | 'video'; // Tipo de contenido
+  comments: MetaComment[]; // Agrega los comentarios aquí
+};
+
+
+export type ChatMessage = {
+  id: string;
+  text: string;
+  fromUser: boolean;
+  userName?: string;
+  formattedDate?: string; // Fecha formateada opcional
+  timestamp?: Date; // Agrega timestamp opcionalmente como Date
+};
+
+
+
+
+// Para API de Meta (Facebook e Instagram)
+export type MetaApiResponse<T> = {
+  data: T;
+  paging?: {
+    previous?: string;
+    next?: string;
+  };
+};
+
+export type MetaDM = {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  message: string;
+  timestamp: string;
+};
+
+export type MetaComment = {
+  id: string;
+  userName: string;
+  text: string;
+  timestamp: string;
+};
+
+export type MetaPost = {
+  id: string;
+  socialNetwork: 'facebook' | 'instagram';
+  caption: string;
+  comments: MetaComment[];
+  mediaType: 'image' | 'video';
+  thumbnail?: string;
+  publishDate: string; // Cambiado de postDate a publishDate para coherencia
+};
