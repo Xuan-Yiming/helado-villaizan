@@ -13,11 +13,13 @@ const ConfirmationAlert: React.FC = () => {
       <div className="bg-white p-4 rounded shadow-lg">
         <p>{message}</p>
         <div className="mt-4 flex justify-end space-x-2">
-          <button onClick={hideConfirmation || (() => {})} className="p-2 bg-gray-500 text-white rounded">
-            Cancelar
-          </button>
-          <button onClick={onConfirm || (() => {})} className="p-2 bg-[#BD181E] text-white rounded">
-            Confirmar
+          {onCancel && (
+            <button onClick={hideConfirmation || onCancel} className="p-2 bg-gray-500 text-white rounded">
+              Cancel
+            </button>
+          )}
+          <button onClick={onConfirm ?? undefined} className="p-2 bg-blue-500 text-white rounded">
+            Confirm
           </button>
         </div>
       </div>
