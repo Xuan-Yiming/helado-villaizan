@@ -138,7 +138,7 @@ const Page = () => {
                 const data = await response.json();
     
                 if (response.ok) {
-                    console.log("Respuesta al comentario enviada:", data);
+                    //console.log("Respuesta al comentario enviada:", data);
                 } else {
                     console.error("Error al responder el comentario:", data.error);
                 }
@@ -180,10 +180,6 @@ const Page = () => {
         }
     };
     
-    
-    
-    
-
     const handleSelectInteraction = async (id: string) => {
         setSelectedInteractionId(id);
         const selectedInteraction = filteredConversations.find(
@@ -225,8 +221,6 @@ const Page = () => {
             console.error("Error al obtener mensajes/comentarios:", error);
         }
     };
-    
-    
     
     const paginatedConversations = Array.isArray(filteredConversations) 
         ? filteredConversations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) 

@@ -133,14 +133,24 @@ export type InteractionMessage = {
 };
 
 
+// Define un tipo para los adjuntos del mensaje
+type MessageAttachment = {
+  type: 'image' | 'audio' | 'sticker' | 'video';
+  url: string;
+};
+
+// Actualiza ChatMessage para incluir los adjuntos
 export type ChatMessage = {
   id: string;
   text: string;
   fromUser: boolean;
   userName?: string;
-  formattedDate?: string; // Fecha formateada opcional
-  timestamp?: Date; // Agrega timestamp opcionalmente como Date
+  formattedDate?: string;
+  timestamp?: Date;
+  attachment?: MessageAttachment | null; // Añade la propiedad de attachment opcional
 };
+
+
 
 // Para API de Meta (Facebook e Instagram)
 export type MetaApiResponse<T> = {
