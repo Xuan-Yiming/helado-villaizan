@@ -135,7 +135,7 @@ export default function Page(){
                             onClick={handleAplicarFiltro}
                         >
                             <CheckCircleIcon className="h-5 w-5 mr-2" />
-                            <div>Aplicar el Filtro</div>
+                            <div>Aplicar filtro</div>
                         </button>
                     </div>
                 </div>
