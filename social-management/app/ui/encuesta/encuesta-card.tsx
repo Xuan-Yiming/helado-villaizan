@@ -8,6 +8,8 @@ import { useState } from 'react';
 
 import { delete_survey, disable_survey, activate_survey } from "@/app/lib/database";
 import { useError } from "@/app/context/errorContext";
+import { useConfirmation } from "@/app/context/confirmationContext";
+import { useSuccess } from "@/app/context/successContext";
 
 interface EncuestaCardProps {
     encuesta: Encuesta
@@ -17,37 +19,48 @@ export default function EncuestaCard( {encuesta}: EncuestaCardProps){
     const [isLoading, setIsLoading] = useState(false);
     const [isActive, setIsActive] = useState(encuesta.status === 'activo');
     const { showError } = useError();
+    const { showConfirmation } = useConfirmation();
+    const { showSuccess } = useSuccess();
 
     const handleToggle = async () => {
-    try {
-        if (isActive) {
-            await disable_survey(encuesta.id);
-            // //console.log('Survey disabled successfully');
-        } else {
-            await activate_survey(encuesta.id);
-            // //console.log('Survey activated successfully');
+      showConfirmation(
+        `Are you sure you want to ${isActive ? "disable" : "activate"} this survey?`,
+        async () => {
+          try {
+            if (isActive) {
+              await disable_survey(encuesta.id);
+              showSuccess("Survey disabled successfully!");
+            } else {
+              await activate_survey(encuesta.id);
+              showSuccess("Survey activated successfully!");
+            }
+            setIsActive(!isActive);
+          } catch (error) {
+            showError(
+              `Error ${isActive ? "disabling" : "activating"} survey: ` + error
+            );
+          }
         }
-        setIsActive(!isActive);
-    } catch (error) {
-        showError(`Error ${isActive ? 'disabling' : 'activating'} survey:`+ error);
-    }
+      );
     };
 
     const handleDelete = async () => {
-      setIsLoading(true);
-      try {
-        const response = await delete_survey(encuesta.id);
-        window.location.reload();
-      } catch (error) {
-        showError('Error deleting survey:'+ error);
-      } finally {
-        setIsLoading(false);
-      }
+      showConfirmation(
+        "Are you sure you want to delete this survey?",
+        async () => {
+          setIsLoading(true);
+          try {
+            await delete_survey(encuesta.id);
+            showSuccess("Survey deleted successfully!");
+            window.location.reload();
+          } catch (error) {
+            showError("Error deleting survey: " + error);
+          } finally {
+            setIsLoading(false);
+          }
+        }
+      );
     };
-
-
-
-    
 
     return(
         <li className="min-w-full border rounded border-gray-300 p-4 m-1 rounded-xl bg-white mx-auto flex flex-col md:flex-row justify-between w-full md:w-3/4">

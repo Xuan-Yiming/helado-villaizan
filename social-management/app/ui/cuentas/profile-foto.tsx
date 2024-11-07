@@ -8,6 +8,7 @@ import {
 import { MediaFILE } from "@/app/lib/types";
 import { update_profile_photo } from "@/app/lib/database";
 import { useError } from "@/app/context/errorContext";
+import { useSuccess } from "@/app/context/successContext";
 
 interface ProfilePhotoUploadProps {
   mediaFiles: MediaFILE | null;
@@ -27,6 +28,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const { showError } = useError();
+  const { showSuccess } = useSuccess();
 
   const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -74,7 +76,9 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         // await setUser((user) => ({ ...user, photo: photo_url }));
         // //console.log("Updated User Photo: ", user.photo)
         await update_profile_photo(userID, photo_url);
-
+        
+        showSuccess("Foto de perfil actualizada correctamente");
+        
         const cookie = document.cookie;
         const userInformation = cookie
           .split(";")

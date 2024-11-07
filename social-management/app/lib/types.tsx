@@ -185,3 +185,39 @@ export type MetaPost = {
   thumbnail?: string;
   publishDate: string; // Cambiado de postDate a publishDate para coherencia
 };
+
+export type Campage = { 
+  id: string;
+  name: string; // El nombre de la campaña
+  status: 'ACTIVE' | 'PAUSED'; // El estado inicial de la campaña
+  start_date: string;
+  end_date: string;
+  budget: number;
+  objective: 'APP_INSTALLS' | 'BRAND_AWARENESS' | 'CONVERSIONS' | 'EVENT_RESPONSES' | 'LEAD_GENERATION' | 'LINK_CLICKS' | 'LOCAL_AWARENESS' | 'MESSAGES' | 'OFFER_CLAIMS' | 'OUTCOME_APP_PROMOTION' | 'OUTCOME_AWARENESS' | 'OUTCOME_ENGAGEMENT' | 'OUTCOME_LEADS' | 'OUTCOME_SALES' | 'OUTCOME_TRAFFIC' | 'PAGE_LIKES' | 'POST_ENGAGEMENT' | 'PRODUCT_CATALOG_SALES' | 'REACH' | 'STORE_VISITS' | 'VIDEO_VIEWS'; // El objetivo de la campaña
+  special_ad_categories: string[]; // Debe proporcionarse, incluso si es un array vacío []
+  daily_budget?: number; // Presupuesto diario de la campaña
+  lifetime_budget?: number; // Presupuesto total de la campaña
+  start_time?: string; // Fecha de inicio de la campaña
+  stop_time?: string; // Fecha de fin de la campaña
+  spend_cap?: number; // Límite de gasto de la campaña
+  adset: Ad[];
+}
+
+export type Ad = {
+  id: string;
+  name: string; // Nombre del conjunto de anuncios
+  campaign_id: string | number; // ID de la campaña a la que se asociará el conjunto de anuncios
+  daily_budget?: number; // Presupuesto diario en la moneda de la cuenta
+  lifetime_budget?: number; // Presupuesto total en la moneda de la cuenta
+  billing_event: 'APP_INSTALLS' | 'IMPRESSIONS' | 'LINK_CLICKS' | 'OFFER_CLAIMS' | 'PAGE_LIKES' | 'POST_ENGAGEMENT' | 'VIDEO_VIEWS' | 'THRUPLAY' | 'PURCHASE' | 'LISTING_INTERACTION'; // Evento de facturación utilizado para el conjunto de anuncios
+  optimization_goal: 'NONE' | 'APP_INSTALLS' | 'AD_RECALL_LIFT' | 'ENGAGED_USERS' | 'EVENT_RESPONSES' | 'IMPRESSIONS' | 'LEAD_GENERATION' | 'LINK_CLICKS' | 'OFFSITE_CONVERSIONS' | 'PAGE_LIKES' | 'POST_ENGAGEMENT' | 'REACH' | 'LANDING_PAGE_VIEWS' | 'VALUE' | 'THRUPLAY' | 'VISIT_INSTAGRAM_PROFILE'; // Lo que se optimiza en el conjunto de anuncios
+  status: 'ACTIVE' | 'PAUSED'; // Estado del conjunto de anuncios al momento de la creación
+  targeting: {
+    countries: string[]; // Debe incluir al menos countries
+    [key: string]: any; // Otros campos de segmentación
+  };
+  start_time?: string; // Fecha de inicio del conjunto de anuncios
+  end_time?: string; // Fecha de fin del conjunto de anuncios
+  daily_spend_cap?: number; // Límite de gasto diario
+  lifetime_spend_cap?: number; // Límite de gasto total
+};
