@@ -64,7 +64,7 @@ const InteractionList: React.FC<InteractionListProps> = ({ items, selectedIntera
                                     <p className="font-semibold">{interaction.userName}</p>
                                     <div className="flex items-center">
                                         <p className="text-sm text-gray-600 flex-grow">{interaction.lastMessage}</p>
-                                        <p className="text-sm text-gray-500 ml-2">{interaction.messageCount || 0} mensajes</p>
+                                        <p className="text-sm text-gray-500 ml-2">{interaction.unreadCount || 0} mensajes no leídos</p>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">{formatDate(interaction.updatedTime)}</p>
                                 </>

@@ -32,6 +32,8 @@ const Page = () => {
     const itemsPerPage = 6;
     const hasLoaded = useRef(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [recipientUserId, setRecipientUserId] = useState<string | null>(null);
+
 
     const fetchAllConversations = async () => {
         setIsLoading(true);
@@ -39,13 +41,17 @@ const Page = () => {
             const fbConversations = await fetch('/api/facebook/conversaciones').then(res => res.json());
             const igPublications = await fetch('/api/instagram/publicaciones').then(res => res.json());
             const fbPublications = await fetch('/api/facebook/publicaciones').then(res => res.json());
-
+    
             const combinedInteractions = [
                 ...fbPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
                 ...igPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
-                ...fbConversations.map((msg: InteractionMessage) => ({ ...msg, type: 'message' })),
+                ...fbConversations.map((msg: InteractionMessage) => ({
+                    ...msg,
+                    type: 'message',
+                    userId: msg.userId  // Asegúrate de que `userId` esté aquí
+                })),
             ];
-
+    
             setAllConversations(combinedInteractions);
             setFilteredConversations(combinedInteractions);
         } catch (error) {
@@ -54,6 +60,7 @@ const Page = () => {
             setIsLoading(false);
         }
     };
+    
 
     useEffect(() => {
         if (!hasLoaded.current) {
@@ -100,46 +107,89 @@ const Page = () => {
     };
 
     const handleSendResponse = async (message: string) => {
-        if (!selectedCommentId || !selectedInteractionId) {
-            console.warn("No hay comentario o publicación seleccionada para responder.");
+        if (!selectedInteractionId) {
+            console.warn("No hay interacción seleccionada para responder.");
             return;
         }
-
-        const network = filteredConversations.find(
-            (pub) => pub.type === 'publication' && pub.postId === selectedInteractionId
-        )?.socialNetwork;
-
-        try {
-            const response = await fetch(`/api/${network}/responder-comentario`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    commentId: selectedCommentId,
-                    message: message
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log("Respuesta enviada:", data);
-            } else {
-                console.error("Error al responder el comentario:", data.error);
+    
+        if (chatType === 'comments') {
+            // Manejo de respuesta a un comentario
+            if (!selectedCommentId) {
+                console.warn("No hay comentario seleccionado para responder.");
+                return;
             }
-        } catch (error) {
-            console.error("Error en la solicitud de respuesta:", error);
+    
+            const network = filteredConversations.find(
+                (pub) => pub.type === 'publication' && pub.postId === selectedInteractionId
+            )?.socialNetwork;
+    
+            try {
+                const response = await fetch(`/api/${network}/responder-comentario`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        commentId: selectedCommentId,
+                        message: message
+                    })
+                });
+    
+                const data = await response.json();
+    
+                if (response.ok) {
+                    //console.log("Respuesta al comentario enviada:", data);
+                } else {
+                    console.error("Error al responder el comentario:", data.error);
+                }
+            } catch (error) {
+                console.error("Error en la solicitud de respuesta:", error);
+            }
+    
+        } else if (chatType === 'message') {
+            // Manejo del envío de un mensaje directo
+            if (!recipientUserId) {
+                console.warn("No se ha encontrado el ID del usuario para enviar el mensaje.");
+                return;
+            }
+    
+            try {
+                const response = await fetch('/api/facebook/enviar-mensaje', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipientId: recipientUserId,
+                        message: message
+                    })
+                });
+    
+                const data = await response.json();
+    
+                if (response.ok) {
+                    console.log("Mensaje directo enviado:", data);
+                    // Opcional: Recargar la conversación para ver el mensaje recién enviado
+                    handleSelectInteraction(selectedInteractionId);
+                } else {
+                    console.error("Error al enviar el mensaje directo:", data.error);
+                }
+            } catch (error) {
+                console.error("Error en la solicitud de envío de mensaje directo:", error);
+            }
         }
     };
-
+    
     const handleSelectInteraction = async (id: string) => {
         setSelectedInteractionId(id);
         const selectedInteraction = filteredConversations.find(
             (interaction) => (interaction.type === 'message' ? String(interaction.id) : interaction.postId) === id
         ) as Interaction;
-    
+        
         if (!selectedInteraction) return;
+    
+        // Guarda el `userId` del participante en una variable de estado
+        const userId = selectedInteraction.type === 'message' ? selectedInteraction.userId : null;
     
         try {
             if (selectedInteraction.type === 'publication') {
@@ -163,12 +213,14 @@ const Page = () => {
                 setChatType('message');
                 setSelectedCommentId(null);
                 setSelectedCommentUserName(null);
+    
+                // Guarda el `userId` en una variable de estado separada
+                setRecipientUserId(userId);  // Nueva variable de estado que debes agregar
             }
         } catch (error) {
             console.error("Error al obtener mensajes/comentarios:", error);
         }
     };
-    
     
     const paginatedConversations = Array.isArray(filteredConversations) 
         ? filteredConversations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) 
