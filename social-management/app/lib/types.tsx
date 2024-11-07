@@ -125,10 +125,13 @@ export type InteractionMessage = {
   userName: string;
   socialNetwork: 'facebook' | 'instagram';
   lastMessage: string;
-  updatedTime: string; // Cambiado de timestamp a updatedTime para mostrar la fecha del último mensaje
+  updatedTime: string; // Fecha del último mensaje
   messageCount: number;
+  unreadCount?: number; // Agrega este campo como opcional
+  userId: string; // ID único del usuario para mensajes directos
   type: 'message';
 };
+
 
 export type ChatMessage = {
   id: string;

@@ -36,9 +36,6 @@ export async function GET(request: NextRequest) {
             timestamp: msg.created_time
         })).reverse(); // Invertir el orden de los mensajes
 
-        // Agregar console.log para verificar los datos
-        console.log("Mensajes formateados para el frontend:", formattedMessages);
-
         return NextResponse.json(formattedMessages, { status: 200 });
 
     } catch (error) {
