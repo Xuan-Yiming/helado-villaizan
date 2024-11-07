@@ -12,6 +12,8 @@ import ErrorPopup from "@/app/ui/error-popup";
 import { ErrorProvider } from "@/app/context/errorContext";
 import { ConfirmationProvider } from "@/app/context/confirmationContext";
 import ConfirmationAlert from "@/app/ui/confirmation-alert";
+import { SuccessProvider } from "@/app/context/successContext";
+import SuccessNotification from "@/app/ui/success-notification";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,21 +27,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <body className={`bg-white ${inter.className}`}>
         <ErrorProvider>
-          <ConfirmationProvider>
-            <div className="flex">
-              <SideNav />
-              <main className="flex-1">
-                <MarginWidthWrapper>
-                  <Header />
-                  <HeaderMobile />
-                  <NavigationBar />
-                  <PageWrapper>{children}</PageWrapper>
-                </MarginWidthWrapper>
-              </main>
-            </div>
+          <SuccessProvider>
+            <ConfirmationProvider>
+              <div className="flex">
+                <SideNav />
+                <main className="flex-1">
+                  <MarginWidthWrapper>
+                    <Header />
+                    <HeaderMobile />
+                    <NavigationBar />
+                    <PageWrapper>{children}</PageWrapper>
+                  </MarginWidthWrapper>
+                </main>
+              </div>
 
-            <ConfirmationAlert />
-          </ConfirmationProvider>
+              <ConfirmationAlert />
+            </ConfirmationProvider>
+            <SuccessNotification />
+          </SuccessProvider>
           <ErrorPopup /> {/* Add the popup component here */}
         </ErrorProvider>
       </body>
