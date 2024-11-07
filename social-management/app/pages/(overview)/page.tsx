@@ -3,22 +3,25 @@
 import { useEffect } from 'react';
 import { useError } from "@/app/context/errorContext";
 import { useConfirmation } from "@/app/context/confirmationContext";
+import { useSuccess } from "@/app/context/successContext";
 import Image from 'next/image';
 
 export default function Page() {
   const { showError } = useError();
   const { showConfirmation, showAlert } = useConfirmation();
+  const { showSuccess } = useSuccess();
 
   const handleClick = () => {
     showError("An error occurred! Please try again.");
   };
 
-  const handleDelete: () => void = () => {
+  const handleDelete = () => {
     showConfirmation(
       "Are you sure you want to delete this item?",
       () => {
         // Handle confirm action
         console.log("Item deleted");
+        showSuccess("Item successfully deleted!");
       },
       () => {
         // Handle cancel action
