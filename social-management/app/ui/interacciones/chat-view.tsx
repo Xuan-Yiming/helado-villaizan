@@ -25,17 +25,6 @@ const ChatView: React.FC<ChatViewProps> = ({
     const [newMessage, setNewMessage] = useState('');
     const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-        messagesContainerRef.current?.scrollTo({
-            top: messagesContainerRef.current.scrollHeight,
-            behavior: 'smooth'
-        });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [chatContent]);
-
     const handleSend = () => {
         if (newMessage.trim()) {
             onSendMessage(newMessage);
@@ -43,7 +32,6 @@ const ChatView: React.FC<ChatViewProps> = ({
         }
     };
 
-    // Función para formatear la fecha y hora
     // Función para formatear la fecha y hora
     const formatDate = (timestamp: Date | string) => {
         const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
@@ -54,9 +42,6 @@ const ChatView: React.FC<ChatViewProps> = ({
         const minutes = date.getMinutes().toString().padStart(2, '0');
         return `${day}/${month}/${year} ${hours}:${minutes}`;
     };
-
-
-
     
     return (
         <div className="border border-gray-300 rounded-xl bg-white flex flex-col h-full max-h-[650px]">
