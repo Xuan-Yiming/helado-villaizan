@@ -1,33 +1,48 @@
-// route.ts para Facebook Mensajes
-import { NextResponse } from 'next/server';
-import { get_social_account } from '@/app/lib/database';
+// facebook/mensajes.ts
+'use server';
+import { NextResponse, NextRequest } from 'next/server';
+import { get_social_account } from "@/app/lib/database";
 
-export async function GET() {
-  try {
-    // Obtener el token de la página y el page_id de la base de datos
-    const account = await get_social_account('facebook');
-    if (!account || !account.token_autenticacion || !account.page_id) {
-      throw new Error('Token de autenticación o page_id no disponibles');
+export async function GET(request: NextRequest) {
+    const url = new URL(request.url);
+    const conversationId = url.searchParams.get("conversationId");
+
+    if (!conversationId) {
+        return NextResponse.json({ error: 'Falta el parámetro conversationId' }, { status: 400 });
     }
 
-    const accessToken = account.token_autenticacion;
-    const pageId = account.page_id;
+    try {
+        const account = await get_social_account('facebook');
+        if (!account || !account.token_autenticacion || !account.page_id) {
+            throw new Error('No se encontraron datos de la cuenta de Facebook en la base de datos');
+        }
 
-    // Llamada al API para obtener las conversaciones
-    const response = await fetch(
-      `https://graph.facebook.com/v20.0/${pageId}/conversations?fields=id,message_count,name,unread_count,messages{message,created_time,from},updated_time&access_token=${accessToken}`
-    );
+        const { token_autenticacion: accessToken } = account;
 
-    const data = await response.json();
+        // Obtener los mensajes de la conversación específica
+        const conversationResponse = await fetch(`https://graph.facebook.com/v20.0/${conversationId}/messages?fields=from,to,message,created_time&access_token=${accessToken}`, { cache: "no-store" });
+        const conversationData = await conversationResponse.json();
 
-    if (!response.ok) {
-      console.error("Error en la respuesta de Facebook API:", data);
-      throw new Error(`Error en Facebook API: ${data.error.message}`);
+        if (!conversationResponse.ok || !conversationData.data) {
+            throw new Error(`Error al obtener mensajes de la conversación de Facebook: ${conversationData.error ? conversationData.error.message : 'No se encontraron datos'}`);
+        }
+
+        // Formatear los mensajes obtenidos
+        const formattedMessages = conversationData.data.map((msg: any) => ({
+            id: msg.id,
+            text: msg.message,
+            fromUser: msg.from.name === account.usuario,
+            userName: msg.from.name,
+            timestamp: msg.created_time
+        })).reverse(); // Invertir el orden de los mensajes
+
+        // Agregar console.log para verificar los datos
+        console.log("Mensajes formateados para el frontend:", formattedMessages);
+
+        return NextResponse.json(formattedMessages, { status: 200 });
+
+    } catch (error) {
+        console.error('Error en Facebook Mensajes API:', error);
+        return NextResponse.json({ error: 'Error al obtener mensajes de la conversación de Facebook' }, { status: 500 });
     }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error al obtener mensajes de Facebook:', error);
-    return NextResponse.json({ error: 'Error al obtener mensajes de Facebook' }, { status: 500 });
-  }
 }

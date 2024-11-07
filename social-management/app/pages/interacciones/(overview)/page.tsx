@@ -1,4 +1,3 @@
-// page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -11,47 +10,68 @@ import {
 import FilterSelect from '@/app/ui/interacciones/filter-select';
 import InteractionList from '@/app/ui/interacciones/interaction-list';
 import ChatView from '@/app/ui/interacciones/chat-view';
-import { InteractionPublication, ChatMessage } from '@/app/lib/types';
+import { InteractionPublication, ChatMessage, InteractionMessage } from '@/app/lib/types';
+
+type Interaction = 
+    | (InteractionPublication & { type: 'publication'; userName?: string })
+    | (InteractionMessage & { type: 'message'; userName: string });
 
 const Page = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [socialNetworkFilter, setSocialNetworkFilter] = useState('all');
     const [interactionTypeFilter, setInteractionTypeFilter] = useState('all');
-    const [allPublications, setAllPublications] = useState<InteractionPublication[]>([]);
-    const [filteredPublications, setFilteredPublications] = useState<InteractionPublication[]>([]);
+    const [allConversations, setAllConversations] = useState<Interaction[]>([]);
+    const [filteredConversations, setFilteredConversations] = useState<Interaction[]>([]);
     const [selectedChat, setSelectedChat] = useState<ChatMessage[]>([]);
     const [chatType, setChatType] = useState('');
     const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null);
     const [selectedCommentUserName, setSelectedCommentUserName] = useState<string | null>(null);
     const [publicationInfo, setPublicationInfo] = useState<string | null>(null);
-    const [selectedPublicationId, setSelectedPublicationId] = useState<string | null>(null);
+    const [selectedInteractionId, setSelectedInteractionId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
     const hasLoaded = useRef(false);
-    const [isLoading, setIsLoading] = useState(true); // Estado para la carga
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch todas las publicaciones de Facebook e Instagram
-    const fetchAllPublications = async () => {
-        setIsLoading(true); // Activar indicador de carga
+    const fetchAllConversations = async () => {
+        setIsLoading(true);
         try {
-            const fbPublications = await fetch('/api/facebook/publicaciones').then(res => res.json());
+            const fbConversations = await fetch('/api/facebook/conversaciones').then(res => res.json());
             const igPublications = await fetch('/api/instagram/publicaciones').then(res => res.json());
-            const combinedPublications = [...fbPublications, ...igPublications];
-            setAllPublications(combinedPublications);
-            setFilteredPublications(combinedPublications);
+            const fbPublications = await fetch('/api/facebook/publicaciones').then(res => res.json());
+
+            const combinedInteractions = [
+                ...fbPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
+                ...igPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
+                ...fbConversations.map((msg: InteractionMessage) => ({ ...msg, type: 'message' })),
+            ];
+
+            setAllConversations(combinedInteractions);
+            setFilteredConversations(combinedInteractions);
         } catch (error) {
-            console.error("Error al obtener publicaciones:", error);
+            console.error("Error al obtener conversaciones:", error);
         } finally {
-            setIsLoading(false); // Desactivar indicador de carga después de obtener las publicaciones
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
         if (!hasLoaded.current) {
-            fetchAllPublications();
+            fetchAllConversations();
             hasLoaded.current = true;
         }
-    }, []);
+        
+        if (selectedInteractionId && chatType === 'message') {
+            // Configurar polling para actualizar los mensajes
+            const interval = setInterval(() => {
+                handleSelectInteraction(selectedInteractionId);
+            }, 5000); // Cada 5 segundos
+            
+            // Limpiar intervalo cuando cambie el id de la interacción o se desmonte el componente
+            return () => clearInterval(interval);
+        }
+    }, [selectedInteractionId, chatType]);
+    
 
     const toggleFilters = () => {
         setFiltersVisible(!filtersVisible);
@@ -60,26 +80,35 @@ const Page = () => {
     const resetFilters = () => {
         setSocialNetworkFilter('all');
         setInteractionTypeFilter('all');
-        setFilteredPublications(allPublications);
+        setFilteredConversations(allConversations);
     };
 
     const handleAplicarFiltro = () => {
-        const filtered = allPublications.filter((publication) => {
-            const matchesNetwork = socialNetworkFilter === 'all' || publication.socialNetwork === socialNetworkFilter;
-            const matchesInteractionType = interactionTypeFilter === 'all' || interactionTypeFilter === 'comentarios';
-            return matchesNetwork && matchesInteractionType;
-        });
-        setFilteredPublications(filtered);
+        if (socialNetworkFilter === 'all' && interactionTypeFilter === 'all') {
+            fetchAllConversations();
+        } else {
+            const filtered = allConversations.filter((interaction: Interaction) => {
+                const matchesNetwork = socialNetworkFilter === 'all' || interaction.socialNetwork === socialNetworkFilter;
+                const matchesInteractionType =
+                    interactionTypeFilter === 'all' ||
+                    (interactionTypeFilter === 'comentarios' && interaction.type === 'publication') ||
+                    (interactionTypeFilter === 'mensajes' && interaction.type === 'message');
+                return matchesNetwork && matchesInteractionType;
+            });
+            setFilteredConversations(filtered);
+        }
     };
 
     const handleSendResponse = async (message: string) => {
-        if (!selectedCommentId || !selectedPublicationId) {
+        if (!selectedCommentId || !selectedInteractionId) {
             console.warn("No hay comentario o publicación seleccionada para responder.");
             return;
         }
 
-        const network = filteredPublications.find(pub => pub.postId === selectedPublicationId)?.socialNetwork;
-    
+        const network = filteredConversations.find(
+            (pub) => pub.type === 'publication' && pub.postId === selectedInteractionId
+        )?.socialNetwork;
+
         try {
             const response = await fetch(`/api/${network}/responder-comentario`, {
                 method: 'POST',
@@ -104,44 +133,45 @@ const Page = () => {
         }
     };
 
-    const handleSelectPublication = async (id: string) => {
-        const selectedPublication = filteredPublications.find(pub => pub.postId === id);
-        setSelectedPublicationId(selectedPublicationId === id ? null : id);
-        
-        // Restablecer el comentario seleccionado
-        setSelectedCommentId(null);
-        setSelectedCommentUserName(null);
+    const handleSelectInteraction = async (id: string) => {
+        setSelectedInteractionId(id);
+        const selectedInteraction = filteredConversations.find(
+            (interaction) => (interaction.type === 'message' ? String(interaction.id) : interaction.postId) === id
+        ) as Interaction;
     
-        if (selectedPublication) {
-            try {
-                const commentsResponse = await fetch(`/api/${selectedPublication.socialNetwork}/comentarios`, {
+        if (!selectedInteraction) return;
+    
+        try {
+            if (selectedInteraction.type === 'publication') {
+                const commentsResponse = await fetch(`/api/${selectedInteraction.socialNetwork}/comentarios`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ postId: id })
                 });
-        
-                const comments: ChatMessage[] = await commentsResponse.json();
-        
-                const sortedComments = comments
-                    .map((comment: ChatMessage) => ({
-                        ...comment,
-                        formattedDate: new Date(comment.timestamp || "").toLocaleString()
-                    }))
-                    .sort((b, a) => (new Date(b.timestamp || "").getTime()) - (new Date(a.timestamp || "").getTime()));
-        
-                setSelectedChat(sortedComments || []);
-                setPublicationInfo(`Publicación de ${selectedPublication.socialNetwork}`);
+                const comments = await commentsResponse.json();
+                setSelectedChat(comments);
+                setPublicationInfo(`Publicación de ${selectedInteraction.socialNetwork}`);
                 setChatType('comments');
-            } catch (error) {
-                console.error("Error al obtener comentarios:", error);
+                setSelectedCommentId(null);
+                setSelectedCommentUserName(null);
+            } else if (selectedInteraction.type === 'message') {
+                // Llama al nuevo endpoint de mensajes con el conversationId
+                const messagesResponse = await fetch(`/api/facebook/mensajes?conversationId=${id}`);
+                const messages = await messagesResponse.json();
+                setSelectedChat(messages);
+                setPublicationInfo(`Conversación con ${selectedInteraction.userName || 'Usuario desconocido'}`);
+                setChatType('message');
+                setSelectedCommentId(null);
+                setSelectedCommentUserName(null);
             }
+        } catch (error) {
+            console.error("Error al obtener mensajes/comentarios:", error);
         }
     };
-
-    const paginatedPublications = Array.isArray(filteredPublications) 
-        ? filteredPublications.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) 
+    
+    
+    const paginatedConversations = Array.isArray(filteredConversations) 
+        ? filteredConversations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) 
         : [];
 
     return (
@@ -212,13 +242,13 @@ const Page = () => {
                     <h2 className="text-md font-bold mb-2">Seleccione una interacción para atender</h2>
                     {isLoading ? (
                         <div className="flex justify-center items-center h-full">
-                            <div className="loader">Cargando...</div> {/* Spinner de carga */}
+                            <div className="loader">Cargando...</div>
                         </div>
                     ) : (
-                        <InteractionList
-                            items={paginatedPublications}
-                            selectedPublicationId={selectedPublicationId}
-                            onSelectPublication={(id) => handleSelectPublication(id)}
+                        <InteractionList 
+                            items={paginatedConversations} 
+                            selectedInteractionId={selectedInteractionId} 
+                            onSelectInteraction={handleSelectInteraction} 
                         />
                     )}
                     <div className="flex justify-between items-center mt-4 p-4 border-t bg-gray-50">
@@ -228,10 +258,10 @@ const Page = () => {
                             className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">
                             Anterior
                         </button>
-                        <span>Página {currentPage} de {Math.ceil(filteredPublications.length / itemsPerPage)}</span>
+                        <span>Página {currentPage} de {Math.ceil(filteredConversations.length / itemsPerPage)}</span>
                         <button 
                             onClick={() => setCurrentPage(currentPage + 1)} 
-                            disabled={(currentPage * itemsPerPage) >= filteredPublications.length}
+                            disabled={(currentPage * itemsPerPage) >= filteredConversations.length}
                             className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">
                             Siguiente
                         </button>
