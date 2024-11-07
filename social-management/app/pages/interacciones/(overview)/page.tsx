@@ -60,7 +60,18 @@ const Page = () => {
             fetchAllConversations();
             hasLoaded.current = true;
         }
-    }, []);
+        
+        if (selectedInteractionId && chatType === 'message') {
+            // Configurar polling para actualizar los mensajes
+            const interval = setInterval(() => {
+                handleSelectInteraction(selectedInteractionId);
+            }, 5000); // Cada 5 segundos
+            
+            // Limpiar intervalo cuando cambie el id de la interacción o se desmonte el componente
+            return () => clearInterval(interval);
+        }
+    }, [selectedInteractionId, chatType]);
+    
 
     const toggleFilters = () => {
         setFiltersVisible(!filtersVisible);
@@ -157,6 +168,7 @@ const Page = () => {
             console.error("Error al obtener mensajes/comentarios:", error);
         }
     };
+    
     
     const paginatedConversations = Array.isArray(filteredConversations) 
         ? filteredConversations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) 

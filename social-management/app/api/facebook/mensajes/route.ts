@@ -27,15 +27,20 @@ export async function GET(request: NextRequest) {
             throw new Error(`Error al obtener mensajes de la conversación de Facebook: ${conversationData.error ? conversationData.error.message : 'No se encontraron datos'}`);
         }
 
+        // Formatear los mensajes obtenidos
         const formattedMessages = conversationData.data.map((msg: any) => ({
             id: msg.id,
             text: msg.message,
-            fromUser: msg.from.name === account.page_id,
+            fromUser: msg.from.name === account.usuario,
             userName: msg.from.name,
             timestamp: msg.created_time
-        }));
+        })).reverse(); // Invertir el orden de los mensajes
+
+        // Agregar console.log para verificar los datos
+        console.log("Mensajes formateados para el frontend:", formattedMessages);
 
         return NextResponse.json(formattedMessages, { status: 200 });
+
     } catch (error) {
         console.error('Error en Facebook Mensajes API:', error);
         return NextResponse.json({ error: 'Error al obtener mensajes de la conversación de Facebook' }, { status: 500 });

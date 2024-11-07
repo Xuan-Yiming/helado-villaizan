@@ -2,6 +2,7 @@
 'use server';
 import { NextResponse } from 'next/server';
 import { get_social_account } from "@/app/lib/database";
+import { MetaComment } from "@/app/lib/types"; // Importa MetaComment
 
 export async function POST(request: Request) {
     try {
@@ -29,12 +30,14 @@ export async function POST(request: Request) {
             throw new Error(`Error al obtener comentarios de Instagram: ${commentsData.error ? commentsData.error.message : 'No se encontraron datos'}`);
         }
 
-        const formattedComments = commentsData.data.map((comment: any) => ({
-            id: comment.id,
-            userName: comment.from?.username || "Usuario desconocido",
-            text: comment.message || comment.text || "", // Asegurarse de obtener el texto
-            timestamp: comment.created_time || comment.timestamp // Verificar cuál es el correcto
-        }));
+        const formattedComments: MetaComment[] = commentsData.data
+            .map((comment: any) => ({
+                id: comment.id,
+                userName: comment.from?.username || "Usuario desconocido",
+                text: comment.message || comment.text || "", // Asegurarse de obtener el texto
+                timestamp: comment.created_time || comment.timestamp // Verificar cuál es el correcto
+            }))
+            .sort((a: MetaComment, b: MetaComment) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()); // Orden ascendente por timestamp
 
         return NextResponse.json(formattedComments, { status: 200 });
     } catch (error) {
