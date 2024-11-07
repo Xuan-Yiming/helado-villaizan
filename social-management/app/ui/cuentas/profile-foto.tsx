@@ -37,7 +37,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 
       const maxSizeInBytes = 4.5 * 1024 * 1024; // 4.5MB
       if (file.size > maxSizeInBytes) {
-        alert("El archivo debe ser menor a 4.5MB");
+        showError("El archivo debe ser menor a 4.5MB");
         return;
       }
 

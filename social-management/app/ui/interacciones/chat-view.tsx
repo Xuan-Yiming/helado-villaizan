@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ChatMessage } from '@/app/lib/types';
+import { useConfirmation} from "@/app/context/confirmationContext";
 
 interface ChatViewProps {
     chatContent: ChatMessage[];
@@ -24,12 +25,15 @@ const ChatView: React.FC<ChatViewProps> = ({
 }) => {
     const [newMessage, setNewMessage] = useState('');
     const messagesContainerRef = useRef<HTMLDivElement>(null);
-
+    const { showConfirmation, showAlert } = useConfirmation();
     const handleSend = () => {
-        if (newMessage.trim()) {
-            onSendMessage(newMessage);
-            setNewMessage('');
+        if (!newMessage || newMessage.trim() === "") {
+            showAlert("Por favor escribe un mensaje para enviar.",() => {});
+            return;
         }
+
+        onSendMessage(newMessage);
+        setNewMessage('');
     };
 
     // Función para formatear la fecha y hora

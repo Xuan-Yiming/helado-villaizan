@@ -18,6 +18,8 @@ import { delete_media_by_url, load_all_social_accounts } from "@/app/lib/databas
 import { load_post_by_id } from "@/app/lib/database";
 import { create_post } from "@/app/lib/database";
 import { useError } from "@/app/context/errorContext";
+import { useConfirmation} from "@/app/context/confirmationContext";
+import { useSuccess } from "@/app/context/successContext";
 
 function PublicarPage() {
   const searchParams = useSearchParams();
@@ -29,8 +31,6 @@ function PublicarPage() {
   const [disableImage, setDisableImage] = useState(false); // Controla el botón de imagen
   const [mediaFiles, setMediaFiles] = useState<MediaFILE[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // Estado para manejar la carga
-
-  const [postStatus, setPostStatus] = useState<string>("");
 
   // Basic data
   const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
@@ -50,6 +50,8 @@ function PublicarPage() {
   const [postTime, setPostTime] = useState<string | undefined>(undefined); 
 
   const { showError } = useError();
+  const { showSuccess } = useSuccess();
+  const { showConfirmation, showAlert } = useConfirmation();
 
 
   const getLogo = (name: string) => {
@@ -144,14 +146,14 @@ function PublicarPage() {
           if (mediaType === 'image') {
             // Verificar formato de imagen
             if (!allowedImageTypes.includes(file.type)) {
-              alert(`El archivo ${file.name} no es un formato de imagen permitido.`);
+              showAlert(`El archivo ${file.name} no es un formato de imagen permitido.`,() => {});
               return null;
             }
           }
   
           // Verificar tamaño del archivo (4MB máximo)
           if (file.size > maxSizeInBytes) {
-            alert(`El archivo ${file.name} debe ser menor a 4.0MB.`);
+            showAlert(`El archivo ${file.name} debe ser menor a 4.0MB.`,() => {});
             return null;
           }
   
@@ -174,7 +176,7 @@ function PublicarPage() {
             mediaFiles.filter((file) => file.type === 'image').length + newFiles.length;
   
           if (totalImages > 10) {
-            alert('No puedes subir más de 10 imágenes.');
+            showAlert('No puedes subir más de 10 imágenes.',() => {});
             event.target.value = ''; // Restablecer input
             return;
           }
@@ -241,8 +243,7 @@ function PublicarPage() {
         URL.revokeObjectURL(fileToRemove.url);
       }
     } catch (error) {
-      console.error('Error eliminando el archivo:', error);
-      alert('No se pudo eliminar el archivo.');
+      showAlert('No se pudo eliminar el archivo.',() => {});
     }
   };
 
@@ -268,7 +269,7 @@ function PublicarPage() {
           const maxSizeInBytes = 4.0 * 1024 * 1024;
   
           if (!file.file || file.file.size > maxSizeInBytes) {
-            alert(`El archivo ${file.name} debe ser menor a 4.0MB o es inválido`);
+            showAlert(`El archivo ${file.name} debe ser menor a 4.0MB o es inválido`,() => {});
             continue;
           }
   
@@ -311,17 +312,17 @@ function PublicarPage() {
       }
   
       if (successNetworks.length > 0) {
-        setPostStatus(
+        showSuccess(
           `La publicación se ha realizado correctamente en: ${successNetworks.join(' - ')}`
         );
       } else if (currentStatus !== "borrador") {
-        setPostStatus('No se pudo realizar la publicación en ninguna red social.');
+        showAlert('No se pudo realizar la publicación en ninguna red social.',() => {});
       } else {
-        setPostStatus('El borrador se ha guardado correctamente.');
+        showSuccess('El borrador se ha guardado correctamente.');
       }
     } catch (error) {
       console.error('Error al intentar realizar la publicación:', error);
-      setPostStatus('Ocurrió un error al publicar en la(s) red(es) seleccionada(s).');
+      showAlert('Ocurrió un error al publicar en la(s) red(es) seleccionada(s).',() => {});
     } finally {
       setLoading(false);
       setSelectedAccount([]);
@@ -364,6 +365,60 @@ function PublicarPage() {
     const formattedDate = date.toISOString();
     setPostTime(formattedDate);
   };
+
+  function validatePost(
+    selectedAccount: any[],
+    mediaFiles: MediaFILE[],
+    status: string,
+    postTime?: string,
+    content?: string
+  ): boolean {
+    const hasInstagram = selectedAccount.some(
+      (account) => account.red_social.toLowerCase() === 'instagram'
+    );
+  
+    const hasTikTok = selectedAccount.some(
+      (account) => account.red_social.toLowerCase() === 'tiktok'
+    );
+  
+    if ((hasInstagram || hasTikTok) && (!mediaFiles || mediaFiles.length === 0)) {
+      showAlert('Debes adjuntar al menos una imagen o video para publicar en la red social seleccionada.',() => {});
+      return false;
+    }
+  
+    if (selectedAccount.length === 0) {
+      showAlert('Por favor, selecciona al menos un usuario para publicar.',() => {});
+      return false;
+    }
+  
+    if (status === 'programado') {
+      if (!postTime) {
+        showAlert('Por favor, selecciona una fecha y hora válidas.',() => {});
+        return false;
+      }
+  
+      const currentDate = new Date();
+      const scheduledDate = new Date(postTime);
+      const minValidDate = new Date(currentDate.getTime() + 10 * 60 * 1000);
+  
+      if (scheduledDate < minValidDate) {
+        showAlert('La fecha/hora programada debe ser al menos 10 minutos en el futuro.',() => {});
+        return false;
+      }
+  
+      if (scheduledDate < currentDate) {
+        showAlert('No puedes programar una publicación en una fecha pasada.',() => {});
+        return false;
+      }
+    }
+  
+    if (!content?.trim() && mediaFiles.length === 0) {
+      showAlert('Debe haber al menos un archivo o contenido para publicar.',() => {});
+      return false;
+    }
+  
+    return true;
+  }
 
   return (
     <div className={`flex justify-center p-2 h-full w-full`}>
@@ -545,20 +600,6 @@ function PublicarPage() {
             </button>
           </div>
 
-          {/* Mostrar el mensaje de estado de la publicación */}
-          {postStatus && (
-            <div className="mt-4">
-              <p
-                className={`text-sm ${
-                  postStatus.includes("correctamente")
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {postStatus}
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Bloque derecho - Vista previa con el componente Preview */}
@@ -620,61 +661,6 @@ function PublicarPage() {
     </div>
   );
 }
-
-function validatePost(
-  selectedAccount: any[],
-  mediaFiles: MediaFILE[],
-  status: string,
-  postTime?: string,
-  content?: string
-): boolean {
-  const hasInstagram = selectedAccount.some(
-    (account) => account.red_social.toLowerCase() === 'instagram'
-  );
-
-  const hasTikTok = selectedAccount.some(
-    (account) => account.red_social.toLowerCase() === 'tiktok'
-  );
-
-  if ((hasInstagram || hasTikTok) && (!mediaFiles || mediaFiles.length === 0)) {
-    alert('Debes adjuntar al menos una imagen o video para publicar en la red social seleccionada.');
-    return false;
-  }
-
-  if (selectedAccount.length === 0) {
-    alert('Por favor, selecciona al menos un usuario para publicar.');
-    return false;
-  }
-
-  if (status === 'programado') {
-    if (!postTime) {
-      alert('Por favor, selecciona una fecha y hora válidas.');
-      return false;
-    }
-
-    const currentDate = new Date();
-    const scheduledDate = new Date(postTime);
-    const minValidDate = new Date(currentDate.getTime() + 10 * 60 * 1000);
-
-    if (scheduledDate < minValidDate) {
-      alert('La fecha/hora programada debe ser al menos 10 minutos en el futuro.');
-      return false;
-    }
-
-    if (scheduledDate < currentDate) {
-      alert('No puedes programar una publicación en una fecha pasada.');
-      return false;
-    }
-  }
-
-  if (!content?.trim() && mediaFiles.length === 0) {
-    alert('Debe haber al menos un archivo o contenido para publicar.');
-    return false;
-  }
-
-  return true;
-}
-
 
 const isValidNetwork = (network: string): network is 'facebook' | 'instagram' | 'tiktok' =>
   ['facebook', 'instagram', 'tiktok'].includes(network);
