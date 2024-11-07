@@ -125,19 +125,32 @@ export type InteractionMessage = {
   userName: string;
   socialNetwork: 'facebook' | 'instagram';
   lastMessage: string;
-  updatedTime: string; // Cambiado de timestamp a updatedTime para mostrar la fecha del último mensaje
+  updatedTime: string; // Fecha del último mensaje
   messageCount: number;
+  unreadCount?: number; // Agrega este campo como opcional
+  userId: string; // ID único del usuario para mensajes directos
   type: 'message';
 };
 
+
+// Define un tipo para los adjuntos del mensaje
+type MessageAttachment = {
+  type: 'image' | 'audio' | 'sticker' | 'video';
+  url: string;
+};
+
+// Actualiza ChatMessage para incluir los adjuntos
 export type ChatMessage = {
   id: string;
   text: string;
   fromUser: boolean;
   userName?: string;
-  formattedDate?: string; // Fecha formateada opcional
-  timestamp?: Date; // Agrega timestamp opcionalmente como Date
+  formattedDate?: string;
+  timestamp?: Date;
+  attachment?: MessageAttachment | null; // Añade la propiedad de attachment opcional
 };
+
+
 
 // Para API de Meta (Facebook e Instagram)
 export type MetaApiResponse<T> = {

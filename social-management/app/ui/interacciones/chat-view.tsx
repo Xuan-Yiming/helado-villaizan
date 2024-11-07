@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { ChatMessage } from '@/app/lib/types';
 
 interface ChatViewProps {
@@ -36,7 +36,7 @@ const ChatView: React.FC<ChatViewProps> = ({
     const formatDate = (timestamp: Date | string) => {
         const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
         const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Los meses van de 0 a 11
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const year = date.getFullYear();
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -72,7 +72,14 @@ const ChatView: React.FC<ChatViewProps> = ({
                             {chatType === 'comments' && chat.userName && (
                                 <p className="font-semibold">{chat.userName}</p>
                             )}
-                            <p>{chat.text || <span className="italic text-gray-500">[Sticker]</span>}</p>
+                            {chat.attachment?.type === 'image' ? (
+                                <img src={chat.attachment.url} alt="Imagen" className="max-w-xs mt-2 rounded-lg" />
+                            ) : chat.attachment?.type === 'sticker' ? (
+                                <img src={chat.attachment.url} alt="Sticker" className="w-24 h-24 mt-2 rounded-lg" />
+                            ) : (
+                                <p>{chat.text || <span className="italic text-gray-500">[Mensaje desconocido]</span>}</p>
+                            )}
+
                             {chat.timestamp && (
                                 <p className="text-xs mt-1 text-gray-500 text-right">
                                     {formatDate(chat.timestamp)}
@@ -117,4 +124,3 @@ const ChatView: React.FC<ChatViewProps> = ({
 };
 
 export default ChatView;
-

@@ -20,15 +20,23 @@ export async function GET() {
             throw new Error(`Error al obtener conversaciones de Facebook: ${conversationsData.error ? conversationsData.error.message : 'No se encontraron datos'}`);
         }
 
-        const formattedConversations = conversationsData.data.map((conversation: any) => ({
-            id: conversation.id,
-            userName: conversation.senders.data[0]?.name || "Usuario desconocido",
-            lastMessage: conversation.snippet || "No hay mensaje",
-            messageCount: conversation.message_count,
-            unreadCount: conversation.unread_count || 0,
-            socialNetwork: 'facebook',
-            updatedTime: conversation.updated_time
-        }));
+        const formattedConversations = conversationsData.data.map((conversation: any) => {
+            // Obtener el ID y nombre del usuario que no es la página
+            const participant = conversation.senders.data.find((sender: any) => sender.id !== pageId);
+            const userId = participant ? participant.id : null;
+            const userName = participant ? participant.name : "Usuario desconocido";
+
+            return {
+                id: conversation.id,
+                userId,  // Agregar el userId aquí
+                userName,
+                lastMessage: conversation.snippet || "No hay mensaje",
+                messageCount: conversation.message_count,
+                unreadCount: conversation.unread_count || 0,
+                socialNetwork: 'facebook',
+                updatedTime: conversation.updated_time
+            };
+        });
 
         return NextResponse.json(formattedConversations, { status: 200 });
     } catch (error) {

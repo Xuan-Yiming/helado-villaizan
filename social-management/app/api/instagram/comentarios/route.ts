@@ -23,9 +23,6 @@ export async function POST(request: Request) {
         const commentsResponse = await fetch(`https://graph.facebook.com/v20.0/${postId}/comments?fields=from,timestamp,text&access_token=${accessToken}`, { cache: "no-store" });
         const commentsData = await commentsResponse.json();
 
-        // Agregar console.log para inspeccionar los datos de comentarios
-        console.log("Comentarios de Instagram recibidos:", commentsData);
-
         if (!commentsResponse.ok || !commentsData.data) {
             throw new Error(`Error al obtener comentarios de Instagram: ${commentsData.error ? commentsData.error.message : 'No se encontraron datos'}`);
         }
