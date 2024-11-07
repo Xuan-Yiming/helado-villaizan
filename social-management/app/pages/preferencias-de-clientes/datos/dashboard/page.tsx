@@ -18,15 +18,16 @@ interface ProductoData {
   nombre?: string; // Añadimos un campo opcional para el nombre
 }
 
-const dataLine = [
-  { name: 'Ene', esteAno: 12000, anoAnterior: 8000 },
-  { name: 'Feb', esteAno: 15000, anoAnterior: 12000 },
-  { name: 'Mar', esteAno: 20000, anoAnterior: 18000 },
-  { name: 'Abr', esteAno: 25000, anoAnterior: 22000 },
-  { name: 'May', esteAno: 30000, anoAnterior: 28000 },
-  { name: 'Jun', esteAno: 32000, anoAnterior: 30000 },
-  { name: 'Jul', esteAno: 28000, anoAnterior: 25000 },
-];
+interface ProductoVenta {
+  producto_id: string;
+  producto_nombre: string;
+  total_vendido: number;
+}
+
+interface CiudadVentas {
+  ciudad_id: string;
+  ventas: ProductoVenta[];
+}
 
 const dataPie = [
   { name: 'Promocion 1', value: 38.6 },
@@ -36,12 +37,11 @@ const dataPie = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
-  if (typeof window === 'undefined') {
-    // Evitar el prerenderizado en el servidor
-    return null;
-  }
+
   // Estado para almacenar los datos del gráfico de barras
   const searchParams = useSearchParams();
+  const [ciudadesData, setCiudadesData] = useState([]);
+  const [cityNameMap, setCityNameMap] = useState<{ [key: string]: string }>({});
   const [barData, setBarData] = useState<ProductoData[]>([]);
   const [dataLine, setDataLine] = useState([]);
 
@@ -53,7 +53,7 @@ const Dashboard = () => {
   // Obtener las fechas de los parámetros de consulta
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
-  
+
   // Función para obtener la cantidad total de ventas desde la API
   const fetchTotalVentas = async () => {
     try {
@@ -119,6 +119,41 @@ const Dashboard = () => {
     }
   };
 
+  // Función para obtener el mapeo de nombres de ciudades
+  const fetchCityNames = async () => {
+    try {
+      const response = await axios.get("https://villaizan-social.onrender.com/ciudades/");
+      const cityMap: { [key: string]: string } = {};
+      response.data.forEach((city: { id: string; nombre: string }) => {
+        cityMap[city.id] = city.nombre; // Asegúrate de que los nombres de los campos coincidan
+      });
+      setCityNameMap(cityMap);
+      console.log("cityNameMap cargado:", cityMap); // Verifica el contenido del mapeo
+    } catch (error) {
+      console.error("Error fetching city names:", error);
+    }
+  };
+
+// Función para obtener la cantidad de ventas por ciudad desde la API
+const fetchCiudadesData = async () => {
+  try {
+    if (startDate && endDate && Object.keys(cityNameMap).length > 0) { // Asegurarse de que cityNameMap esté cargado
+      const response = await axios.get(`https://villaizan-social.onrender.com/ventas-por-producto-ciudad/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
+      console.log("cityNameMap antes de formatear:", cityNameMap); // Verifica si el mapeo está disponible
+
+      const formattedData = response.data.map((ciudad: CiudadVentas) => ({
+        ciudad: cityNameMap[ciudad.ciudad_id] || "Ciudad desconocida",
+        total_vendido: ciudad.ventas.reduce((sum, producto: ProductoVenta) => sum + (producto.total_vendido || 0), 0),
+      }));
+
+      setCiudadesData(formattedData);
+    }
+  } catch (error) {
+    console.error("Error fetching ciudades data:", error);
+    setCiudadesData([]);
+  }
+};
+
   // Función para obtener datos de la API
   const fetchBarData = async () => {
     try {
@@ -151,6 +186,12 @@ const Dashboard = () => {
 
   // useEffect para obtener los datos de la API cuando el componente se monta
   useEffect(() => {
+    const fetchData = async () => {
+      await fetchCityNames(); // Carga el mapa de nombres de ciudades primero
+      await fetchCiudadesData(); // Luego, llama a fetchCiudadesData para utilizar el mapa de nombres
+    };
+  
+    fetchData(); // Ejecuta el fetchData para asegurar la sincronización.
     fetchTotalVentas();
     fetchTotalProductos();
     fetchTotalCiudades();
@@ -161,9 +202,9 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="bg-green-200 rounded-lg p-4 mb-6">
+      <div className="bg-gray-200 rounded-lg p-4 mb-6">
         <div className="flex items-center">
-          <div className="bg-green-500 rounded-full h-4 w-4 mr-2"></div>
+          <div className="bg-gray-500 rounded-full h-4 w-4 mr-2"></div>
           <h2 className="font-bold text-xl">Procesamiento de Datos de Ventas
              ({startDate ? startDate : "Fecha de inicio no disponible"} - {endDate ? endDate : "Fecha de fin no disponible"})</h2>
         </div>
@@ -214,11 +255,15 @@ const Dashboard = () => {
         </div>
         <div className="bg-white rounded-lg p-6 shadow-md">
           <h3 className="font-bold text-lg mb-4">Zonas y demanda</h3>
-          <ul className="space-y-2">
-            <li>Tarapoto - 0</li>
-            <li>Iquitos - 0</li>
-            <li>Jaén - 0</li>
-          </ul>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={ciudadesData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ciudad" label={{ value: "Ciudad", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Total Vendido", angle: -90, position: "insideLeft" }} />
+              <Tooltip />
+              <Bar dataKey="total_vendido" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -260,4 +305,4 @@ const Dashboard = () => {
   );
 };
 
-export default dynamic(() => Promise.resolve(Dashboard), { ssr: false });
+export default Dashboard;

@@ -24,9 +24,9 @@ const SalesDataItem = () => {
     const endDateFormatted = formatDate(endDate);
 
     return (
-        <div className="bg-green-200 rounded-lg p-4 flex items-start justify-between w-full mx-auto mt-4 hover:bg-green-300 cursor-pointer">
+        <div className="bg-gray-200 rounded-lg p-4 flex items-start justify-between w-full mx-auto mt-4 hover:bg-gray-300 cursor-pointer">
             <div className="flex justify-start w-full">
-                <div className="bg-green-500 rounded-full h-10 w-10"></div> {/* Icono circular */}
+                <div className="bg-gray-500 rounded-full h-10 w-10"></div> {/* Icono circular */}
                 <div className="ml-4 flex flex-col">
                     <div className="flex items-center space-x-4">
                         <p className="font-bold text-lg">Procesamiento de Datos de Ventas</p>
