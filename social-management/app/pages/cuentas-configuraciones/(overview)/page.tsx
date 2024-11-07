@@ -15,6 +15,7 @@ import { update_password } from "@/app/lib/database";
 
 import ProfilePhotoUpload from "@/app/ui/cuentas/profile-foto";
 import { useError } from "@/app/context/errorContext";
+import { useSuccess } from "@/app/context/successContext";
 
 const DEFAULT_PROFILE_PHOTO = "https://bap4ouaenh9ktlwp.public.blob.vercel-storage.com/default-profile-account-unknown-icon-black-silhouette-free-vector-lOfodT0L1kfsKmIpBeof3vKeWBhmr6.jpg";
 
@@ -27,6 +28,8 @@ export default function Page() {
   const [mediaFiles, setMediaFiles] = useState<MediaFILE | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { showError } = useError();
+  const { showSuccess } = useSuccess();
+
 
   useEffect(() => {
     const cookie = document.cookie;
@@ -63,7 +66,7 @@ export default function Page() {
         await update_password(user.id, newPassword);
         setPassword("")
         setNewPassword("")
-        setErrorMessage("contraseña actualizada")
+        showSuccess("Contraseña actualizada correctamente");
       }
     } catch (error: any) {
       setErrorMessage(error.message || "Error al cambiar la contraseña");

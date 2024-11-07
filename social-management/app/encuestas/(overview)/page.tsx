@@ -7,7 +7,7 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import EncuestaHeader from '../encuesta-header';
 import EncuestaNode from '../encuesta-node';
 
-import { Encuesta, Question, Response,Answer } from '@/app/lib/types';
+import { Encuesta, Question, Response, Answer } from '@/app/lib/types';
 import { is_survey_available, load_survey_by_id } from '@/app/lib/database';
 import { submit_survey_response } from '@/app/lib/database';
 import { check_survey_response } from '@/app/lib/database';
@@ -144,9 +144,10 @@ function EncuestaPage() {
                     <button
                         type="submit"
                         className="flex items-center ml-5 rounded px-4 py-2 bg-[#BD181E] text-white"
+                        disabled={isSubmitting}
                     >
                         <PaperAirplaneIcon className="h-5 w-5 mr-2" />
-                        Enviar la respuesta
+                        {isSubmitting ? 'Enviando...' : 'Enviar la respuesta'}
                     </button>
                 </div>
             </form>
