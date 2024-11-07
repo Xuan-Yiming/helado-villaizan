@@ -108,24 +108,27 @@ export type Answer = {
 
 /* INTERACCIONES */
 
+export type InteractionPublication = {
+  postId: string;
+  socialNetwork: 'facebook' | 'instagram';
+  caption: string;
+  commentsCount: number;
+  thumbnail?: string;
+  publishDate?: string;
+  mediaType?: 'image' | 'video';
+  comments: MetaComment[];
+  type: 'publication';
+};
+
 export type InteractionMessage = {
   id: number;
   userName: string;
   socialNetwork: 'facebook' | 'instagram';
   lastMessage: string;
+  updatedTime: string; // Cambiado de timestamp a updatedTime para mostrar la fecha del último mensaje
+  messageCount: number;
+  type: 'message';
 };
-
-export type InteractionPublication = {
-  postId: string; // Cambiado a string para coincidir con los postId de las APIs
-  socialNetwork: 'facebook' | 'instagram';
-  caption: string;
-  commentsCount: number;
-  thumbnail?: string; // URL de la miniatura de la imagen o video
-  publishDate?: string;  // Fecha de la publicación
-  mediaType?: 'image' | 'video'; // Tipo de contenido
-  comments: MetaComment[]; // Agrega los comentarios aquí
-};
-
 
 export type ChatMessage = {
   id: string;
@@ -135,9 +138,6 @@ export type ChatMessage = {
   formattedDate?: string; // Fecha formateada opcional
   timestamp?: Date; // Agrega timestamp opcionalmente como Date
 };
-
-
-
 
 // Para API de Meta (Facebook e Instagram)
 export type MetaApiResponse<T> = {
