@@ -200,10 +200,10 @@ export type Campaign = {
   start_time?: string; // Fecha de inicio de la campaña
   stop_time?: string; // Fecha de fin de la campaña
   spend_cap?: number; // Límite de gasto de la campaña
-  adset: Ad[];
+  adset: Adset[];
 }
 
-export type Ad = {
+export type Adset = {
   id: string;
   name: string; // Nombre del conjunto de anuncios
   campaign_id: string | number; // ID de la campaña a la que se asociará el conjunto de anuncios
@@ -220,4 +220,16 @@ export type Ad = {
   end_time?: string; // Fecha de fin del conjunto de anuncios
   daily_spend_cap?: number; // Límite de gasto diario
   lifetime_spend_cap?: number; // Límite de gasto total
+};
+
+export type AdCreative = {
+  name: string;
+  object_story_spec: string[];
+};
+
+export type Ad = {
+  name: string;
+  adset_id: string;
+  creative: AdCreative[];
+  status: 'ACTIVE' | 'PAUSED';
 };
