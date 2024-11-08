@@ -2,7 +2,7 @@
 
 const API_URL = process.env.API_URL || 'https://api.example.com';
 
-import { Post } from "./types";
+import { Campaign, Post } from "./types";
 import {Encuesta} from "./types";
 import { Response } from "./types";
 import { SocialAccount } from "./types";
@@ -169,3 +169,40 @@ export async function logout_social_account(red_social:string): Promise<void> {
   }
 }
 
+export async function load_all_campaigns(): Promise<Campaign[]> {
+  const apiUrl = 'https://mocki.io/v1/0c82e44b-e8ca-45e5-8fb7-cb9546b723a7';
+  // API_URL + `/campanas/`;
+  //apiUrl = "https://mocki.io/v1/8bf11121-29f2-4ea9-ad68-bc38e3f38612"
+  const response = await fetch(apiUrl);
+  if (!response.ok) {
+    throw new Error(`Error fetching campaigns: ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  return data as Campaign[];
+}
+
+export async function load_ad_by_id(adId: string): Promise<Campaign> {
+  const apiUrl = API_URL + `/campanas/${adId}`;
+  
+  const response = await fetch(apiUrl);
+  if (!response.ok) {
+    throw new Error(`Error fetching ad: ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  return data as Campaign;
+}
+
+export async function load_ad_by_campaign(adId: string): Promise<Campaign> {
+  const apiUrl = 'https://mocki.io/v1/f5fb4d48-7ea6-46b6-8e42-0dcfa93f0013';
+  //API_URL + `/campanas/${adId}`;
+  
+  const response = await fetch(apiUrl);
+  if (!response.ok) {
+    throw new Error(`Error fetching ad: ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  return data as Campaign;
+}

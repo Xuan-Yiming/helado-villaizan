@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { AdjustmentsHorizontalIcon, PlusCircleIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
-import { Campage } from '@/app/lib/types';
+import { Campaign } from '@/app/lib/types';
 
 import FilterSelect from '@/app/ui/interacciones/filter-select';
 import EncuestaList from '@/app/ui/encuesta/encuesta-list';
@@ -14,6 +14,7 @@ import EncuestaCard from '@/app/ui/encuesta/encuesta-card';
 
 import {load_all_survey} from '@/app/lib/database';
 import CampanasCard from '@/app/ui/campanas/campanas-card';
+import { load_all_campaigns } from '@/app/lib/data';
 
 const NUMBER_OF_POSTS_TO_FETCH = 20;
 
@@ -24,7 +25,7 @@ enum special_ad_categories {APP_INSTALLS, BRAND_AWARENESS, CONVERSIONS, EVENT_RE
 export default function Page(){
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [estadoFilter, setEstadoFilter] = useState('all');
-    const [campages, setCampages] = useState<Campage[]>([]);
+    const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [offset, setOffset] = useState(0);
     const hasLoaded = useRef(false);
@@ -39,14 +40,14 @@ export default function Page(){
     };
 
 
-    const loadMoreCampages = async (_offset: number) => {
+    const loadMoreCampaigns = async (_offset: number) => {
         setIsLoading(true);
         try {
-            var apiCampages;
-            if (Array.isArray(apiCampages)) {
-                setCampages(apiCampages);
+            var apiCampaigns = await load_all_campaigns();
+            if (Array.isArray(apiCampaigns)) {
+                setCampaigns(apiCampaigns);
             } else {
-                console.error('Error: apiEncuestas is not an array', apiCampages);
+                console.error('Error: apiEncuestas is not an array', apiCampaigns);
             }
         } catch (error) {
             console.error('Error loading more encuestas:', error);
@@ -58,18 +59,18 @@ export default function Page(){
 
     useEffect(() => {
         if (!hasLoaded.current) {
-            loadMoreCampages(0);
+            loadMoreCampaigns(0);
             hasLoaded.current = true;
         }
     }, []);
 
     async function reset(){
-        setCampages([]);
+        setCampaigns([]);
     }
 
     const handleAplicarFiltro  = async () => {
         await reset();
-        await loadMoreCampages(0);
+        await loadMoreCampaigns(0);
     };
 
 
@@ -89,7 +90,7 @@ export default function Page(){
                 </button>
 
                 <Link
-                    href="/pages/preferencias-de-clientes/encuestas/crear"
+                    href="/pages/publicaciones/campanas/crear"
                     className={`flex items-center ml-5 rounded px-4 py-2 ${filtersVisible ? 'bg-[#BD181E] text-white' : 'border border-black bg-transparent text-black'
                         }`}
                 >
@@ -170,8 +171,8 @@ export default function Page(){
             )}
 
             <ul className="mt-6 flex flex-col gap-2 list-none p-0 min-w-full">
-                {campages.map(campage => (
-                    <CampanasCard key={campage.id} campage={campage} />
+                {campaigns.map(campaign => (
+                    <CampanasCard key={campaign.id} campaign={campaign} />
                 ))}
             </ul>
         </main>

@@ -186,7 +186,7 @@ export type MetaPost = {
   publishDate: string; // Cambiado de postDate a publishDate para coherencia
 };
 
-export type Campage = { 
+export type Campaign = { 
   id: string;
   name: string; // El nombre de la campaña
   status: 'ACTIVE' | 'PAUSED'; // El estado inicial de la campaña
@@ -194,7 +194,7 @@ export type Campage = {
   end_date: string;
   budget: number;
   objective: 'APP_INSTALLS' | 'BRAND_AWARENESS' | 'CONVERSIONS' | 'EVENT_RESPONSES' | 'LEAD_GENERATION' | 'LINK_CLICKS' | 'LOCAL_AWARENESS' | 'MESSAGES' | 'OFFER_CLAIMS' | 'OUTCOME_APP_PROMOTION' | 'OUTCOME_AWARENESS' | 'OUTCOME_ENGAGEMENT' | 'OUTCOME_LEADS' | 'OUTCOME_SALES' | 'OUTCOME_TRAFFIC' | 'PAGE_LIKES' | 'POST_ENGAGEMENT' | 'PRODUCT_CATALOG_SALES' | 'REACH' | 'STORE_VISITS' | 'VIDEO_VIEWS'; // El objetivo de la campaña
-  special_ad_categories: string[]; // Debe proporcionarse, incluso si es un array vacío []
+  special_ad_categories: ('NONE' | 'EMPLOYMENT' | 'HOUSING' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING' | 'FINANCIAL_PRODUCTS_SERVICES')[]; // Debe proporcionarse, incluso si es un array vacío []
   daily_budget?: number; // Presupuesto diario de la campaña
   lifetime_budget?: number; // Presupuesto total de la campaña
   start_time?: string; // Fecha de inicio de la campaña

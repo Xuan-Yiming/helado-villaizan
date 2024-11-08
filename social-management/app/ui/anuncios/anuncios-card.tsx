@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/24/solid";
 import React from "react";
 import Link from "next/link";
-import { Campaign } from "@/app/lib/types";
+import { Ad, Campaign } from "@/app/lib/types";
 import { inter } from "../fonts";
 import { useState } from "react";
 
@@ -23,28 +23,28 @@ import { useError } from "@/app/context/errorContext";
 import { useConfirmation } from "@/app/context/confirmationContext";
 import { useSuccess } from "@/app/context/successContext";
 
-interface CampanasCardProps {
-  campaign: Campaign;
+interface AdCardProps {
+  ad: Ad;
 }
 
-export default function CampanasCard({ campaign }: CampanasCardProps) {
+export default function AdCard({ ad }: AdCardProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [isActive, setIsActive] = useState(campaign.status === "ACTIVE");
+  const [isActive, setIsActive] = useState(ad.status === "ACTIVE");
   const { showError } = useError();
   const { showConfirmation } = useConfirmation();
   const { showSuccess } = useSuccess();
 
   const handleDelete = async () => {
     showConfirmation(
-      "Are you sure you want to delete this survey?",
+      "Are you sure you want to delete this Ad?",
       async () => {
         setIsLoading(true);
         try {
-          await delete_survey(campaign.id);
-          showSuccess("Survey deleted successfully!");
+          await delete_survey(ad.id);
+          showSuccess("Ad deleted successfully!");
           window.location.reload();
         } catch (error) {
-          showError("Error deleting survey: " + error);
+          showError("Error deleting Ad: " + error);
         } finally {
           setIsLoading(false);
         }
@@ -99,38 +99,28 @@ export default function CampanasCard({ campaign }: CampanasCardProps) {
           <div className="flex items-center space-x-2 w-[100px]">
             <div
               className={`w-3 h-3 rounded-full ${getStatusColor(
-                campaign.status
+                ad.status
               )}`}
             ></div>{" "}
             {/* Bolita de estado */}
             <span className="text-xs font-semibold text-gray-700">
-              {getStatusLabel(campaign.status)}
+              {getStatusLabel(ad.status)}
             </span>
           </div>
           <div className="w-10 text-black md:w-10">
             <MegaphoneIcon />
           </div>
           <div className="flex flex-col justify-between w-full md:w-auto">
-            <p className="p-2 pb-0 space-x-4">{campaign.name}</p>
+            <p className="p-2 pb-0 space-x-4">{ad.name}</p>
             <p className="p-2 pb-0 text-xs text-gray-700">
-              {campaign.objective}
+              {ad.optimization_goal}
             </p>
-            <p className="p-2 pb-0 text-xs text-gray-700">
-              {" "}
-              PEN {campaign.budget}
-            </p>
-            <div className="p-2 pt-0 text-xs text-gray-700">
-              {campaign.start_date &&
-                new Date(campaign.start_date).toLocaleString()}
-              {" - "}
-              {campaign.end_date && new Date(campaign.end_date).toLocaleString()}
-            </div>
           </div>
         </div>
       </div>
       <div className="flex items-center">
         <Link
-          href={`/pages/publicaciones/campanas/anuncios?id=${campaign.id}`}
+          href={`/pages/publicaciones/campanas/anuncios?id=${ad.id}`}
           className="flex items-center text-black-500 hover:text-blue-700 ml-5"
         >
           <EyeIcon className="h-5 w-5 mr-2" />
