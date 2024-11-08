@@ -11,6 +11,11 @@ import FilterSelect from '@/app/ui/interacciones/filter-select';
 import InteractionList from '@/app/ui/interacciones/interaction-list';
 import ChatView from '@/app/ui/interacciones/chat-view';
 import { InteractionPublication, ChatMessage, InteractionMessage } from '@/app/lib/types';
+import { useSuccess } from "@/app/context/successContext";
+import { useError } from "@/app/context/errorContext";
+import { useConfirmation} from "@/app/context/confirmationContext";
+
+
 
 type Interaction = 
     | (InteractionPublication & { type: 'publication'; userName?: string })
@@ -33,7 +38,9 @@ const Page = () => {
     const hasLoaded = useRef(false);
     const [isLoading, setIsLoading] = useState(true);
     const [recipientUserId, setRecipientUserId] = useState<string | null>(null);
-
+    const { showError } = useError(); // Para mensajes de error
+    const { showSuccess } = useSuccess(); // Para mensajes de éxito
+    const { showConfirmation, showAlert } = useConfirmation();
 
     const fetchAllConversations = async () => {
         setIsLoading(true);
@@ -55,7 +62,7 @@ const Page = () => {
             setAllConversations(combinedInteractions);
             setFilteredConversations(combinedInteractions);
         } catch (error) {
-            console.error("Error al obtener conversaciones:", error);
+            showError("Error al obtener conversaciones: " + error);
         } finally {
             setIsLoading(false);
         }
@@ -96,16 +103,17 @@ const Page = () => {
         }
     };
 
-    const handleSendResponse = async (message: string) => {
+    const handleSendResponse = async (message: string) => {     
+
         if (!selectedInteractionId) {
-            console.warn("No hay interacción seleccionada para responder.");
+            showAlert("Por favor selecciona una interacción para responder.",() => {});
             return;
         }
     
         if (chatType === 'comments') {
             // Manejo de respuesta a un comentario
             if (!selectedCommentId) {
-                console.warn("No hay comentario seleccionado para responder.");
+                showAlert("Por favor selecciona un comentario para responder.",() => {});
                 return;
             }
     
@@ -128,18 +136,18 @@ const Page = () => {
                 const data = await response.json();
     
                 if (response.ok) {
-                    //console.log("Respuesta al comentario enviada:", data);
+                    showSuccess("Respuesta al comentario enviada");
                 } else {
-                    console.error("Error al responder el comentario:", data.error);
+                    showError("Error al responder el comentario: " + data.error);
                 }
             } catch (error) {
-                console.error("Error en la solicitud de respuesta:", error);
+                showError("Error en la solicitud de respuesta: "+ error);
             }
     
         } else if (chatType === 'message') {
             // Manejo del envío de un mensaje directo
             if (!recipientUserId) {
-                console.warn("No se ha encontrado el ID del usuario para enviar el mensaje.");
+                showAlert("No se ha encontrado el el usuario para enviar el mensaje.",() => {});
                 return;
             }
     
@@ -158,14 +166,14 @@ const Page = () => {
                 const data = await response.json();
     
                 if (response.ok) {
-                    console.log("Mensaje directo enviado:", data);
+                    showSuccess("Mensaje directo enviado");
                     // Opcional: Recargar la conversación para ver el mensaje recién enviado
                     handleSelectInteraction(selectedInteractionId);
                 } else {
-                    console.error("Error al enviar el mensaje directo:", data.error);
+                    showError("Error al enviar el mensaje directo: "+ data.error);
                 }
             } catch (error) {
-                console.error("Error en la solicitud de envío de mensaje directo:", error);
+                showError("Error en la solicitud de envío de mensaje directo: "+ error);
             }
         }
     };
@@ -208,7 +216,7 @@ const Page = () => {
                 setRecipientUserId(userId);  // Nueva variable de estado que debes agregar
             }
         } catch (error) {
-            console.error("Error al obtener mensajes/comentarios:", error);
+            showError("Error al obtener mensajes/comentarios: " + error);
         }
     };
     
