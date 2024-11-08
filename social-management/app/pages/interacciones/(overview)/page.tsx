@@ -46,8 +46,8 @@ const Page = () => {
         setIsLoading(true);
         try {
             const fbConversations = await fetch('/api/facebook/conversaciones').then(res => res.json());
-            const igPublications = await fetch('/api/instagram/publicaciones').then(res => res.json());
-            const fbPublications = await fetch('/api/facebook/publicaciones').then(res => res.json());
+            const igPublications = await fetch('/api/instagram/publicaciones?includeCommentsOnly=true').then(res => res.json());
+            const fbPublications = await fetch('/api/facebook/publicaciones?includeCommentsOnly=true').then(res => res.json());
     
             const combinedInteractions = [
                 ...fbPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
