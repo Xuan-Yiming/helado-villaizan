@@ -47,9 +47,9 @@ export default function Page() {
   return (
     <main className='bg-white'>
       <h1 className="font-bold text-4xl">Bienvenido a Social Hub</h1>
-      <button onClick={handleClick}>Trigger Error</button>
+      {/* <button onClick={handleClick}>Trigger Error</button>
       <button onClick={handleDelete}>Trigger Confirmation</button>
-      <button onClick={handleAlert}>Trigger Alert</button>
+      <button onClick={handleAlert}>Trigger Alert</button> */}
       <div className="flex justify-center mt-4">
         <Image
           src="/images/Community-Management.jpg"
