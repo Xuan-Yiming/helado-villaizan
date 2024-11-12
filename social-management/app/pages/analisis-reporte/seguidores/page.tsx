@@ -4,20 +4,7 @@ import React, { useState, useEffect } from 'react';
 import DateRangePicker from '@/app/ui/dashboard-redes/date-range-picker';
 import FilterSelect from '@/app/ui/interacciones/filter-select';
 import { AdjustmentsHorizontalIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import FacebookLogo from '@/app/ui/icons/facebook';
-import InstagramLogo from '@/app/ui/icons/instagram';
-
-const getSocialIcon = (socialNetwork?: string) => {
-    if (!socialNetwork) return null;
-    switch (socialNetwork.toLowerCase()) {
-        case 'facebook':
-            return <span className="w-5 h-5 mr-2"><FacebookLogo /></span>;
-        case 'instagram':
-            return <span className="w-5 h-5 mr-2"><InstagramLogo /></span>;
-        default:
-            return null;
-    }
-};
+import SelectedFiltersDisplay from '@/app/ui/dashboard-redes/selected-filters-display';
 
 const MetricsPage = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -25,7 +12,6 @@ const MetricsPage = () => {
     const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null);
     const [isClient, setIsClient] = useState(false);
 
-    // Variables temporales para los filtros seleccionados
     const [tempNetwork, setTempNetwork] = useState<'facebook' | 'instagram'>('facebook');
     const [tempDateRange, setTempDateRange] = useState<{ start: Date; end: Date } | null>(null);
 
@@ -60,17 +46,12 @@ const MetricsPage = () => {
         if (tempDateRange) {
             setDateRange(tempDateRange);
         }
-        console.log("Red Social Seleccionada:", tempNetwork);
-        console.log("Rango de Fechas:", tempDateRange?.start, "-", tempDateRange?.end);
     };
 
     if (!isClient || !dateRange) return null;
 
-    const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
-
     return (
         <div className="container mx-auto p-4 text-black">
-            {/* Header */}
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Análisis de redes</h1>
 
@@ -84,7 +65,6 @@ const MetricsPage = () => {
                 </button>
             </div>
 
-            {/* Filters */}
             {filtersVisible && (
                 <div className="flex justify-between mt-4">
                     <FilterSelect
@@ -123,18 +103,15 @@ const MetricsPage = () => {
                 </div>
             )}
 
-            {/* Result section */}
-            <div className="bg-gray-200 rounded-lg p-4 mb-6 mt-8">
-                <div className="flex items-center">
-                    {getSocialIcon(network)}
-                    <h2 className="font-bold text-lg">
-                        Red Social Seleccionada: {capitalizedNetwork}
-                    </h2>
-                </div>
-                <p className="text-gray-600 mt-2">
-                    Rango de Fechas: {dateRange.start.toLocaleDateString()} - {dateRange.end.toLocaleDateString()}
-                </p>
-            </div>
+            {/* Bloque de Resultados */}
+            {dateRange && (
+                <SelectedFiltersDisplay 
+                    network={network} 
+                    dateRange={dateRange} 
+                />
+            )}
+
+            {/* Aquí puedes integrar los gráficos correspondientes */}
         </div>
     );
 };
