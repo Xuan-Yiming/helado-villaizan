@@ -1,5 +1,5 @@
-// ui/date-range-picker.tsx
-import React, { useState } from 'react';
+// app/ui/dashboard-redes/date-range-picker.tsx
+import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import dayjs from 'dayjs';
 import "react-datepicker/dist/react-datepicker.css";
@@ -8,18 +8,29 @@ import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 interface DateRangePickerProps {
     onDateRangeChange: (startDate: Date, endDate: Date) => void;
+    selectedRange?: { start: Date; end: Date } | null;
 }
 
-const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) => {
+const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, selectedRange }) => {
     const [showPicker, setShowPicker] = useState(false);
-    const [startDate, setStartDate] = useState<Date>(dayjs().subtract(28, 'day').toDate());
-    const [endDate, setEndDate] = useState<Date>(new Date());
+    const [startDate, setStartDate] = useState<Date | undefined>(selectedRange?.start);
+    const [endDate, setEndDate] = useState<Date | undefined>(selectedRange?.end);
 
-    const [tempStartDate, setTempStartDate] = useState<Date>(startDate);
-    const [tempEndDate, setTempEndDate] = useState<Date>(endDate);
-    const [quickSelect, setQuickSelect] = useState<string>('Últimos 28 días');
-    const [tempQuickSelect, setTempQuickSelect] = useState<string>('Últimos 28 días');
+    const [tempStartDate, setTempStartDate] = useState<Date | undefined>(selectedRange?.start);
+    const [tempEndDate, setTempEndDate] = useState<Date | undefined>(selectedRange?.end);
+    const [quickSelect, setQuickSelect] = useState<string>('Definir rango de fechas');
+    const [tempQuickSelect, setTempQuickSelect] = useState<string>('Definir rango de fechas');
     const [isCustomDate, setIsCustomDate] = useState(false);
+
+    useEffect(() => {
+        if (selectedRange) {
+            setStartDate(selectedRange.start);
+            setEndDate(selectedRange.end);
+            setQuickSelect(`${dayjs(selectedRange.start).format('DD MMM, YYYY')} - ${dayjs(selectedRange.end).format('DD MMM, YYYY')}`);
+        } else {
+            setQuickSelect('Definir rango de fechas');
+        }
+    }, [selectedRange]);
 
     const togglePicker = () => setShowPicker(!showPicker);
 
@@ -29,7 +40,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
         setTempStartDate(newStartDate);
         setTempEndDate(newEndDate);
         setTempQuickSelect(label);
-        setIsCustomDate(false); // Oculta los cuadros de fecha personalizada al seleccionar un rango rápido
+        setIsCustomDate(false);
     };
 
     const handleCustomDate = () => {
@@ -38,7 +49,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
     };
 
     const formatDateInput = (value: string): string => {
-        // Solo permite dígitos y formatea la fecha automáticamente
         const digits = value.replace(/\D/g, '');
         const day = digits.slice(0, 2);
         const month = digits.slice(2, 4);
@@ -70,11 +80,19 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
     };
 
     const applyChanges = () => {
-        setStartDate(tempStartDate);
-        setEndDate(tempEndDate);
-        setQuickSelect(tempQuickSelect);
-        onDateRangeChange(tempStartDate, tempEndDate);
-        setShowPicker(false);
+        if (tempStartDate && tempEndDate) {
+            if (tempStartDate > tempEndDate) {
+                alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+                return;
+            }
+            setStartDate(tempStartDate);
+            setEndDate(tempEndDate);
+            setQuickSelect(tempQuickSelect || 'Personalizado');
+            onDateRangeChange(tempStartDate, tempEndDate);
+            setShowPicker(false);
+        } else {
+            alert("Por favor ingresa un rango de fechas válido.");
+        }
     };
 
     const cancelChanges = () => {
@@ -89,11 +107,10 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
         <div className="relative inline-block h-full">
             <div className="h-16 flex items-center border rounded border-gray-300">
                 <button onClick={togglePicker} className="flex justify-between items-center w-full px-3 py-3">
-                    <span>{quickSelect}: {dayjs(startDate).format('DD MMM, YYYY')} - {dayjs(endDate).format('DD MMM, YYYY')}</span>
+                    <span>{quickSelect}</span>
                     <ChevronDownIcon className="ml-2 h-4 w-4 text-gray-700" />
                 </button>
             </div>
-
 
             {showPicker && (
                 <div className="absolute z-10 mt-2 p-4 bg-white border rounded shadow-lg custom-picker flex flex-col" style={{ top: '100%', left: '50%', transform: 'translateX(-50%)' }}>
@@ -117,7 +134,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
 
                     {!isCustomDate ? (
                         <DatePicker
-                            selected={tempStartDate}
+                            selected={tempStartDate ?? undefined}
                             onChange={(dates: [Date | null, Date | null]) => {
                                 const [start, end] = dates;
                                 if (start && end) {
@@ -126,8 +143,8 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
                                     setTempQuickSelect('Personalizado');
                                 }
                             }}
-                            startDate={tempStartDate}
-                            endDate={tempEndDate}
+                            startDate={tempStartDate ?? undefined}
+                            endDate={tempEndDate ?? undefined}
                             selectsRange
                             inline
                         />
@@ -136,7 +153,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
                             <input
                                 type="text"
                                 placeholder="Inicio (dd/mm/yyyy)"
-                                defaultValue={dayjs(tempStartDate).format('DD/MM/YYYY')}
+                                defaultValue={tempStartDate ? dayjs(tempStartDate).format('DD/MM/YYYY') : ''}
                                 onChange={handleStartDateInput}
                                 maxLength={10}
                                 className="border p-2 rounded"
@@ -144,7 +161,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
                             <input
                                 type="text"
                                 placeholder="Fin (dd/mm/yyyy)"
-                                defaultValue={dayjs(tempEndDate).format('DD/MM/YYYY')}
+                                defaultValue={tempEndDate ? dayjs(tempEndDate).format('DD/MM/YYYY') : ''}
                                 onChange={handleEndDateInput}
                                 maxLength={10}
                                 className="border p-2 rounded"

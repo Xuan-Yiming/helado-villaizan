@@ -1,4 +1,3 @@
-// app/pages/analisis-reporte/seguidores/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import DateRangePicker from '@/app/ui/dashboard-redes/date-range-picker';
@@ -21,7 +20,7 @@ const getSocialIcon = (socialNetwork?: string) => {
 };
 
 const MetricsPage = () => {
-    const [selectedMetric, setSelectedMetric] = useState<'alcance' | 'interacciones' | 'seguidores' | 'visitas'>('alcance');
+    const [selectedMetric, setSelectedMetric] = useState<null | 'alcance' | 'engagement' | 'seguidores' | 'visitas'>(null);
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [network, setNetwork] = useState<'facebook' | 'instagram'>('facebook');
     const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null);
@@ -30,10 +29,6 @@ const MetricsPage = () => {
 
     useEffect(() => {
         setIsClient(true);
-        setDateRange({
-            start: new Date(),
-            end: new Date()
-        });
     }, []);
 
     const toggleFilters = () => {
@@ -42,10 +37,9 @@ const MetricsPage = () => {
 
     const resetFilters = () => {
         setNetwork('facebook');
-        setDateRange({
-            start: new Date(),
-            end: new Date()
-        });
+        setDateRange(null);
+        setAppliedDateRange(null);
+        setSelectedMetric(null);
     };
 
     const handleDateRangeChange = (startDate: Date, endDate: Date) => {
@@ -59,10 +53,14 @@ const MetricsPage = () => {
     };
 
     const handleAplicarFiltro = () => {
+        if (!dateRange) {
+            alert('Por favor selecciona un rango de fechas antes de aplicar el filtro.');
+            return;
+        }
         setAppliedDateRange(dateRange);
     };
 
-    if (!isClient || !dateRange) return null;
+    if (!isClient) return null;
 
     const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
 
@@ -93,7 +91,7 @@ const MetricsPage = () => {
                         value={network}
                         onChange={handleNetworkChange}
                     />
-                    <DateRangePicker onDateRangeChange={handleDateRangeChange} />
+                    <DateRangePicker onDateRangeChange={handleDateRangeChange} selectedRange={dateRange} />
                     <div className="flex-1 h-15 mx-1 flex justify-center items-center">
                         <button
                             className="flex items-center text-[#BD181E] underline px-4 py-2 hover:text-black border-none"
@@ -127,14 +125,16 @@ const MetricsPage = () => {
             </div>
 
             {/* Crecimiento Section */}
-            <div className="mt-8">
-                <CrecimientoSection
-                    selectedMetric={selectedMetric}
-                    setSelectedMetric={setSelectedMetric}
-                    appliedDateRange={appliedDateRange}
-                    network={network}
-                />
-            </div>
+            {appliedDateRange && (
+                <div className="mt-8">
+                    <CrecimientoSection
+                        selectedMetric={selectedMetric}
+                        setSelectedMetric={setSelectedMetric}
+                        appliedDateRange={appliedDateRange}
+                        network={network}
+                    />
+                </div>
+            )}
         </div>
     );
 };
