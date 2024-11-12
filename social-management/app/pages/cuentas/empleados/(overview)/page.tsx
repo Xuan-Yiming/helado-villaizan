@@ -174,7 +174,7 @@ export default function Page(){
                     className="px-4 py-2 text-[#BD181E] "
                     disabled={isLoading}
                 >
-                    {isLoading ? 'Loading...' : 'Cargar Mas'}
+                    {isLoading ? 'Loading...' : 'Cargar más'}
                 </button>
             </div>
         </main>

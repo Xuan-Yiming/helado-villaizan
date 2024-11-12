@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { ChatMessage } from '@/app/lib/types';
 import { useConfirmation} from "@/app/context/confirmationContext";
+import { ArrowPathIcon } from '@heroicons/react/24/solid';
 
 interface ChatViewProps {
     chatContent: ChatMessage[];
@@ -11,6 +12,7 @@ interface ChatViewProps {
     selectedUserName: string | null;
     publicationInfo: string | null;
     onSelectComment: (commentId: string, userName: string) => void;
+    onRefresh: () => void;
 }
 
 const ChatView: React.FC<ChatViewProps> = ({
@@ -21,7 +23,8 @@ const ChatView: React.FC<ChatViewProps> = ({
     selectedCommentUserName,
     selectedUserName,
     publicationInfo,
-    onSelectComment
+    onSelectComment,
+    onRefresh
 }) => {
     const [newMessage, setNewMessage] = useState('');
     const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -49,8 +52,12 @@ const ChatView: React.FC<ChatViewProps> = ({
     
     return (
         <div className="border border-gray-300 rounded-xl bg-white flex flex-col h-full max-h-[650px]">
-            <div className="p-4 border-b text-gray-700 font-semibold">
-                {publicationInfo}
+            <div className="p-4 border-b text-gray-700 font-semibold flex justify-between items-center">
+                <span>{publicationInfo}</span>
+                <button onClick={onRefresh} className="flex items-center text-blue-500 hover:text-blue-700">
+                    <ArrowPathIcon className="h-5 w-5 mr-1" />
+                    Actualizar
+                </button>
             </div>
 
             <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 p-4">

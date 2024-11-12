@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     AdjustmentsHorizontalIcon,
     CheckCircleIcon,
-    XMarkIcon
+    XMarkIcon,
+    ArrowPathIcon
 } from '@heroicons/react/24/solid';
 
 import FilterSelect from '@/app/ui/interacciones/filter-select';
@@ -14,8 +15,6 @@ import { InteractionPublication, ChatMessage, InteractionMessage } from '@/app/l
 import { useSuccess } from "@/app/context/successContext";
 import { useError } from "@/app/context/errorContext";
 import { useConfirmation} from "@/app/context/confirmationContext";
-
-
 
 type Interaction = 
     | (InteractionPublication & { type: 'publication'; userName?: string })
@@ -46,8 +45,8 @@ const Page = () => {
         setIsLoading(true);
         try {
             const fbConversations = await fetch('/api/facebook/conversaciones').then(res => res.json());
-            const igPublications = await fetch('/api/instagram/publicaciones').then(res => res.json());
-            const fbPublications = await fetch('/api/facebook/publicaciones').then(res => res.json());
+            const igPublications = await fetch('/api/instagram/publicaciones?includeCommentsOnly=true').then(res => res.json());
+            const fbPublications = await fetch('/api/facebook/publicaciones?includeCommentsOnly=true').then(res => res.json());
     
             const combinedInteractions = [
                 ...fbPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
@@ -219,6 +218,12 @@ const Page = () => {
             showError("Error al obtener mensajes/comentarios: " + error);
         }
     };
+
+    const refreshCommentsOrMessages = async () => {
+        if (selectedInteractionId) {
+            handleSelectInteraction(selectedInteractionId);
+        }
+    };
     
     const paginatedConversations = Array.isArray(filteredConversations) 
         ? filteredConversations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) 
@@ -288,8 +293,17 @@ const Page = () => {
             </div>
 
             <div className="flex flex-1">
-                <div className="w-1/2 border-r p-4">
-                    <h2 className="text-md font-bold mb-2">Seleccione una interacción para atender</h2>
+                <div className="w-1/2 border-r p-4 ">
+                    <div className="flex justify-between items-center mb-2 font-bold">
+                        <h2 className="text-md">Seleccione una interacción para atender</h2>
+                        <button 
+                            onClick={fetchAllConversations} 
+                            className="flex items-center text-blue-500 hover:text-blue-700"
+                        >
+                            <ArrowPathIcon className="h-5 w-5 mr-1" />
+                            Actualizar
+                        </button>
+                    </div>
                     {isLoading ? (
                         <div className="flex justify-center items-center h-full">
                             <div className="loader">Cargando...</div>
@@ -330,6 +344,7 @@ const Page = () => {
                             setSelectedCommentId(commentId);
                             setSelectedCommentUserName(userName);
                         }}
+                        onRefresh={refreshCommentsOrMessages}
                     />
                 </div>
             </div>

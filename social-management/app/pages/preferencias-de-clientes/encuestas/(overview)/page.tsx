@@ -80,7 +80,7 @@ export default function Page(){
         <main>
             {/* Header */}
             <div className="flex justify-between items-center">
-                <h1 className="text-xl font-bold">Todas las publicaciones</h1>
+                <h1 className="text-xl font-bold">Todas las encuestas</h1>
                 <div className="flex items-center">
                 <button
                     onClick={toggleFilters}
