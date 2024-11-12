@@ -4,19 +4,36 @@ import React, { useState, useEffect } from 'react';
 import DateRangePicker from '@/app/ui/dashboard-redes/date-range-picker';
 import FilterSelect from '@/app/ui/interacciones/filter-select';
 import { AdjustmentsHorizontalIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import FacebookLogo from '@/app/ui/icons/facebook';
+import InstagramLogo from '@/app/ui/icons/instagram';
+
+const getSocialIcon = (socialNetwork?: string) => {
+    if (!socialNetwork) return null;
+    switch (socialNetwork.toLowerCase()) {
+        case 'facebook':
+            return <span className="w-5 h-5 mr-2"><FacebookLogo /></span>;
+        case 'instagram':
+            return <span className="w-5 h-5 mr-2"><InstagramLogo /></span>;
+        default:
+            return null;
+    }
+};
 
 const MetricsPage = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [network, setNetwork] = useState<'facebook' | 'instagram'>('facebook');
     const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null);
-    const [isClient, setIsClient] = useState(false); // Nueva variable para verificar si estamos en el cliente
+    const [isClient, setIsClient] = useState(false);
+
+    // Variables temporales para los filtros seleccionados
+    const [tempNetwork, setTempNetwork] = useState<'facebook' | 'instagram'>('facebook');
+    const [tempDateRange, setTempDateRange] = useState<{ start: Date; end: Date } | null>(null);
 
     useEffect(() => {
-        setIsClient(true); // Marca que estamos en el cliente
-        setDateRange({
-            start: new Date(),
-            end: new Date()
-        });
+        setIsClient(true);
+        const initialDate = { start: new Date(), end: new Date() };
+        setDateRange(initialDate);
+        setTempDateRange(initialDate);
     }, []);
 
     const toggleFilters = () => {
@@ -24,29 +41,32 @@ const MetricsPage = () => {
     };
 
     const resetFilters = () => {
-        setNetwork('facebook');
-        setDateRange({
-            start: new Date(),
-            end: new Date()
-        });
+        setTempNetwork('facebook');
+        setTempDateRange({ start: new Date(), end: new Date() });
     };
 
     const handleDateRangeChange = (startDate: Date, endDate: Date) => {
-        setDateRange({ start: startDate, end: endDate });
+        setTempDateRange({ start: startDate, end: endDate });
     };
 
     const handleNetworkChange = (value: string) => {
         if (value === 'facebook' || value === 'instagram') {
-            setNetwork(value);
+            setTempNetwork(value);
         }
     };
 
     const handleAplicarFiltro = () => {
-        console.log("Red Social Seleccionada:", network);
-        console.log("Rango de Fechas:", dateRange?.start, "-", dateRange?.end);
+        setNetwork(tempNetwork);
+        if (tempDateRange) {
+            setDateRange(tempDateRange);
+        }
+        console.log("Red Social Seleccionada:", tempNetwork);
+        console.log("Rango de Fechas:", tempDateRange?.start, "-", tempDateRange?.end);
     };
 
-    if (!isClient || !dateRange) return null; // Evita renderizar hasta que estemos en el cliente y dateRange esté inicializado
+    if (!isClient || !dateRange) return null;
+
+    const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
 
     return (
         <div className="container mx-auto p-4 text-black">
@@ -74,7 +94,7 @@ const MetricsPage = () => {
                             { value: 'facebook', label: 'Facebook' },
                             { value: 'instagram', label: 'Instagram' },
                         ]}
-                        value={network}
+                        value={tempNetwork}
                         onChange={handleNetworkChange}
                     />
 
@@ -104,10 +124,16 @@ const MetricsPage = () => {
             )}
 
             {/* Result section */}
-            <div className="mt-8">
-                <p>Red Social Seleccionada: {network}</p>
-                <p>Rango de Fechas: {dateRange.start.toLocaleDateString()} - {dateRange.end.toLocaleDateString()}</p>
-                {/* Aquí puedes integrar los gráficos correspondientes */}
+            <div className="bg-gray-200 rounded-lg p-4 mb-6 mt-8">
+                <div className="flex items-center">
+                    {getSocialIcon(network)}
+                    <h2 className="font-bold text-lg">
+                        Red Social Seleccionada: {capitalizedNetwork}
+                    </h2>
+                </div>
+                <p className="text-gray-600 mt-2">
+                    Rango de Fechas: {dateRange.start.toLocaleDateString()} - {dateRange.end.toLocaleDateString()}
+                </p>
             </div>
         </div>
     );
