@@ -29,6 +29,7 @@
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.5",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "framer-motion": "^11.11.1",
     "fullcalendar": "^6.1.15",
     "js-cookie": "^3.0.5",
