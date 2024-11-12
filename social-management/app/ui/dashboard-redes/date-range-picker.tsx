@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker';
 import dayjs from 'dayjs';
 import "react-datepicker/dist/react-datepicker.css";
 import './date-range-picker.css';
+import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 interface DateRangePickerProps {
     onDateRangeChange: (startDate: Date, endDate: Date) => void;
@@ -85,11 +86,14 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange }) 
     };
 
     return (
-        <div className="relative inline-block">
-            <button onClick={togglePicker} className="px-4 py-2 border rounded flex items-center bg-gray-100 hover:bg-gray-200">
-                <span>{quickSelect}: {dayjs(startDate).format('DD MMM, YYYY')} - {dayjs(endDate).format('DD MMM, YYYY')}</span>
-                <span className="ml-2">&#9660;</span>
-            </button>
+        <div className="relative inline-block h-full">
+            <div className="h-16 flex items-center border rounded border-gray-300">
+                <button onClick={togglePicker} className="flex justify-between items-center w-full px-3 py-3">
+                    <span>{quickSelect}: {dayjs(startDate).format('DD MMM, YYYY')} - {dayjs(endDate).format('DD MMM, YYYY')}</span>
+                    <ChevronDownIcon className="ml-2 h-4 w-4 text-gray-700" />
+                </button>
+            </div>
+
 
             {showPicker && (
                 <div className="absolute z-10 mt-2 p-4 bg-white border rounded shadow-lg custom-picker flex flex-col" style={{ top: '100%', left: '50%', transform: 'translateX(-50%)' }}>
