@@ -1,7 +1,10 @@
-// api/facebook/metricas/audiencia/geografico/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { get_social_account } from "@/app/lib/database";
 import dayjs from 'dayjs';
+import countries from 'i18n-iso-countries';
+
+// Inicializa i18n-iso-countries en español
+countries.registerLocale(require("i18n-iso-countries/langs/es.json"));
 
 export async function GET(request: NextRequest) {
     try {
@@ -28,19 +31,25 @@ export async function GET(request: NextRequest) {
 
         const data = await response.json();
         if (!response.ok) {
-            throw new Error(`Error al obtener datos geográficos: ${data.error?.message}`);
+            throw new Error(`Error al obtener datos de países: ${data.error?.message}`);
         }
 
-        const formattedData = Object.entries(data.data[0].values[0].value || {}).map(
-            ([country, count]) => ({
-                name: country,
+        // Formateamos los datos y traducimos los nombres de los países
+        let formattedData = Object.entries(data.data[0].values[0].value || {}).map(
+            ([countryCode, count]) => ({
+                name: countries.getName(countryCode, "es") || countryCode,
                 value: count as number,
             })
         );
 
+        // Ordenamos en orden descendente y seleccionamos solo el top 3
+        formattedData = formattedData.sort((a, b) => b.value - a.value).slice(0, 3);
+
+        console.log("Datos formateados (Países - Top 3):", formattedData);
+
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
-        console.error("Error en el endpoint geográfico:", error);
+        console.error("Error en el endpoint países:", error);
         return NextResponse.json(
             { error: error instanceof Error ? error.message : "Error desconocido" },
             { status: 500 }

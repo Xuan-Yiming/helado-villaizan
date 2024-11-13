@@ -13,7 +13,8 @@ interface AudienceSectionProps {
 const AudienceSection: React.FC<AudienceSectionProps> = ({ appliedDateRange, network }) => {
     const [ageGenderData, setAgeGenderData] = useState<ChartData[]>([]);
     const [countryData, setCountryData] = useState<ChartData[]>([]);
-    const [cachedData, setCachedData] = useState<{ [key: string]: { ageGender: ChartData[], country: ChartData[] } }>({});
+    const [cityData, setCityData] = useState<ChartData[]>([]); // Nuevo estado para ciudades
+    const [cachedData, setCachedData] = useState<{ [key: string]: { ageGender: ChartData[], country: ChartData[], city: ChartData[] } }>({});
 
     useEffect(() => {
         if (appliedDateRange) {
@@ -23,6 +24,7 @@ const AudienceSection: React.FC<AudienceSectionProps> = ({ appliedDateRange, net
             if (cachedData[cacheKey]) {
                 setAgeGenderData(cachedData[cacheKey].ageGender);
                 setCountryData(cachedData[cacheKey].country);
+                setCityData(cachedData[cacheKey].city);
             } else {
                 fetchAudienceData(cacheKey);
             }
@@ -36,31 +38,44 @@ const AudienceSection: React.FC<AudienceSectionProps> = ({ appliedDateRange, net
         const endDate = appliedDateRange.end.toISOString();
 
         try {
-            // Fetch para edad y género
+            // Comentado: Fetch para edad y género
             const ageGenderResponse = await fetch(`/api/${network}/metricas/audiencia/seguidores?startDate=${startDate}&endDate=${endDate}`);
             const ageGender = await ageGenderResponse.json();
 
             // Fetch para países
-            const countryResponse = await fetch(`/api/${network}/metricas/audiencia/geografico?startDate=${startDate}&endDate=${endDate}`);
+            const countryResponse = await fetch(`/api/${network}/metricas/audiencia/paises?startDate=${startDate}&endDate=${endDate}`);
             const country = await countryResponse.json();
 
-            // Guarda los datos en caché y establece el estado
-            setCachedData(prevCache => ({ ...prevCache, [cacheKey]: { ageGender, country } }));
-            setAgeGenderData(ageGender);
+            // Fetch para ciudades
+            const cityResponse = await fetch(`/api/${network}/metricas/audiencia/ciudades?startDate=${startDate}&endDate=${endDate}`);
+            const city = await cityResponse.json();
+
+            // Guarda los datos en caché y establece el estado solo para "paises"
+            setCachedData(prevCache => ({ ...prevCache, [cacheKey]: { ageGender: [], country, city: [] } }));
             setCountryData(country);
+            
+            setAgeGenderData(ageGender);
+            setCityData(city);
         } catch (error) {
             console.error("Error fetching audience data:", error);
         }
     };
 
     return (
-        <div className="flex gap-8 mt-8"> {/* Cambia gap-4 a gap-8 para una separación mayor */}
-            <GraphContainer title="Edad y Sexo" className="w-1/2">
-                <AgeGenderChartComponent data={ageGenderData} />
-            </GraphContainer>
-            <GraphContainer title="Países Principales" className="w-1/2">
-                <CountryChartComponent data={countryData} />
-            </GraphContainer>
+        <div className="flex flex-col gap-8 mt-8">
+            <div className="flex gap-8">
+                <GraphContainer title="Edad y Sexo de Audiencia" className="w-1/2">
+                    <AgeGenderChartComponent data={ageGenderData} />
+                </GraphContainer>
+                <div className="w-1/2 flex flex-col gap-8">
+                    <GraphContainer title="Países principales de Audiencia" className="w-full h-2/6">
+                        <CountryChartComponent data={countryData} />
+                    </GraphContainer>
+                    <GraphContainer title="Ciudades principales de Audiencia" className="w-full h-4/5">
+                        <CountryChartComponent data={cityData} /> {/* Reutilizando el componente para ciudades */}
+                    </GraphContainer>
+                </div>
+            </div>
         </div>
     );
 };

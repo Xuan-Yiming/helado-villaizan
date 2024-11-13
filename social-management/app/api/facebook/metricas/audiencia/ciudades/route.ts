@@ -25,27 +25,30 @@ export async function GET(request: NextRequest) {
         const until = dayjs(endDate).unix();
 
         const response = await fetch(
-            `https://graph.facebook.com/v20.0/${page_id}/insights/page_fans_gender_age?since=${since}&until=${until}&access_token=${accessToken}`
+            `https://graph.facebook.com/v20.0/${page_id}/insights/page_fans_city?since=${since}&until=${until}&access_token=${accessToken}`
         );
 
         const data = await response.json();
-        console.log("Datos obtenidos de Facebook (Edad y Sexo):", data);
+        console.log("Datos obtenidos de Facebook (Ciudades):", data);
 
         if (!response.ok) {
-            throw new Error(`Error al obtener datos de edad y sexo: ${data.error?.message}`);
+            throw new Error(`Error al obtener datos de ciudades: ${data.error?.message}`);
         }
 
-        const formattedData = Object.entries(data.data[0].values[0].value || {}).map(
-            ([ageGender, count]) => ({
-                name: ageGender,
+        let formattedData = Object.entries(data.data[0].values[0].value || {}).map(
+            ([city, count]) => ({
+                name: city,
                 value: count as number,
             })
         );
 
-        console.log("Datos formateados (Edad y Sexo):", formattedData);
+        // Ordenamos en orden descendente y seleccionamos solo el top 10
+        formattedData = formattedData.sort((a, b) => b.value - a.value).slice(0, 10);
+
+        console.log("Datos formateados (Ciudades):", formattedData);
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
-        console.error("Error en el endpoint de edad y sexo:", error);
+        console.error("Error en el endpoint de ciudades:", error);
         return NextResponse.json(
             { error: error instanceof Error ? error.message : "Error desconocido" },
             { status: 500 }

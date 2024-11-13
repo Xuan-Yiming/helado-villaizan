@@ -77,10 +77,12 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
     return (
         <GraphContainer title={title}>
             <div className="flex flex-col mt-2 mb-4">
-                <label className="text-sm font-medium text-gray-600 mb-1" htmlFor="metric-filter">Métrica de Crecimiento</label>
+                <label className="text-sm font-medium text-gray-600 mb-1" htmlFor="metric-filter">
+                    Métrica de Crecimiento
+                </label>
                 <select
                     id="metric-filter"
-                    className="border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring focus:border-blue-300"
+                    className="border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring focus:border-blue-300 w-1/4" 
                     value={selectedMetric || ""}
                     onChange={(e) => setSelectedMetric(e.target.value as 'alcance' | 'engagement' | 'seguidores' | 'visitas')}
                 >
