@@ -14,35 +14,46 @@ interface CrecimientoSectionProps {
 const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric, setSelectedMetric, appliedDateRange, network }) => {
     const [chartData, setChartData] = useState<ChartData[]>([]);
     const [title, setTitle] = useState<string>('Seleccione una métrica para ver los datos');
+    const [cachedData, setCachedData] = useState<{ [key: string]: ChartData[] }>({}); // Para almacenar los datos de cada métrica
 
     useEffect(() => {
         if (appliedDateRange && selectedMetric) {
-            fetchChartData(selectedMetric);
+            const cacheKey = `${selectedMetric}-${appliedDateRange.start.toISOString()}-${appliedDateRange.end.toISOString()}`;
+            
+            // Si ya tenemos los datos en caché, no hacemos la llamada a la API
+            if (cachedData[cacheKey]) {
+                setChartData(cachedData[cacheKey]);
+                setTitle(`Crecimiento en ${capitalizeMetric(selectedMetric)}`);
+            } else {
+                fetchChartData(selectedMetric, cacheKey);
+            }
         }
     }, [selectedMetric, appliedDateRange]);
 
-    const fetchChartData = async (metric: 'alcance' | 'engagement' | 'seguidores' | 'visitas') => {
+    const fetchChartData = async (metric: 'alcance' | 'engagement' | 'seguidores' | 'visitas', cacheKey: string) => {
         if (!appliedDateRange) return;
-    
+
         const startDate = appliedDateRange.start.toISOString();
         const endDate = appliedDateRange.end.toISOString();
-    
+
         try {
             const response = await fetch(`/api/facebook/metricas/crecimiento/${metric}?startDate=${startDate}&endDate=${endDate}`);
             const data = await response.json();
-    
+
             const formattedData = data.map((item: any) => ({
                 name: item.name,
                 value: item.value,
             }));
-    
+
+            // Guardamos los datos en el estado de caché
+            setCachedData(prevCache => ({ ...prevCache, [cacheKey]: formattedData }));
             setChartData(formattedData);
             setTitle(`Crecimiento en ${capitalizeMetric(metric)}`);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     };
-    
+
     const capitalizeMetric = (metric: string) => {
         return metric.charAt(0).toUpperCase() + metric.slice(1);
     };

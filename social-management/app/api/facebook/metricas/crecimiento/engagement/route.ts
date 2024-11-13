@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         // Ajuste en `since` restando un día
         const since = dayjs(startDate).subtract(1, 'day').unix();
         const until = dayjs(endDate).unix();
-
+        
         // Consulta la métrica de engagement
         const response = await fetch(
             `https://graph.facebook.com/v20.0/${page_id}/insights/page_post_engagements?period=day&since=${since}&until=${until}&access_token=${accessToken}`,

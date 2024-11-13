@@ -6,6 +6,7 @@ import { AdjustmentsHorizontalIcon, CheckCircleIcon, XMarkIcon } from '@heroicon
 import FacebookLogo from '@/app/ui/icons/facebook';
 import InstagramLogo from '@/app/ui/icons/instagram';
 import CrecimientoSection from './crecimiento-section';
+import AudienceSection from './audience-section';
 
 const getSocialIcon = (socialNetwork?: string) => {
     if (!socialNetwork) return null;
@@ -133,6 +134,13 @@ const MetricsPage = () => {
                         appliedDateRange={appliedDateRange}
                         network={network}
                     />
+                </div>
+            )}
+
+            {/* Audience Section */}
+            {appliedDateRange && (
+                <div className="mt-8">
+                    <AudienceSection appliedDateRange={appliedDateRange} network={network} />
                 </div>
             )}
         </div>
