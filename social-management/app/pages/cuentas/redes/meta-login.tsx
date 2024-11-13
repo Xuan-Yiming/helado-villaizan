@@ -47,7 +47,7 @@ export async function metaLogin(): Promise<any> {
                 reject('El usuario canceló el login o no autorizó.');
             }
         }, {
-            scope: 'pages_manage_posts,pages_read_engagement,pages_show_list,pages_manage_metadata,business_management,instagram_basic,instagram_manage_insights,instagram_content_publish,pages_manage_engagement,pages_read_user_content,pages_messaging,instagram_manage_comments,instagram_manage_messages,read_page_mailboxes,ads_read,ads_management',
+            scope: 'read_insights,pages_manage_posts,pages_read_engagement,pages_show_list,pages_manage_metadata,business_management,instagram_basic,instagram_manage_insights,instagram_content_publish,pages_manage_engagement,pages_read_user_content,pages_messaging,instagram_manage_comments,instagram_manage_messages,read_page_mailboxes,ads_read,ads_management',
         });
     });
 }

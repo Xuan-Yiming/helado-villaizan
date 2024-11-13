@@ -17,20 +17,34 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
 
     useEffect(() => {
         if (appliedDateRange && selectedMetric) {
+            console.log("Fetching data for metric:", selectedMetric);
             fetchChartData(selectedMetric);
         }
     }, [selectedMetric, appliedDateRange]);
 
     const fetchChartData = async (metric: 'alcance' | 'engagement' | 'seguidores' | 'visitas') => {
+        if (!appliedDateRange) return;
+    
+        const startDate = appliedDateRange.start.toISOString();
+        const endDate = appliedDateRange.end.toISOString();
+    
         try {
-            const response = await fetch(`/api/facebook/metricas/crecimiento/${metric}`);
+            const response = await fetch(`/api/facebook/metricas/crecimiento/${metric}?startDate=${startDate}&endDate=${endDate}`);
             const data = await response.json();
-            setChartData(data.map((item: any) => ({ name: item.end_time, value: item.value })));
+    
+            const formattedData = data.map((item: any) => ({
+                name: item.name,
+                value: item.value,
+            }));
+    
+            console.log("Datos formateados para LineChartComponent:", formattedData);
+            setChartData(formattedData);
             setTitle(`Crecimiento en ${capitalizeMetric(metric)}`);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     };
+    
 
     const capitalizeMetric = (metric: string) => {
         return metric.charAt(0).toUpperCase() + metric.slice(1);
@@ -53,7 +67,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
                     <option value="visitas">Visitas</option>
                 </select>
             </div>
-            {selectedMetric && <LineChartComponent data={chartData} />}
+            <LineChartComponent data={chartData} metricLabel={selectedMetric === 'alcance' ? 'Alcance' : 'Seguidores'} />
         </GraphContainer>
     );
 };
