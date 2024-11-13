@@ -1,4 +1,3 @@
-// api/facebook/metricas/crecimiento/alcance/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { get_social_account } from "@/app/lib/database";
 import dayjs from 'dayjs';
@@ -20,7 +19,8 @@ export async function GET(request: NextRequest) {
             throw new Error("Faltan parámetros de rango de fechas.");
         }
 
-        const since = dayjs(startDate).unix();
+        // Ajustamos la fecha de inicio restando un día para asegurar que se incluya correctamente
+        const since = dayjs(startDate).subtract(1, 'day').unix();
         const until = dayjs(endDate).unix();
 
         const response = await fetch(
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         }
 
         const formattedData = data.data[0].values.map((item: any) => {
-            // Restamos un día a la fecha obtenida para corregir el desfase
+            // Restamos un día a la fecha obtenida para corregir el desfase en la API de Facebook
             const adjustedDate = dayjs(item.end_time).subtract(1, 'day').format('YYYY-MM-DD');
             return {
                 name: adjustedDate,

@@ -17,7 +17,6 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
 
     useEffect(() => {
         if (appliedDateRange && selectedMetric) {
-            console.log("Fetching data for metric:", selectedMetric);
             fetchChartData(selectedMetric);
         }
     }, [selectedMetric, appliedDateRange]);
@@ -37,7 +36,6 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
                 value: item.value,
             }));
     
-            console.log("Datos formateados para LineChartComponent:", formattedData);
             setChartData(formattedData);
             setTitle(`Crecimiento en ${capitalizeMetric(metric)}`);
         } catch (error) {
@@ -45,10 +43,25 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
         }
     };
     
-
     const capitalizeMetric = (metric: string) => {
         return metric.charAt(0).toUpperCase() + metric.slice(1);
     };
+
+    // Define el `metricLabel` según la métrica seleccionada
+    const metricLabel = (() => {
+        switch (selectedMetric) {
+            case 'alcance':
+                return 'Alcance';
+            case 'engagement':
+                return 'Engagement';
+            case 'seguidores':
+                return 'Seguidores';
+            case 'visitas':
+                return 'Visitas';
+            default:
+                return '';
+        }
+    })();
 
     return (
         <GraphContainer title={title}>
@@ -67,7 +80,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
                     <option value="visitas">Visitas</option>
                 </select>
             </div>
-            <LineChartComponent data={chartData} metricLabel={selectedMetric === 'alcance' ? 'Alcance' : 'Seguidores'} />
+            <LineChartComponent data={chartData} metricLabel={metricLabel} />
         </GraphContainer>
     );
 };

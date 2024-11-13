@@ -34,8 +34,6 @@ const LineChartComponent: React.FC<LineChartProps> = ({ data, metricLabel }) => 
         return date.isValid() ? date.format('dddd, D MMM YYYY') : '';
     };
 
-    console.log("Datos pasados a LineChartComponent:", data);
-
     return (
         <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>

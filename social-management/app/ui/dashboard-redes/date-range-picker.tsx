@@ -12,6 +12,14 @@ interface DateRangePickerProps {
 }
 
 const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, selectedRange }) => {
+    const [tempStartDay, setTempStartDay] = useState<string>('');
+    const [tempStartMonth, setTempStartMonth] = useState<string>('');
+    const [tempStartYear, setTempStartYear] = useState<string>('');
+
+    const [tempEndDay, setTempEndDay] = useState<string>('');
+    const [tempEndMonth, setTempEndMonth] = useState<string>('');
+    const [tempEndYear, setTempEndYear] = useState<string>('');
+
     const [showPicker, setShowPicker] = useState(false);
     const [startDate, setStartDate] = useState<Date | undefined>(selectedRange?.start);
     const [endDate, setEndDate] = useState<Date | undefined>(selectedRange?.end);
@@ -26,7 +34,23 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
         if (selectedRange) {
             setStartDate(selectedRange.start);
             setEndDate(selectedRange.end);
-            setQuickSelect(`${dayjs(selectedRange.start).format('DD MMM, YYYY')} - ${dayjs(selectedRange.end).format('DD MMM, YYYY')}`);
+
+            // Actualiza el texto de quickSelect dependiendo del rango de fechas
+            const today = dayjs().startOf('day');
+            const start = dayjs(selectedRange.start);
+            const end = dayjs(selectedRange.end);
+
+            if (start.isSame(today.subtract(7, 'day'), 'day') && end.isSame(today.subtract(1, 'day'), 'day')) {
+                setQuickSelect(`Últimos 7 días: ${start.format('DD MMM, YYYY')} - ${end.format('DD MMM, YYYY')}`);
+            } else if (start.isSame(today.subtract(28, 'day'), 'day') && end.isSame(today.subtract(1, 'day'), 'day')) {
+                setQuickSelect(`Últimos 28 días: ${start.format('DD MMM, YYYY')} - ${end.format('DD MMM, YYYY')}`);
+            } else if (start.isSame(today.subtract(90, 'day'), 'day') && end.isSame(today.subtract(1, 'day'), 'day')) {
+                setQuickSelect(`Últimos 90 días: ${start.format('DD MMM, YYYY')} - ${end.format('DD MMM, YYYY')}`);
+            } else if (start.isSame(dayjs().startOf('month'), 'day') && end.isSame(dayjs().subtract(1, 'day'), 'day')) {
+                setQuickSelect(`Este mes: ${start.format('DD MMM, YYYY')} - ${end.format('DD MMM, YYYY')}`);
+            } else {
+                setQuickSelect(`Personalizado: ${start.format('DD MMM, YYYY')} - ${end.format('DD MMM, YYYY')}`);
+            }
         } else {
             setQuickSelect('Definir rango de fechas');
         }
@@ -36,7 +60,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
 
     const handleQuickSelect = (label: string, days: number) => {
         const newStartDate = dayjs().subtract(days, 'day').toDate();
-        const newEndDate = new Date();
+        const newEndDate = dayjs().subtract(1, 'day').toDate();
         setTempStartDate(newStartDate);
         setTempEndDate(newEndDate);
         setTempQuickSelect(label);
@@ -48,52 +72,76 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
         setTempQuickSelect('Personalizado');
     };
 
-    const formatDateInput = (value: string): string => {
-        const digits = value.replace(/\D/g, '');
-        const day = digits.slice(0, 2);
-        const month = digits.slice(2, 4);
-        const year = digits.slice(4, 8);
-        let formatted = day;
-        if (month) formatted += `/${month}`;
-        if (year) formatted += `/${year}`;
-        return formatted;
+    // Función para formatear el valor de día y mes
+    const formatDayOrMonth = (value: string, max: number): string => {
+        const cleanValue = value.replace(/\D/g, ''); // Elimina caracteres no numéricos
+        if (cleanValue.length === 1 && parseInt(cleanValue) > max / 10) {
+            return `0${cleanValue}`; // Agrega un "0" adelante para valores de un dígito mayores a los posibles
+        } else if (cleanValue.length === 2) {
+            const intValue = parseInt(cleanValue);
+            if (intValue > max) return `${max}`; // Asegura que el valor no sobrepase el máximo
+        }
+        return cleanValue.slice(0, 2); // Limita el valor a 2 dígitos
     };
 
-    const handleStartDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const formattedValue = formatDateInput(e.target.value);
-        e.target.value = formattedValue;
-
-        if (formattedValue.length === 10) {
-            const date = dayjs(formattedValue, 'DD/MM/YYYY', true);
-            if (date.isValid()) setTempStartDate(date.toDate());
-        }
-    };
-
-    const handleEndDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const formattedValue = formatDateInput(e.target.value);
-        e.target.value = formattedValue;
-
-        if (formattedValue.length === 10) {
-            const date = dayjs(formattedValue, 'DD/MM/YYYY', true);
-            if (date.isValid()) setTempEndDate(date.toDate());
-        }
+    // Función para el campo de año
+    const formatYear = (value: string): string => {
+        const cleanValue = value.replace(/\D/g, ''); // Elimina caracteres no numéricos
+        return cleanValue.slice(0, 4); // Limita el valor a 4 dígitos
     };
 
     const applyChanges = () => {
-        if (tempStartDate && tempEndDate) {
-            if (tempStartDate > tempEndDate) {
+        if (tempQuickSelect !== 'Personalizado') {
+            // Para opciones rápidas (7, 28, 90 días y este mes), no se necesitan validaciones de fecha
+            if (tempStartDate && tempEndDate) {
+                setStartDate(tempStartDate);
+                setEndDate(tempEndDate);
+                setQuickSelect(`${tempQuickSelect}: ${dayjs(tempStartDate).format('DD MMM, YYYY')} - ${dayjs(tempEndDate).format('DD MMM, YYYY')}`);
+                onDateRangeChange(tempStartDate, tempEndDate);
+                setShowPicker(false);
+            }
+        } else if (tempStartDay && tempStartMonth && tempStartYear && tempEndDay && tempEndMonth && tempEndYear) {
+            // Para fechas personalizadas
+            const formattedStartDate = `${tempStartYear}-${tempStartMonth}-${tempStartDay}`;
+            const formattedEndDate = `${tempEndYear}-${tempEndMonth}-${tempEndDay}`;
+    
+            const startDate = dayjs(formattedStartDate, 'YYYY-MM-DD', true);
+            const endDate = dayjs(formattedEndDate, 'YYYY-MM-DD', true);
+            const today = dayjs().startOf('day');
+    
+            if (!startDate.isValid() || !endDate.isValid()) {
+                alert("Por favor ingresa fechas válidas.");
+                return;
+            }
+    
+            if (startDate > endDate) {
                 alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
                 return;
             }
-            setStartDate(tempStartDate);
-            setEndDate(tempEndDate);
-            setQuickSelect(tempQuickSelect || 'Personalizado');
-            onDateRangeChange(tempStartDate, tempEndDate);
+    
+            if (parseInt(tempStartYear) < 2020 || parseInt(tempEndYear) < 2020) {
+                alert("No se permiten años menores a 2020.");
+                return;
+            }
+    
+            if (endDate.isAfter(today) || startDate.isAfter(today)) {
+                alert("Las fechas no pueden ser futuras.");
+                return;
+            }
+    
+            setTempStartDate(startDate.toDate());
+            setTempEndDate(endDate.toDate());
+            setStartDate(startDate.toDate());
+            setEndDate(endDate.toDate());
+    
+            setQuickSelect(`Personalizado: ${startDate.format('DD MMM, YYYY')} - ${endDate.format('DD MMM, YYYY')}`);
+            onDateRangeChange(startDate.toDate(), endDate.toDate());
             setShowPicker(false);
         } else {
-            alert("Por favor ingresa un rango de fechas válido.");
+            alert("Por favor completa todos los campos de fecha.");
         }
     };
+    
 
     const cancelChanges = () => {
         setTempStartDate(startDate);
@@ -140,7 +188,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
                                 if (start && end) {
                                     setTempStartDate(start);
                                     setTempEndDate(end);
-                                    setTempQuickSelect('Personalizado');
                                 }
                             }}
                             startDate={tempStartDate ?? undefined}
@@ -150,22 +197,58 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
                         />
                     ) : (
                         <div className="flex flex-col gap-2">
-                            <input
-                                type="text"
-                                placeholder="Inicio (dd/mm/yyyy)"
-                                defaultValue={tempStartDate ? dayjs(tempStartDate).format('DD/MM/YYYY') : ''}
-                                onChange={handleStartDateInput}
-                                maxLength={10}
-                                className="border p-2 rounded"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Fin (dd/mm/yyyy)"
-                                defaultValue={tempEndDate ? dayjs(tempEndDate).format('DD/MM/YYYY') : ''}
-                                onChange={handleEndDateInput}
-                                maxLength={10}
-                                className="border p-2 rounded"
-                            />
+                            <div className="flex gap-1">
+                                <input
+                                    type="text"
+                                    placeholder="DD"
+                                    value={tempStartDay}
+                                    onChange={(e) => setTempStartDay(formatDayOrMonth(e.target.value, 31))}
+                                    maxLength={2}
+                                    className="border p-2 rounded w-12"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="MM"
+                                    value={tempStartMonth}
+                                    onChange={(e) => setTempStartMonth(formatDayOrMonth(e.target.value, 12))}
+                                    maxLength={2}
+                                    className="border p-2 rounded w-12"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="YYYY"
+                                    value={tempStartYear}
+                                    onChange={(e) => setTempStartYear(formatYear(e.target.value))}
+                                    maxLength={4}
+                                    className="border p-2 rounded w-16"
+                                />
+                            </div>
+                            <div className="flex gap-1">
+                                <input
+                                    type="text"
+                                    placeholder="DD"
+                                    value={tempEndDay}
+                                    onChange={(e) => setTempEndDay(formatDayOrMonth(e.target.value, 31))}
+                                    maxLength={2}
+                                    className="border p-2 rounded w-12"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="MM"
+                                    value={tempEndMonth}
+                                    onChange={(e) => setTempEndMonth(formatDayOrMonth(e.target.value, 12))}
+                                    maxLength={2}
+                                    className="border p-2 rounded w-12"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="YYYY"
+                                    value={tempEndYear}
+                                    onChange={(e) => setTempEndYear(formatYear(e.target.value))}
+                                    maxLength={4}
+                                    className="border p-2 rounded w-16"
+                                />
+                            </div>
                         </div>
                     )}
 
