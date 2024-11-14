@@ -2,11 +2,11 @@ import React from 'react';
 import { ChartData } from '@/app/lib/types';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts';
 
-interface CountryChartComponentProps {
+interface HorizontalBarChartComponentProps {
     data: ChartData[];
 }
 
-const CountryChartComponent: React.FC<CountryChartComponentProps> = ({ data }) => {
+const HorizontalBarChartComponent: React.FC<HorizontalBarChartComponentProps> = ({ data }) => {
     const barHeight = 15; // Grosor fijo de cada barra
     const barGap = 20; // Espacio fijo entre cada barra
     const chartHeight = data.length * (barHeight + barGap) + 40; // Altura calculada dinámicamente
@@ -50,4 +50,4 @@ const CountryChartComponent: React.FC<CountryChartComponentProps> = ({ data }) =
     );
 };
 
-export default CountryChartComponent;
+export default HorizontalBarChartComponent;

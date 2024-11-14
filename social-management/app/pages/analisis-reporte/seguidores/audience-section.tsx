@@ -1,8 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import GraphContainer from '@/app/ui/dashboard-redes/graph-container';
-import CountryChartComponent from '@/app/ui/dashboard-redes/country-chart-component';
-import ImpressionChartComponent from '@/app/ui/dashboard-redes/impression-chart-component';
+import HorizontalBarChartComponent from '@/app/ui/dashboard-redes/horizontal-bar-chart-component';
 import { ChartData } from '@/app/lib/types';
 
 interface AudienceSectionProps {
@@ -67,19 +66,30 @@ const AudienceSection: React.FC<AudienceSectionProps> = ({ appliedDateRange, net
         }
     };
 
+    // Filtra "Veces en que las publicaciones aparecieron en pantalla" y obtén los datos restantes
+    const screenAppearanceData = impressionData.find(item => item.name === "Veces en que las publicaciones aparecieron en pantalla");
+    const filteredImpressionData = impressionData.filter(item => item.name !== "Veces en que las publicaciones aparecieron en pantalla");
+
     return (
         <div className="flex flex-col gap-8 mt-8">
             <div className="flex gap-8">
                 <div className="w-1/2 flex flex-col gap-8">
-                    <GraphContainer title="Países principales de Audiencia" className="w-full h-2/6">
-                        <CountryChartComponent data={countryData} />
+                    <GraphContainer title="Países principales de seguidores" className="w-full h-1/2">
+                        <HorizontalBarChartComponent data={countryData} />
                     </GraphContainer>
-                    <GraphContainer title="Ciudades principales de Audiencia" className="w-full h-4/5">
-                        <CountryChartComponent data={cityData} />
+                    <GraphContainer title="Fuentes de impresiones de publicaciones" className="w-full h-1/2">
+                        {/* Muestra el subtítulo para "Veces en que las publicaciones aparecieron en pantalla" */}
+                        {screenAppearanceData && (
+                            <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>
+                                {screenAppearanceData.name}: {screenAppearanceData.value}
+                            </div>
+                        )}
+                        {/* Pasa solo los datos filtrados al componente HorizontalBarChartComponent */}
+                        <HorizontalBarChartComponent data={filteredImpressionData} />
                     </GraphContainer>
                 </div>
-                <GraphContainer title="Fuentes de Impresiones" className="w-1/2">
-                    <ImpressionChartComponent data={impressionData} metricLabel="Impresiones" />
+                <GraphContainer title="Ciudades principales de seguidores" className="w-1/2">
+                    <HorizontalBarChartComponent data={cityData} />
                 </GraphContainer>
             </div>
         </div>

@@ -23,7 +23,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
             // Si ya tenemos los datos en caché, no hacemos la llamada a la API
             if (cachedData[cacheKey]) {
                 setChartData(cachedData[cacheKey]);
-                setTitle(`Crecimiento en ${capitalizeMetric(selectedMetric)}`);
+                setTitle(`Crecimiento en ${capitalizeMetric(selectedMetric)} de la página`);
             } else {
                 fetchChartData(selectedMetric, cacheKey);
             }
@@ -48,7 +48,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ selectedMetric,
             // Guardamos los datos en el estado de caché
             setCachedData(prevCache => ({ ...prevCache, [cacheKey]: formattedData }));
             setChartData(formattedData);
-            setTitle(`Crecimiento en ${capitalizeMetric(metric)}`);
+            setTitle(`Crecimiento en ${capitalizeMetric(metric)} de la página`);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
