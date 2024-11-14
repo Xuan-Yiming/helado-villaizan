@@ -44,8 +44,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     submenu: true,
     subMenuItems: [
       { title: 'Principal', path: '/pages/analisis-reporte' },
-      { title: 'Engagement', path: '/pages/analisis-reporte/engagement' },
-      { title: 'Seguidores', path: '/pages/analisis-reporte/seguidores' },
+      { title: 'Redes', path: '/pages/analisis-reporte/redes' },
       { title: 'Ventas', path: '/pages/analisis-reporte/ventas' },
     ],
   },
@@ -143,8 +142,7 @@ export const SIDENAV_ITEMS_MOD: SideNavItem[] = [
     submenu: true,
     subMenuItems: [
       { title: 'Principal', path: '/pages/analisis-reporte' },
-      { title: 'Engagement', path: '/pages/analisis-reporte/engagement' },
-      { title: 'Seguidores', path: '/pages/analisis-reporte/seguidores' },
+      { title: 'Redes', path: '/pages/analisis-reporte/redes' },
       { title: 'Ventas', path: '/pages/analisis-reporte/ventas' },
     ],
   },
@@ -210,8 +208,7 @@ Preferencias de Clientes
 
 Analisis y Reportes
     Principal
-    Engagement
-    Seguidores
+    Redes
     Ventas
 
 Cuentas y Configuraciones
