@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         // Ordenamos en orden descendente y seleccionamos solo el top 3
         formattedData = formattedData.sort((a, b) => b.value - a.value).slice(0, 3);
 
-        console.log("Datos formateados (Países - Top 3):", formattedData);
+        //console.log("Datos formateados (Países - Top 3):", formattedData);
 
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {

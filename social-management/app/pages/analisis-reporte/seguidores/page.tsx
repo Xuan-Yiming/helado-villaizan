@@ -125,6 +125,13 @@ const MetricsPage = () => {
                 </p>
             </div>
 
+            {/* Audience Section */}
+            {appliedDateRange && (
+                <div className="mt-8">
+                    <AudienceSection appliedDateRange={appliedDateRange} network={network} />
+                </div>
+            )}
+
             {/* Crecimiento Section */}
             {appliedDateRange && (
                 <div className="mt-8">
@@ -137,12 +144,6 @@ const MetricsPage = () => {
                 </div>
             )}
 
-            {/* Audience Section */}
-            {appliedDateRange && (
-                <div className="mt-8">
-                    <AudienceSection appliedDateRange={appliedDateRange} network={network} />
-                </div>
-            )}
         </div>
     );
 };

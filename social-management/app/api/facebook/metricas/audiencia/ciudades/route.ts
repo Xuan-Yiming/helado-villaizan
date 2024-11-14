@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
 
-        console.log("Fecha de inicio:", startDate);
+        //console.log("Fecha de inicio:", startDate);
         console.log("Fecha de fin:", endDate);
 
         if (!startDate || !endDate) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         );
 
         const data = await response.json();
-        console.log("Datos obtenidos de Facebook (Ciudades):", data);
+        //console.log("Datos obtenidos de Facebook (Ciudades):", data);
 
         if (!response.ok) {
             throw new Error(`Error al obtener datos de ciudades: ${data.error?.message}`);
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         // Ordenamos en orden descendente y seleccionamos solo el top 10
         formattedData = formattedData.sort((a, b) => b.value - a.value).slice(0, 10);
 
-        console.log("Datos formateados (Ciudades):", formattedData);
+        //console.log("Datos formateados (Ciudades):", formattedData);
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
         console.error("Error en el endpoint de ciudades:", error);
