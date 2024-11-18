@@ -590,7 +590,7 @@ async function load_questions_by_encuesta_id(
   })) as Question[];
 }
 
-async function load_responses_by_encuesta_id(
+export async function load_responses_by_encuesta_id(
   encuestaId: string
 ): Promise<Response[]> {
   await connectToDatabase();
@@ -707,6 +707,17 @@ export async function is_survey_available(surveyId: string): Promise<boolean> {
         SELECT * FROM encuestas WHERE id = ${surveyId} AND status = 'activo'
     `;
   return result.rows.length > 0;
+}
+
+export async function get_all_surveys(): Promise<any[]> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+  const result = await client.sql`
+        SELECT * FROM encuestas
+    `;
+  return result.rows;
 }
 
 // SOCIAL ACCOUNTS
