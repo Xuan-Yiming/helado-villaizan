@@ -221,3 +221,12 @@ export type Ad = {
   daily_spend_cap?: number; // Límite de gasto diario
   lifetime_spend_cap?: number; // Límite de gasto total
 };
+
+
+
+// ANALISIS DE REDES types.tsx
+
+export type ChartData = {
+  name: string;
+  value: number;
+};
