@@ -50,7 +50,7 @@ export default function LoginForm() {
         throw new Error(errorData.error);
       }
     } catch (error: any) {
-      setError(error.message);
+      setError("El correo o contraseña son incorrectos.");
     } finally {
       setLoading(false);
     }
