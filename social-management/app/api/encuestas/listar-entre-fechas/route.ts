@@ -19,22 +19,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Failed to fetch surveys between dates' }, { status: 500 });
     }
 }
-
-export async function get_creator_by_survey_id(surveyId: string): Promise<string> {
-  await connectToDatabase();
-
-  const query = `
-    SELECT usuario_id
-    FROM Encuestas
-    WHERE id = $1
-  `;
-  const values = [surveyId];
-
-  try {
-    const result = await client!.query(query, values);
-    return result.rows[0]?.usuario_id || null;
-  } catch (error) {
-    console.error("Error querying survey creator:", error);
-    throw new Error("Database query failed");
-  }
-}
