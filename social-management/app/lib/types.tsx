@@ -82,9 +82,10 @@ export type Encuesta = {
   status: string;
   start_date: string;
   end_date: string;
+  creator_id: string; // Nuevo campo
   questions?: Question[];
   responses?: Response[];
-}
+};
 
 export type Question = {
   id: string;

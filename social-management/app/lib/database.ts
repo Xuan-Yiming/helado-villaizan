@@ -715,7 +715,9 @@ export async function get_all_surveys(): Promise<any[]> {
     throw new Error("Database client is not initialized");
   }
   const result = await client.sql`
-        SELECT * FROM encuestas
+        SELECT e.*, ua.username AS creator_name
+    FROM encuestas e
+    LEFT JOIN user_accounts ua ON e.creator_id = ua.id;
     `;
   return result.rows;
 }
@@ -803,10 +805,10 @@ export async function get_surveys_between_dates(startDate: string, endDate: stri
   await connectToDatabase();
 
   const query = `
-    SELECT id, title, description, status, start_date, end_date
-    FROM Encuestas
-    WHERE start_date >= $1 AND end_date <= $2
-  `;
+  SELECT id, title, description, status, start_date, end_date, creator_id
+  FROM Encuestas
+  WHERE start_date >= $1 AND end_date <= $2
+`;
   const values = [startDate, endDate];
 
   try {
@@ -818,28 +820,10 @@ export async function get_surveys_between_dates(startDate: string, endDate: stri
       status: row.status,
       start_date: row.start_date,
       end_date: row.end_date,
+      creator_id: row.creator_id,
     }));
   } catch (error) {
     console.error("Error querying surveys between dates:", error);
-    throw new Error("Database query failed");
-  }
-}
-
-export async function get_creator_by_survey_id(surveyId: string): Promise<string> {
-  await connectToDatabase();
-
-  const query = `
-    SELECT usuario_id
-    FROM Encuestas
-    WHERE id = $1
-  `;
-  const values = [surveyId];
-
-  try {
-    const result = await client!.query(query, values);
-    return result.rows[0]?.usuario_id || null;
-  } catch (error) {
-    console.error("Error querying survey creator:", error);
     throw new Error("Database query failed");
   }
 }
