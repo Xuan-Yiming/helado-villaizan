@@ -19,6 +19,8 @@ import {
   activate_user,
 } from "@/app/lib/database";
 import { useError } from "@/app/context/errorContext";
+import { useConfirmation } from "@/app/context/confirmationContext";
+import { useSuccess } from "@/app/context/successContext";
 
 interface CuentasCardProps {
   user: UserAccount;
@@ -28,35 +30,50 @@ export default function CuentasCard({ user }: CuentasCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isActive, setIsActive] = useState(user.active);
   const { showError } = useError();
+  const { showConfirmation } = useConfirmation();
+  const { showSuccess } = useSuccess();
 
   const handleToggle = async () => {
-    try {
-      if (isActive) {
-        await deactivate_user(user.id);
-        // //console.log("Survey disabled successfully");
-      } else {
-        await activate_user(user.id);
-        // //console.log("Survey activated successfully");
+
+  
+    showConfirmation(
+      `Are you sure you want to ${isActive ? "deactivate" : "activate"} this user?`,
+      async () => {
+        try {
+          if (isActive) {
+            await deactivate_user(user.id);
+            showSuccess("User deactivated successfully!");
+          } else {
+            await activate_user(user.id);
+            showSuccess("User activated successfully!");
+          }
+          setIsActive(!isActive);
+        } catch (error) {
+          showError(
+            `Error ${isActive ? "deactivating" : "activating"} user: ` + error
+          );
+        }
       }
-      setIsActive(!isActive);
-    } catch (error) {
-      showError(
-        `Error ${isActive ? "disabling" : "activating"} survey: `+
-        error
-      );
-    }
+    );
   };
 
   const handleDelete = async () => {
-    setIsLoading(true);
-    try {
-      const response = await delete_user(user.id);
-      window.location.reload();
-    } catch (error) {
-      showError("Error deleting survey: "+ error);
-    } finally {
-      setIsLoading(false);
-    }
+
+    showConfirmation(
+      "Are you sure you want to delete this user?",
+      async () => {
+        setIsLoading(true);
+        try {
+          await delete_user(user.id);
+          showSuccess("User deleted successfully!");
+          window.location.reload();
+        } catch (error) {
+          showError("Error deleting user: " + error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    );
   };
 
   return (
@@ -119,4 +136,3 @@ export default function CuentasCard({ user }: CuentasCardProps) {
     </li>
   );
 }
-

@@ -82,9 +82,10 @@ export type Encuesta = {
   status: string;
   start_date: string;
   end_date: string;
+  creator_id: string; // Nuevo campo
   questions?: Question[];
   responses?: Response[];
-}
+};
 
 export type Question = {
   id: string;
@@ -125,19 +126,32 @@ export type InteractionMessage = {
   userName: string;
   socialNetwork: 'facebook' | 'instagram';
   lastMessage: string;
-  updatedTime: string; // Cambiado de timestamp a updatedTime para mostrar la fecha del último mensaje
+  updatedTime: string; // Fecha del último mensaje
   messageCount: number;
+  unreadCount?: number; // Agrega este campo como opcional
+  userId: string; // ID único del usuario para mensajes directos
   type: 'message';
 };
 
+
+// Define un tipo para los adjuntos del mensaje
+type MessageAttachment = {
+  type: 'image' | 'audio' | 'sticker' | 'video';
+  url: string;
+};
+
+// Actualiza ChatMessage para incluir los adjuntos
 export type ChatMessage = {
   id: string;
   text: string;
   fromUser: boolean;
   userName?: string;
-  formattedDate?: string; // Fecha formateada opcional
-  timestamp?: Date; // Agrega timestamp opcionalmente como Date
+  formattedDate?: string;
+  timestamp?: Date;
+  attachment?: MessageAttachment | null; // Añade la propiedad de attachment opcional
 };
+
+
 
 // Para API de Meta (Facebook e Instagram)
 export type MetaApiResponse<T> = {
@@ -171,4 +185,49 @@ export type MetaPost = {
   mediaType: 'image' | 'video';
   thumbnail?: string;
   publishDate: string; // Cambiado de postDate a publishDate para coherencia
+};
+
+export type Campaign = { 
+  id: string;
+  name: string; // El nombre de la campaña
+  status: 'ACTIVE' | 'PAUSED'; // El estado inicial de la campaña
+  start_date: string;
+  end_date: string;
+  budget: number;
+  objective: 'APP_INSTALLS' | 'BRAND_AWARENESS' | 'CONVERSIONS' | 'EVENT_RESPONSES' | 'LEAD_GENERATION' | 'LINK_CLICKS' | 'LOCAL_AWARENESS' | 'MESSAGES' | 'OFFER_CLAIMS' | 'OUTCOME_APP_PROMOTION' | 'OUTCOME_AWARENESS' | 'OUTCOME_ENGAGEMENT' | 'OUTCOME_LEADS' | 'OUTCOME_SALES' | 'OUTCOME_TRAFFIC' | 'PAGE_LIKES' | 'POST_ENGAGEMENT' | 'PRODUCT_CATALOG_SALES' | 'REACH' | 'STORE_VISITS' | 'VIDEO_VIEWS'; // El objetivo de la campaña
+  special_ad_categories: ('NONE' | 'EMPLOYMENT' | 'HOUSING' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING' | 'FINANCIAL_PRODUCTS_SERVICES')[]; // Debe proporcionarse, incluso si es un array vacío []
+  daily_budget?: number; // Presupuesto diario de la campaña
+  lifetime_budget?: number; // Presupuesto total de la campaña
+  start_time?: string; // Fecha de inicio de la campaña
+  stop_time?: string; // Fecha de fin de la campaña
+  spend_cap?: number; // Límite de gasto de la campaña
+  adset: Ad[];
+}
+
+export type Ad = {
+  id: string;
+  name: string; // Nombre del conjunto de anuncios
+  campaign_id: string | number; // ID de la campaña a la que se asociará el conjunto de anuncios
+  daily_budget?: number; // Presupuesto diario en la moneda de la cuenta
+  lifetime_budget?: number; // Presupuesto total en la moneda de la cuenta
+  billing_event: 'APP_INSTALLS' | 'IMPRESSIONS' | 'LINK_CLICKS' | 'OFFER_CLAIMS' | 'PAGE_LIKES' | 'POST_ENGAGEMENT' | 'VIDEO_VIEWS' | 'THRUPLAY' | 'PURCHASE' | 'LISTING_INTERACTION'; // Evento de facturación utilizado para el conjunto de anuncios
+  optimization_goal: 'NONE' | 'APP_INSTALLS' | 'AD_RECALL_LIFT' | 'ENGAGED_USERS' | 'EVENT_RESPONSES' | 'IMPRESSIONS' | 'LEAD_GENERATION' | 'LINK_CLICKS' | 'OFFSITE_CONVERSIONS' | 'PAGE_LIKES' | 'POST_ENGAGEMENT' | 'REACH' | 'LANDING_PAGE_VIEWS' | 'VALUE' | 'THRUPLAY' | 'VISIT_INSTAGRAM_PROFILE'; // Lo que se optimiza en el conjunto de anuncios
+  status: 'ACTIVE' | 'PAUSED'; // Estado del conjunto de anuncios al momento de la creación
+  targeting: {
+    countries: string[]; // Debe incluir al menos countries
+    [key: string]: any; // Otros campos de segmentación
+  };
+  start_time?: string; // Fecha de inicio del conjunto de anuncios
+  end_time?: string; // Fecha de fin del conjunto de anuncios
+  daily_spend_cap?: number; // Límite de gasto diario
+  lifetime_spend_cap?: number; // Límite de gasto total
+};
+
+
+
+// ANALISIS DE REDES types.tsx
+
+export type ChartData = {
+  name: string;
+  value: number;
 };

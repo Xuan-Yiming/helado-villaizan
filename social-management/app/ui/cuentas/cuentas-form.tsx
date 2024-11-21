@@ -51,7 +51,7 @@ const CuentasForm: React.FC<CuentasFormProps> = ({ user, setUser }) => {
       await createOrUpdateUserAccount(_user);
       router.push("/pages/cuentas/empleados");
     } catch (error: any) {
-      setErrorMessage(error.message || "Ocurrio un error")
+      setErrorMessage(error.message || "Ocurrió un error")
     } finally {
       setIsUploading(false);
     }

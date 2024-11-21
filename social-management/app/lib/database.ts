@@ -550,13 +550,20 @@ export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
     throw new Error("Database client is not initialized");
   }
 
+  // Verifica si `creator_id` está presente
+  if (!newSurvey.creator_id) {
+    throw new Error("El campo creator_id es obligatorio para crear una encuesta");
+  }
+
+  // Inserta la encuesta con el campo creator_id
   const encuestaResult = await client.sql`
-        INSERT INTO encuestas (title, description, status, start_date, end_date)
-        VALUES (${newSurvey.title}, ${newSurvey.description}, ${newSurvey.status}, ${newSurvey.start_date}, ${newSurvey.end_date})
+        INSERT INTO encuestas (title, description, status, start_date, end_date, creator_id)
+        VALUES (${newSurvey.title}, ${newSurvey.description}, ${newSurvey.status}, ${newSurvey.start_date}, ${newSurvey.end_date}, ${newSurvey.creator_id})
         RETURNING *
     `;
   const encuesta = encuestaResult.rows[0] as Encuesta;
 
+  // Inserta las preguntas asociadas a la encuesta
   for (const question of newSurvey.questions || []) {
     await client.sql`
             INSERT INTO questions (encuesta_id, title, type, required, options)
@@ -568,6 +575,7 @@ export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
 
   return encuesta;
 }
+
 async function load_questions_by_encuesta_id(
   encuestaId: string
 ): Promise<Question[]> {
@@ -590,7 +598,7 @@ async function load_questions_by_encuesta_id(
   })) as Question[];
 }
 
-async function load_responses_by_encuesta_id(
+export async function load_responses_by_encuesta_id(
   encuestaId: string
 ): Promise<Response[]> {
   await connectToDatabase();
@@ -709,6 +717,19 @@ export async function is_survey_available(surveyId: string): Promise<boolean> {
   return result.rows.length > 0;
 }
 
+export async function get_all_surveys(): Promise<any[]> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+  const result = await client.sql`
+        SELECT e.*, ua.username AS creator_name
+    FROM encuestas e
+    LEFT JOIN user_accounts ua ON e.creator_id = ua.id;
+    `;
+  return result.rows;
+}
+
 // SOCIAL ACCOUNTS
 export async function load_all_social_accounts(): Promise<SocialAccount[]> {
   await connectToDatabase();
@@ -735,6 +756,7 @@ export async function add_social_account(
 }
 
 export async function logout_social_account(red_social: string): Promise<void> {
+  console.log("SE INTENTÓ BORRAR RED SOCIAL");
   // await connectToDatabase();
   // if (!client) {
   //   throw new Error("Database client is not initialized");
@@ -786,4 +808,31 @@ export async function update_social_account(social_account: SocialAccount) {
         SET usuario = ${social_account.usuario}, page_id = ${social_account.page_id}, open_id = ${social_account.open_id}, refresh_token = ${social_account.refresh_token}, token_autenticacion = ${social_account.token_autenticacion}, instagram_business_account = ${social_account.instagram_business_account}, fecha_expiracion_token = ${social_account.fecha_expiracion_token}, fecha_expiracion_refresh = ${social_account.fecha_expiracion_refresh}, linked = ${social_account.linked}
         WHERE red_social = ${social_account.red_social}
     `;
+}
+
+export async function get_surveys_between_dates(startDate: string, endDate: string): Promise<Encuesta[]> {
+  await connectToDatabase();
+
+  const query = `
+  SELECT id, title, description, status, start_date, end_date, creator_id
+  FROM Encuestas
+  WHERE start_date >= $1 AND end_date <= $2
+`;
+  const values = [startDate, endDate];
+
+  try {
+    const result = await client!.query(query, values);
+    return result.rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      status: row.status,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      creator_id: row.creator_id,
+    }));
+  } catch (error) {
+    console.error("Error querying surveys between dates:", error);
+    throw new Error("Database query failed");
+  }
 }

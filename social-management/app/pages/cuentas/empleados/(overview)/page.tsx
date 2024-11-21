@@ -142,7 +142,7 @@ export default function Page(){
                             onClick={resetFilters}
                         >
                             <XMarkIcon className="h-5 w-5 mr-2" />
-                            <div>Limpiar Filtro</div>
+                            <div>Limpiar filtro</div>
                         </button>
                     </div>
 
@@ -174,7 +174,7 @@ export default function Page(){
                     className="px-4 py-2 text-[#BD181E] "
                     disabled={isLoading}
                 >
-                    {isLoading ? 'Loading...' : 'Cargar Mas'}
+                    {isLoading ? 'Loading...' : 'Cargar más'}
                 </button>
             </div>
         </main>

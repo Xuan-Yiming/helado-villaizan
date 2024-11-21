@@ -1,0 +1,36 @@
+.custom-picker {
+    display: flex;
+    flex-direction: column;
+    max-width: 350px; /* Ajusta si necesitas limitar el ancho */
+}
+
+.quick-select {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.quick-select-button {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    background-color: #f7f7f7;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.quick-select-button:hover {
+    background-color: #e0e0e0;
+}
+
+.quick-select-button.active {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.quick-select-button:not(.active):hover {
+    background-color: #e9ecef;
+}

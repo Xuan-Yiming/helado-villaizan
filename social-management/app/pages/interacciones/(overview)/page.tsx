@@ -4,13 +4,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     AdjustmentsHorizontalIcon,
     CheckCircleIcon,
-    XMarkIcon
+    XMarkIcon,
+    ArrowPathIcon
 } from '@heroicons/react/24/solid';
 
 import FilterSelect from '@/app/ui/interacciones/filter-select';
 import InteractionList from '@/app/ui/interacciones/interaction-list';
 import ChatView from '@/app/ui/interacciones/chat-view';
 import { InteractionPublication, ChatMessage, InteractionMessage } from '@/app/lib/types';
+import { useSuccess } from "@/app/context/successContext";
+import { useError } from "@/app/context/errorContext";
+import { useConfirmation} from "@/app/context/confirmationContext";
 
 type Interaction = 
     | (InteractionPublication & { type: 'publication'; userName?: string })
@@ -32,43 +36,42 @@ const Page = () => {
     const itemsPerPage = 6;
     const hasLoaded = useRef(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [recipientUserId, setRecipientUserId] = useState<string | null>(null);
+    const { showError } = useError(); // Para mensajes de error
+    const { showSuccess } = useSuccess(); // Para mensajes de éxito
+    const { showConfirmation, showAlert } = useConfirmation();
 
     const fetchAllConversations = async () => {
         setIsLoading(true);
         try {
             const fbConversations = await fetch('/api/facebook/conversaciones').then(res => res.json());
-            const igPublications = await fetch('/api/instagram/publicaciones').then(res => res.json());
-            const fbPublications = await fetch('/api/facebook/publicaciones').then(res => res.json());
-
+            const igPublications = await fetch('/api/instagram/publicaciones?includeCommentsOnly=true').then(res => res.json());
+            const fbPublications = await fetch('/api/facebook/publicaciones?includeCommentsOnly=true').then(res => res.json());
+    
             const combinedInteractions = [
                 ...fbPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
                 ...igPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
-                ...fbConversations.map((msg: InteractionMessage) => ({ ...msg, type: 'message' })),
+                ...fbConversations.map((msg: InteractionMessage) => ({
+                    ...msg,
+                    type: 'message',
+                    userId: msg.userId  // Asegúrate de que `userId` esté aquí
+                })),
             ];
-
+    
             setAllConversations(combinedInteractions);
             setFilteredConversations(combinedInteractions);
         } catch (error) {
-            console.error("Error al obtener conversaciones:", error);
+            showError("Error al obtener conversaciones: " + error);
         } finally {
             setIsLoading(false);
         }
     };
+    
 
     useEffect(() => {
         if (!hasLoaded.current) {
             fetchAllConversations();
             hasLoaded.current = true;
-        }
-        
-        if (selectedInteractionId && chatType === 'message') {
-            // Configurar polling para actualizar los mensajes
-            const interval = setInterval(() => {
-                handleSelectInteraction(selectedInteractionId);
-            }, 5000); // Cada 5 segundos
-            
-            // Limpiar intervalo cuando cambie el id de la interacción o se desmonte el componente
-            return () => clearInterval(interval);
         }
     }, [selectedInteractionId, chatType]);
     
@@ -99,47 +102,91 @@ const Page = () => {
         }
     };
 
-    const handleSendResponse = async (message: string) => {
-        if (!selectedCommentId || !selectedInteractionId) {
-            console.warn("No hay comentario o publicación seleccionada para responder.");
+    const handleSendResponse = async (message: string) => {     
+
+        if (!selectedInteractionId) {
+            showAlert("Por favor selecciona una interacción para responder.",() => {});
             return;
         }
-
-        const network = filteredConversations.find(
-            (pub) => pub.type === 'publication' && pub.postId === selectedInteractionId
-        )?.socialNetwork;
-
-        try {
-            const response = await fetch(`/api/${network}/responder-comentario`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    commentId: selectedCommentId,
-                    message: message
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log("Respuesta enviada:", data);
-            } else {
-                console.error("Error al responder el comentario:", data.error);
+    
+        if (chatType === 'comments') {
+            // Manejo de respuesta a un comentario
+            if (!selectedCommentId) {
+                showAlert("Por favor selecciona un comentario para responder.",() => {});
+                return;
             }
-        } catch (error) {
-            console.error("Error en la solicitud de respuesta:", error);
+    
+            const network = filteredConversations.find(
+                (pub) => pub.type === 'publication' && pub.postId === selectedInteractionId
+            )?.socialNetwork;
+    
+            try {
+                const response = await fetch(`/api/${network}/responder-comentario`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        commentId: selectedCommentId,
+                        message: message
+                    })
+                });
+    
+                const data = await response.json();
+    
+                if (response.ok) {
+                    showSuccess("Respuesta al comentario enviada");
+                } else {
+                    showError("Error al responder el comentario: " + data.error);
+                }
+            } catch (error) {
+                showError("Error en la solicitud de respuesta: "+ error);
+            }
+    
+        } else if (chatType === 'message') {
+            // Manejo del envío de un mensaje directo
+            if (!recipientUserId) {
+                showAlert("No se ha encontrado el el usuario para enviar el mensaje.",() => {});
+                return;
+            }
+    
+            try {
+                const response = await fetch('/api/facebook/enviar-mensaje', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipientId: recipientUserId,
+                        message: message
+                    })
+                });
+    
+                const data = await response.json();
+    
+                if (response.ok) {
+                    showSuccess("Mensaje directo enviado");
+                    // Opcional: Recargar la conversación para ver el mensaje recién enviado
+                    handleSelectInteraction(selectedInteractionId);
+                } else {
+                    showError("Error al enviar el mensaje directo: "+ data.error);
+                }
+            } catch (error) {
+                showError("Error en la solicitud de envío de mensaje directo: "+ error);
+            }
         }
     };
-
+    
     const handleSelectInteraction = async (id: string) => {
         setSelectedInteractionId(id);
         const selectedInteraction = filteredConversations.find(
             (interaction) => (interaction.type === 'message' ? String(interaction.id) : interaction.postId) === id
         ) as Interaction;
-    
+        
         if (!selectedInteraction) return;
+    
+        // Guarda el `userId` del participante en una variable de estado
+        const userId = selectedInteraction.type === 'message' ? selectedInteraction.userId : null;
     
         try {
             if (selectedInteraction.type === 'publication') {
@@ -163,12 +210,20 @@ const Page = () => {
                 setChatType('message');
                 setSelectedCommentId(null);
                 setSelectedCommentUserName(null);
+    
+                // Guarda el `userId` en una variable de estado separada
+                setRecipientUserId(userId);  // Nueva variable de estado que debes agregar
             }
         } catch (error) {
-            console.error("Error al obtener mensajes/comentarios:", error);
+            showError("Error al obtener mensajes/comentarios: " + error);
         }
     };
-    
+
+    const refreshCommentsOrMessages = async () => {
+        if (selectedInteractionId) {
+            handleSelectInteraction(selectedInteractionId);
+        }
+    };
     
     const paginatedConversations = Array.isArray(filteredConversations) 
         ? filteredConversations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) 
@@ -220,7 +275,7 @@ const Page = () => {
                                 onClick={resetFilters}
                             >
                                 <XMarkIcon className="h-5 w-5 mr-2" />
-                                <div>Limpiar Filtro</div>
+                                <div>Limpiar filtro</div>
                             </button>
                         </div>
 
@@ -238,8 +293,17 @@ const Page = () => {
             </div>
 
             <div className="flex flex-1">
-                <div className="w-1/2 border-r p-4">
-                    <h2 className="text-md font-bold mb-2">Seleccione una interacción para atender</h2>
+                <div className="w-1/2 border-r p-4 ">
+                    <div className="flex justify-between items-center mb-2 font-bold">
+                        <h2 className="text-md">Seleccione una interacción para atender</h2>
+                        <button 
+                            onClick={fetchAllConversations} 
+                            className="flex items-center text-blue-500 hover:text-blue-700"
+                        >
+                            <ArrowPathIcon className="h-5 w-5 mr-1" />
+                            Actualizar
+                        </button>
+                    </div>
                     {isLoading ? (
                         <div className="flex justify-center items-center h-full">
                             <div className="loader">Cargando...</div>
@@ -280,6 +344,7 @@ const Page = () => {
                             setSelectedCommentId(commentId);
                             setSelectedCommentUserName(userName);
                         }}
+                        onRefresh={refreshCommentsOrMessages}
                     />
                 </div>
             </div>

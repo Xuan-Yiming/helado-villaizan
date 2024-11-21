@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { ChatMessage } from '@/app/lib/types';
+import { useConfirmation} from "@/app/context/confirmationContext";
+import { ArrowPathIcon } from '@heroicons/react/24/solid';
 
 interface ChatViewProps {
     chatContent: ChatMessage[];
@@ -10,6 +12,7 @@ interface ChatViewProps {
     selectedUserName: string | null;
     publicationInfo: string | null;
     onSelectComment: (commentId: string, userName: string) => void;
+    onRefresh: () => void;
 }
 
 const ChatView: React.FC<ChatViewProps> = ({
@@ -20,23 +23,27 @@ const ChatView: React.FC<ChatViewProps> = ({
     selectedCommentUserName,
     selectedUserName,
     publicationInfo,
-    onSelectComment
+    onSelectComment,
+    onRefresh
 }) => {
     const [newMessage, setNewMessage] = useState('');
     const messagesContainerRef = useRef<HTMLDivElement>(null);
-
+    const { showConfirmation, showAlert } = useConfirmation();
     const handleSend = () => {
-        if (newMessage.trim()) {
-            onSendMessage(newMessage);
-            setNewMessage('');
+        if (!newMessage || newMessage.trim() === "") {
+            showAlert("Por favor escribe un mensaje para enviar.",() => {});
+            return;
         }
+
+        onSendMessage(newMessage);
+        setNewMessage('');
     };
 
     // Función para formatear la fecha y hora
     const formatDate = (timestamp: Date | string) => {
         const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
         const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Los meses van de 0 a 11
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const year = date.getFullYear();
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -45,8 +52,12 @@ const ChatView: React.FC<ChatViewProps> = ({
     
     return (
         <div className="border border-gray-300 rounded-xl bg-white flex flex-col h-full max-h-[650px]">
-            <div className="p-4 border-b text-gray-700 font-semibold">
-                {publicationInfo}
+            <div className="p-4 border-b text-gray-700 font-semibold flex justify-between items-center">
+                <span>{publicationInfo}</span>
+                <button onClick={onRefresh} className="flex items-center text-blue-500 hover:text-blue-700">
+                    <ArrowPathIcon className="h-5 w-5 mr-1" />
+                    Actualizar
+                </button>
             </div>
 
             <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 p-4">
@@ -72,7 +83,14 @@ const ChatView: React.FC<ChatViewProps> = ({
                             {chatType === 'comments' && chat.userName && (
                                 <p className="font-semibold">{chat.userName}</p>
                             )}
-                            <p>{chat.text || <span className="italic text-gray-500">[Sticker]</span>}</p>
+                            {chat.attachment?.type === 'image' ? (
+                                <img src={chat.attachment.url} alt="Imagen" className="max-w-xs mt-2 rounded-lg" />
+                            ) : chat.attachment?.type === 'sticker' ? (
+                                <img src={chat.attachment.url} alt="Sticker" className="w-24 h-24 mt-2 rounded-lg" />
+                            ) : (
+                                <p>{chat.text || <span className="italic text-gray-500">[Mensaje desconocido]</span>}</p>
+                            )}
+
                             {chat.timestamp && (
                                 <p className="text-xs mt-1 text-gray-500 text-right">
                                     {formatDate(chat.timestamp)}
@@ -117,4 +135,3 @@ const ChatView: React.FC<ChatViewProps> = ({
 };
 
 export default ChatView;
-

@@ -1,4 +1,4 @@
-// facebook/responderComentario.ts
+// facebook/responder-comentario.ts
 'use server';
 import { NextResponse } from 'next/server';
 import { get_social_account } from "@/app/lib/database";
