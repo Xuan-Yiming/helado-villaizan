@@ -798,3 +798,48 @@ export async function update_social_account(social_account: SocialAccount) {
         WHERE red_social = ${social_account.red_social}
     `;
 }
+
+export async function get_surveys_between_dates(startDate: string, endDate: string): Promise<Encuesta[]> {
+  await connectToDatabase();
+
+  const query = `
+    SELECT id, title, description, status, start_date, end_date
+    FROM Encuestas
+    WHERE start_date >= $1 AND end_date <= $2
+  `;
+  const values = [startDate, endDate];
+
+  try {
+    const result = await client!.query(query, values);
+    return result.rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      status: row.status,
+      start_date: row.start_date,
+      end_date: row.end_date,
+    }));
+  } catch (error) {
+    console.error("Error querying surveys between dates:", error);
+    throw new Error("Database query failed");
+  }
+}
+
+export async function get_creator_by_survey_id(surveyId: string): Promise<string> {
+  await connectToDatabase();
+
+  const query = `
+    SELECT usuario_id
+    FROM Encuestas
+    WHERE id = $1
+  `;
+  const values = [surveyId];
+
+  try {
+    const result = await client!.query(query, values);
+    return result.rows[0]?.usuario_id || null;
+  } catch (error) {
+    console.error("Error querying survey creator:", error);
+    throw new Error("Database query failed");
+  }
+}
