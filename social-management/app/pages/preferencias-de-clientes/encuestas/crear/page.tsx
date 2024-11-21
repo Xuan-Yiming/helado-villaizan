@@ -27,6 +27,7 @@ function EncuestaPage() {
                     status: 'activo',
                     start_date: '',
                     end_date: '',
+                    creator_id: '', 
                     questions: []
                 });
                 return;

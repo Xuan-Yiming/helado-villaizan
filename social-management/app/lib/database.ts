@@ -550,13 +550,20 @@ export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
     throw new Error("Database client is not initialized");
   }
 
+  // Verifica si `creator_id` está presente
+  if (!newSurvey.creator_id) {
+    throw new Error("El campo creator_id es obligatorio para crear una encuesta");
+  }
+
+  // Inserta la encuesta con el campo creator_id
   const encuestaResult = await client.sql`
-        INSERT INTO encuestas (title, description, status, start_date, end_date)
-        VALUES (${newSurvey.title}, ${newSurvey.description}, ${newSurvey.status}, ${newSurvey.start_date}, ${newSurvey.end_date})
+        INSERT INTO encuestas (title, description, status, start_date, end_date, creator_id)
+        VALUES (${newSurvey.title}, ${newSurvey.description}, ${newSurvey.status}, ${newSurvey.start_date}, ${newSurvey.end_date}, ${newSurvey.creator_id})
         RETURNING *
     `;
   const encuesta = encuestaResult.rows[0] as Encuesta;
 
+  // Inserta las preguntas asociadas a la encuesta
   for (const question of newSurvey.questions || []) {
     await client.sql`
             INSERT INTO questions (encuesta_id, title, type, required, options)
@@ -568,6 +575,7 @@ export async function upload_survey(newSurvey: Encuesta): Promise<Encuesta> {
 
   return encuesta;
 }
+
 async function load_questions_by_encuesta_id(
   encuestaId: string
 ): Promise<Question[]> {
