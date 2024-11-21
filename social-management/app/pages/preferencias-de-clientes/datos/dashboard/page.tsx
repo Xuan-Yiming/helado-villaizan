@@ -6,6 +6,8 @@ import {
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+// import jsPDF from 'jspdf';
+// import html2canvas from 'html2canvas';
 
 interface CompraSemana {
   dia: string;
@@ -40,7 +42,7 @@ const Dashboard = () => {
 
   // Estado para almacenar los datos del gráfico de barras
   const searchParams = useSearchParams();
-  const [ciudadesData, setCiudadesData] = useState([]);
+  const [ciudadesData, setCiudadesData] = useState<{ ciudad: string; total_vendido: number }[]>([]);
   const [cityNameMap, setCityNameMap] = useState<{ [key: string]: string }>({});
   const [barData, setBarData] = useState<ProductoData[]>([]);
   const [dataLine, setDataLine] = useState([]);
@@ -119,13 +121,14 @@ const Dashboard = () => {
     }
   };
 
+
   // Función para obtener el mapeo de nombres de ciudades
   const fetchCityNames = async () => {
     try {
       const response = await axios.get("https://villaizan-social.onrender.com/ciudades/");
       const cityMap: { [key: string]: string } = {};
       response.data.forEach((city: { id: string; nombre: string }) => {
-        cityMap[city.id] = city.nombre; // Asegúrate de que los nombres de los campos coincidan
+        cityMap[city.id] = city.nombre;
       });
       setCityNameMap(cityMap);
       console.log("cityNameMap cargado:", cityMap); // Verifica el contenido del mapeo
@@ -134,25 +137,25 @@ const Dashboard = () => {
     }
   };
 
-// Función para obtener la cantidad de ventas por ciudad desde la API
-const fetchCiudadesData = async () => {
-  try {
-    if (startDate && endDate && Object.keys(cityNameMap).length > 0) { // Asegurarse de que cityNameMap esté cargado
-      const response = await axios.get(`https://villaizan-social.onrender.com/ventas-por-producto-ciudad/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
-      console.log("cityNameMap antes de formatear:", cityNameMap); // Verifica si el mapeo está disponible
-
-      const formattedData = response.data.map((ciudad: CiudadVentas) => ({
-        ciudad: cityNameMap[ciudad.ciudad_id] || "Ciudad desconocida",
-        total_vendido: ciudad.ventas.reduce((sum, producto: ProductoVenta) => sum + (producto.total_vendido || 0), 0),
-      }));
-
-      setCiudadesData(formattedData);
+  const fetchCiudadesData = async () => {
+    try {
+      if (startDate && endDate && Object.keys(cityNameMap).length > 0) {
+        const response = await axios.get(`https://villaizan-social.onrender.com/ventas-por-producto-ciudad/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
+        console.log("Usando cityNameMap en fetchCiudadesData:", cityNameMap);
+  
+        const formattedData = response.data.map((ciudad: CiudadVentas) => ({
+          ciudad: cityNameMap[ciudad.ciudad_id] || "Ciudad desconocida",
+          total_vendido: ciudad.ventas.reduce((sum, producto: ProductoVenta) => sum + (producto.total_vendido || 0), 0),
+        }));
+  
+        console.log("Datos formateados de ciudades:", formattedData);
+        setCiudadesData(formattedData);
+      }
+    } catch (error) {
+      console.error("Error fetching ciudades data:", error);
+      setCiudadesData([]);
     }
-  } catch (error) {
-    console.error("Error fetching ciudades data:", error);
-    setCiudadesData([]);
-  }
-};
+  };
 
   // Función para obtener datos de la API
   const fetchBarData = async () => {
@@ -184,21 +187,58 @@ const fetchCiudadesData = async () => {
     }
   };
 
+    // Función para exportar a PDF
+/*  const exportToPDF = async () => {
+    const input = document.getElementById('dashboard-content'); // Selecciona el elemento del dashboard
+    if (input) {
+      const canvas = await html2canvas(input);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 190; // Ancho de la imagen en el PDF
+      const pageHeight = 295; // Alto de la página en el PDF
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 10;
+
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save('dashboard_report.pdf'); // Guarda el archivo PDF con el nombre indicado
+    }
+  };
+  */
+
   // useEffect para obtener los datos de la API cuando el componente se monta
   useEffect(() => {
     const fetchData = async () => {
-      await fetchCityNames(); // Carga el mapa de nombres de ciudades primero
-      await fetchCiudadesData(); // Luego, llama a fetchCiudadesData para utilizar el mapa de nombres
+      await fetchCityNames();
     };
-  
-    fetchData(); // Ejecuta el fetchData para asegurar la sincronización.
+    fetchData();
+
+    fetchData();
     fetchTotalVentas();
     fetchTotalProductos();
     fetchTotalCiudades();
     fetchTotalClientes();
     fetchFrecuenciaCompras();
     fetchBarData();
-  }, [startDate, endDate]); 
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    const fetchDataForCiudades = async () => {
+      if (Object.keys(cityNameMap).length > 0) {
+        await fetchCiudadesData();
+      }
+    };
+    fetchDataForCiudades();
+  }, [cityNameMap, startDate, endDate]);
 
   return (
     <div className="container mx-auto p-4">
@@ -256,13 +296,17 @@ const fetchCiudadesData = async () => {
         <div className="bg-white rounded-lg p-6 shadow-md">
           <h3 className="font-bold text-lg mb-4">Zonas y demanda</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={ciudadesData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ciudad" label={{ value: "Ciudad", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Total Vendido", angle: -90, position: "insideLeft" }} />
-              <Tooltip />
-              <Bar dataKey="total_vendido" fill="#82ca9d" />
-            </BarChart>
+            {ciudadesData.length > 0 ? (
+              <BarChart data={ciudadesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="ciudad" label={{ value: "Ciudad", position: "insideBottom", offset: -5 }} />
+                <YAxis label={{ value: "Total Vendido", angle: -90, position: "insideLeft" }} />
+                <Tooltip />
+                <Bar dataKey="total_vendido" fill="#82ca9d" />
+              </BarChart>
+            ) : (
+              <p>Cargando datos...</p>
+            )}
           </ResponsiveContainer>
         </div>
       </div>
@@ -300,6 +344,13 @@ const fetchCiudadesData = async () => {
             </PieChart>
           </ResponsiveContainer>
         </div>
+      </div>
+      <div className="flex justify-center mt-8">
+        <button 
+          /* onClick={exportToPDF} */ 
+          className="bg-blue-500 text-white font-bold py-2 px-4 rounded">
+          Exportar a PDF
+        </button>
       </div>
     </div>
   );
