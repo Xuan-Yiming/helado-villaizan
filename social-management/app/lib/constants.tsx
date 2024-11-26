@@ -216,3 +216,12 @@ Analisis y Reportes
 
 Cuentas y Configuraciones
 */
+
+
+export const special_ad_categories = [
+  { value: 'OUTCOME_TRAFFIC', label: 'Tráfico' },
+  { value: 'BRAND_AWARENESS', label: 'Reconocimiento de Marca' },
+  { value: 'CONVERSIONS', label: 'Conversiones' },
+  { value: 'VIDEO_VIEWS', label: 'Vistas de Video' },
+  { value: 'POST_ENGAGEMENT', label: 'Interacción con Publicaciones' },
+];

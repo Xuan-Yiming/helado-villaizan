@@ -2,7 +2,7 @@
 
 const API_URL = process.env.API_URL || 'https://api.example.com';
 
-import { Campaign, Post } from "./types";
+import { Campaign, Post, Adset } from "./types";
 import {Encuesta} from "./types";
 import { Response } from "./types";
 import { SocialAccount } from "./types";
@@ -169,17 +169,37 @@ export async function logout_social_account(red_social:string): Promise<void> {
   }
 }
 
-export async function load_all_campaigns(): Promise<Campaign[]> {
-  const apiUrl = 'https://mocki.io/v1/0c82e44b-e8ca-45e5-8fb7-cb9546b723a7';
-  // API_URL + `/campanas/`;
-  //apiUrl = "https://mocki.io/v1/8bf11121-29f2-4ea9-ad68-bc38e3f38612"
-  const response = await fetch(apiUrl);
-  if (!response.ok) {
-    throw new Error(`Error fetching campaigns: ${response.statusText}`);
+export async function load_all_campaigns(): Promise<any[]> {
+  const API_URL = "https://graph.facebook.com/v21.0/act_567132785808833/campaigns";
+  const FIELDS = "fields=name,objective,status,start_time,stop_time";
+  const EFFECTIVE_STATUS = 'effective_status=["ACTIVE","PAUSED"]';
+  const TOKEN = "EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf"; // Reemplaza con tu token dinámico o guarda en .env
+
+  try {
+    const response = await fetch(`${API_URL}?${FIELDS}&${EFFECTIVE_STATUS}`, {
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error fetching campaigns: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return (data.data || []).map((campaign: Campaign) => ({
+      id: campaign.id,
+      name: campaign.name,
+      objective: campaign.objective,
+      status: campaign.status,
+      budget: campaign.lifetime_budget || campaign.daily_budget || 0, // Usa lifetime_budget o daily_budget si están disponibles
+      start_date: campaign.start_time,
+      end_date: campaign.stop_time,
+    }));
+  } catch (error) {
+    console.error("Error loading campaigns from Meta API:", error);
+    return [];
   }
-  
-  const data = await response.json();
-  return data as Campaign[];
 }
 
 export async function load_ad_by_id(adId: string): Promise<Campaign> {
@@ -205,4 +225,104 @@ export async function load_ad_by_campaign(adId: string): Promise<Campaign> {
   
   const data = await response.json();
   return data as Campaign;
+}
+
+export async function update_campaign_status(id: string, status: 'ACTIVE' | 'PAUSED'): Promise<void> {
+  const apiUrl = `https://graph.facebook.com/v21.0/${id}`;
+  const token = "EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf"; // Asegúrate de reemplazar esto con tu token dinámico si es necesario.
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Error actualizando el estado de la campaña:', error);
+    throw new Error(`Failed to update campaign status: ${error.error_user_msg || response.statusText}`);
+  }
+}
+
+export async function create_campaign(newCampaign: any) {
+  const API_URL = 'https://graph.facebook.com/v21.0/act_567132785808833/campaigns';
+  const token = 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+
+  const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newCampaign),
+  });
+
+  if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Error al crear la campaña');
+  }
+
+  return await response.json();
+}
+
+// Carga de Adsets
+export async function load_adsets(campaignId: string): Promise<Adset[]> {
+  
+  const token = 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/${campaignId}/adsets?fields=name,daily_budget,status&access_token=${token}`
+  );
+  if (!response.ok) {
+    throw new Error('Error al cargar los Adsets');
+  }
+  const data = await response.json();
+  return data.data as Adset[];
+}
+
+export async function update_adset_status(adsetId: string, status: string): Promise<void> {
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/${adsetId}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status, access_token: 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf' }),
+    }
+  );
+  if (!response.ok) {
+    throw new Error('Error al actualizar el estado del AddSet');
+  }
+}
+
+// Creación de Adsets
+export async function create_adset(campaignId: string): Promise<Adset> {
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/act_{YOUR_ACCOUNT_ID}/adsets`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Nuevo Adset',
+        campaign_id: campaignId,
+        daily_budget: 10000,
+        billing_event: 'IMPRESSIONS',
+        optimization_goal: 'REACH',
+        targeting: {
+          geo_locations: { countries: ['PE'] },
+        },
+        status: 'PAUSED',
+      }),
+    }
+  );
+  if (!response.ok) {
+    throw new Error('Error al crear el Adset');
+  }
+  const data = await response.json();
+  return data as Adset;
 }
