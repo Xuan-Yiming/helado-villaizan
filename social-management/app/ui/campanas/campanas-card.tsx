@@ -1,74 +1,56 @@
 import {
   MegaphoneIcon,
-  DocumentTextIcon,
-  PencilSquareIcon,
   EyeIcon,
-  DocumentDuplicateIcon,
   TrashIcon,
   HandRaisedIcon,
-  LinkIcon,
 } from "@heroicons/react/24/solid";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Campaign } from "@/app/lib/types";
-import { inter } from "../fonts";
-import { useState } from "react";
-
-import {
-  delete_survey,
-  disable_survey,
-  activate_survey,
-} from "@/app/lib/database";
 import { useError } from "@/app/context/errorContext";
 import { useConfirmation } from "@/app/context/confirmationContext";
 import { useSuccess } from "@/app/context/successContext";
+import { update_campaign_status } from "@/app/lib/data";
 
 interface CampanasCardProps {
   campaign: Campaign;
+  onActivate: () => Promise<void>;
+  onPause: () => Promise<void>;
 }
 
-export default function CampanasCard({ campaign }: CampanasCardProps) {
+export default function CampanasCard({
+  campaign,
+  onActivate,
+  onPause,
+}: CampanasCardProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [isActive, setIsActive] = useState(campaign.status === "ACTIVE");
   const { showError } = useError();
   const { showConfirmation } = useConfirmation();
   const { showSuccess } = useSuccess();
 
-  const handleDelete = async () => {
+  const handleToggleStatus = async () => {
     showConfirmation(
-      "Are you sure you want to delete this survey?",
+      `¿Estás seguro de que deseas ${
+        campaign.status === "ACTIVE" ? "pausar" : "activar"
+      } esta campaña?`,
       async () => {
         setIsLoading(true);
         try {
-          await delete_survey(campaign.id);
-          showSuccess("Survey deleted successfully!");
-          window.location.reload();
-        } catch (error) {
-          showError("Error deleting survey: " + error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    );
-  };
-
-  const handleToggle = async () => {
-
-  
-    showConfirmation(
-      `Are you sure you want to ${isActive ? "deactivate" : "activate"} this user?`,
-      async () => {
-        try {
-          if (isActive) {
-            showSuccess("User deactivated successfully!");
+          if (campaign.status === "ACTIVE") {
+            await onPause(); // Llama a la función pasada como prop
+            showSuccess("Campaña pausada exitosamente.");
           } else {
-            showSuccess("User activated successfully!");
+            await onActivate(); // Llama a la función pasada como prop
+            showSuccess("Campaña activada exitosamente.");
           }
-          setIsActive(!isActive);
         } catch (error) {
           showError(
-            `Error ${isActive ? "deactivating" : "activating"} user: ` + error
+            `Error al ${
+              campaign.status === "ACTIVE" ? "pausar" : "activar"
+            } la campaña: ${error}`
           );
+        } finally {
+          setIsLoading(false);
         }
       }
     );
@@ -101,8 +83,7 @@ export default function CampanasCard({ campaign }: CampanasCardProps) {
               className={`w-3 h-3 rounded-full ${getStatusColor(
                 campaign.status
               )}`}
-            ></div>{" "}
-            {/* Bolita de estado */}
+            ></div>
             <span className="text-xs font-semibold text-gray-700">
               {getStatusLabel(campaign.status)}
             </span>
@@ -115,46 +96,36 @@ export default function CampanasCard({ campaign }: CampanasCardProps) {
             <p className="p-2 pb-0 text-xs text-gray-700">
               {campaign.objective}
             </p>
-            <p className="p-2 pb-0 text-xs text-gray-700">
-              {" "}
-              PEN {campaign.budget}
-            </p>
             <div className="p-2 pt-0 text-xs text-gray-700">
-              {campaign.start_date &&
-                new Date(campaign.start_date).toLocaleString()}
+              {campaign.start_time &&
+                new Date(campaign.start_time).toLocaleString()}
               {" - "}
-              {campaign.end_date && new Date(campaign.end_date).toLocaleString()}
+              {campaign.stop_time &&
+                new Date(campaign.stop_time).toLocaleString()}
             </div>
           </div>
         </div>
       </div>
       <div className="flex items-center">
         <Link
-          href={`/pages/publicaciones/campanas/anuncios?id=${campaign.id}`}
+          href={`/pages/publicaciones/campanas/addsets?id=${campaign.id}`}
           className="flex items-center text-black-500 hover:text-blue-700 ml-5"
         >
           <EyeIcon className="h-5 w-5 mr-2" />
-          <div>Ver Anuncios</div>
+          <div>Ver Addsets</div>
         </Link>
 
         <button
-          onClick={handleToggle}
+          onClick={handleToggleStatus}
           className={`flex items-center ${
-            !isActive
-              ? "text-green-500 hover:text-green-700"
-              : "text-red-500 hover:text-red-700"
+            campaign.status === "ACTIVE"
+              ? "text-red-500 hover:text-red-700"
+              : "text-green-500 hover:text-green-700"
           } ml-5`}
+          disabled={isLoading}
         >
           <HandRaisedIcon className="h-5 w-5 mr-2" />
-          {isActive ? <div>Desactivar</div> : <div>Activar</div>}
-        </button>
-
-        <button
-          onClick={handleDelete}
-          className="flex items-center text-red-500 hover:text-red-700 ml-5"
-        >
-          <TrashIcon className="h-5 w-5 mr-2" />
-          {isLoading ? <div>Eliminando...</div> : <div>Eliminar</div>}
+          {campaign.status === "ACTIVE" ? "Pausar" : "Activar"}
         </button>
       </div>
     </li>
