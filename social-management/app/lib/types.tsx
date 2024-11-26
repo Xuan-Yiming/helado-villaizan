@@ -214,6 +214,7 @@ export type ChartData = {
   name: string;
   value: number;
 };
+
 export interface Campaign {
   id: string;
   name: string;
