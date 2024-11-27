@@ -112,6 +112,7 @@ const Page = () => {
                         id="social-network-filter"
                         options={[
                             { value: 'all', label: 'Ver todo' },
+                            { value: 'tiktok', label: 'TikTok' },
                             { value: 'facebook', label: 'Facebook' },
                             { value: 'instagram', label: 'Instagram' },
                         ]}
