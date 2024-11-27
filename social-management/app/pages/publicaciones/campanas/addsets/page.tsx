@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { PlusCircleIcon, HandRaisedIcon, EyeIcon } from '@heroicons/react/24/solid';
+export const dynamic = 'force-dynamic'; // Indicar que esta página no será prerenderizada
 
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import FilterSelect from '@/app/ui/interacciones/filter-select';
 import { Adset } from '@/app/lib/types';
 import { load_adsets, update_adset_status } from '@/app/lib/data';
 import AdsetCard from '@/app/ui/campanas/adset-card';
 
-export default function Page() {
+function AdsetsPage() {
   const [adsets, setAdsets] = useState<Adset[]>([]);
   const [estadoFilter, setEstadoFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,6 @@ export default function Page() {
     setIsLoading(true);
     try {
       const apiAdsets = await load_adsets(campaignId);
-      // Filtrar por estado si es necesario
       const filteredAdsets = apiAdsets.filter((adset) => {
         if (estadoFilter === 'all') return true;
         return estadoFilter === 'activo' ? adset.status === 'ACTIVE' : adset.status === 'PAUSED';
@@ -33,10 +32,6 @@ export default function Page() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleApplyFilter = async () => {
-    await loadMoreAdsets();
   };
 
   useEffect(() => {
@@ -85,7 +80,7 @@ export default function Page() {
         />
         <button
           className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-700"
-          onClick={handleApplyFilter}
+          onClick={loadMoreAdsets}
         >
           Aplicar filtro
         </button>
@@ -103,5 +98,13 @@ export default function Page() {
         ))}
       </ul>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <AdsetsPage />
+    </Suspense>
   );
 }
