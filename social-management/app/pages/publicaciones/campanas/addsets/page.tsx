@@ -1,8 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import {
   AdjustmentsHorizontalIcon,
@@ -17,7 +15,7 @@ import AdsetCard from '@/app/ui/campanas/adset-card';
 import { load_adsets, update_adset_status } from '@/app/lib/data';
 import { useSearchParams } from 'next/navigation';
 
-export default function Page() {
+function AdsetPageContent() {
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [estadoFilter, setEstadoFilter] = useState('all');
   const [adsets, setAdsets] = useState<Adset[]>([]);
@@ -183,5 +181,13 @@ export default function Page() {
         ))}
       </ul>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Cargando contenido...</div>}>
+      <AdsetPageContent />
+    </Suspense>
   );
 }
