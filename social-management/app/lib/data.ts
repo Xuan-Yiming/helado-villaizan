@@ -299,30 +299,23 @@ export async function update_adset_status(adsetId: string, status: string): Prom
 }
 
 // Creación de Adsets
-export async function create_adset(campaignId: string): Promise<Adset> {
-  const response = await fetch(
-    `https://graph.facebook.com/v21.0/act_{YOUR_ACCOUNT_ID}/adsets`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: 'Nuevo Adset',
-        campaign_id: campaignId,
-        daily_budget: 10000,
-        billing_event: 'IMPRESSIONS',
-        optimization_goal: 'REACH',
-        targeting: {
-          geo_locations: { countries: ['PE'] },
-        },
-        status: 'PAUSED',
-      }),
-    }
-  );
+export async function create_adset(newAdset: any) {
+  const API_URL = 'https://graph.facebook.com/v21.0/act_567132785808833/adsets';
+  const token = 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newAdset),
+  });
+
   if (!response.ok) {
-    throw new Error('Error al crear el Adset');
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'Error al crear el Adset');
   }
-  const data = await response.json();
-  return data as Adset;
+
+  return await response.json();
 }
