@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { create_adcreative, load_page_posts } from '@/app/lib/data';
 
 interface PostOption {
@@ -18,8 +18,18 @@ export default function CreateAdCreativePage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const adsetId = searchParams.get('adsetId'); // Obtener adsetId de la URL
   const pageId = '443190078883565'; // Página fija
   const fixedLinkUrl = 'https://www.facebook.com/@VillaizanArtesanal/'; // Enlace fijo
+
+  // Validar si `adsetId` está presente
+  useEffect(() => {
+    if (!adsetId) {
+      console.warn('adsetId es nulo. Asegúrate de que la URL contiene este parámetro.');
+      setError('ID de AdSet no encontrado en la URL. Por favor, verifica e inténtalo de nuevo.');
+    }
+  }, [adsetId]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -38,8 +48,14 @@ export default function CreateAdCreativePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!name || !selectedPost) {
       setError('Debes completar todos los campos.');
+      return;
+    }
+
+    if (!adsetId) {
+      setError('No se puede proceder sin un ID de AdSet válido.');
       return;
     }
 
@@ -64,8 +80,8 @@ export default function CreateAdCreativePage() {
 
       await create_adcreative(newAdCreative);
 
-      // Redirigir y refrescar la página de AdCreatives
-      router.replace('/pages/publicaciones/campanas/addsets/adcreative');
+      // Redirigir y conservar el adsetId en la URL
+      router.replace(`/pages/publicaciones/campanas/addsets/adcreative?adsetId=${adsetId}`);
     } catch (error: any) {
       console.error('Error creando el AdCreative:', error);
       setError(error.message || 'Hubo un error al crear el AdCreative.');
@@ -77,6 +93,7 @@ export default function CreateAdCreativePage() {
   return (
     <main className="p-4 mx-auto sm:w-full lg:w-1/2">
       <h1 className="text-xl font-bold mb-4">Crear Nuevo AdCreative</h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
         {/* Nombre del AdCreative */}
         <div>
@@ -128,13 +145,10 @@ export default function CreateAdCreativePage() {
           </div>
         )}
 
-        {/* Mostrar errores */}
-        {error && <p className="text-red-500">{error}</p>}
-
         {/* Botón de enviar */}
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !adsetId}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
         >
           {isLoading ? 'Creando...' : 'Crear AdCreative'}

@@ -16,6 +16,12 @@ function AddCreativePageContent() {
   // Obtener el adsetId de la URL
   const adsetId = searchParams.get('adsetId'); // Obtener adsetId desde los parámetros
 
+  useEffect(() => {
+    if (!adsetId) {
+      console.warn('No se proporcionó adsetId. Asegúrate de que la URL incluye este parámetro.');
+    }
+  }, [adsetId]);
+
   const loadAddCreatives = async () => {
     setIsLoading(true);
     try {
@@ -55,7 +61,11 @@ function AddCreativePageContent() {
         <div className="flex items-center">
           {/* Botón Crear AddCreative */}
           <Link
-            href="/pages/publicaciones/campanas/addsets/adcreative/crear"
+            href={
+              adsetId
+                ? `/pages/publicaciones/campanas/addsets/adcreative/crear?adsetId=${adsetId}`
+                : '/pages/publicaciones/campanas/addsets/adcreative/crear'
+            }
             className="flex items-center ml-5 rounded px-4 py-2 bg-[#BD181E] text-white"
           >
             <div>Nuevo</div>
