@@ -10,6 +10,7 @@ function CreateAdsetForm() {
   const [ageMax, setAgeMax] = useState(65);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['facebook', 'instagram']);
   const [selectedDevices, setSelectedDevices] = useState<string[]>(['mobile', 'desktop']);
+  const [selectedGender, setSelectedGender] = useState(0); // Género inicial: Ambos sexos
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [error, setError] = useState('');
@@ -60,7 +61,7 @@ function CreateAdsetForm() {
         targeting: {
           facebook_positions: ['feed'],
           geo_locations: { countries: ['PE'] }, // Valor fijo
-          genders: [0],
+          genders: [selectedGender], // Género seleccionado
           age_max: ageMax,
           age_min: ageMin,
           publisher_platforms: selectedPlatforms,
@@ -144,6 +145,23 @@ function CreateAdsetForm() {
               className="w-full px-3 py-2 border rounded"
             />
           </div>
+        </div>
+
+        {/* Selección de género */}
+        <div>
+          <label htmlFor="genders" className="block font-medium">
+            Género
+          </label>
+          <select
+            id="genders"
+            value={selectedGender}
+            onChange={(e) => setSelectedGender(Number(e.target.value))}
+            className="w-full px-3 py-2 border rounded"
+          >
+            <option value={0}>Ambos sexos</option>
+            <option value={1}>Hombres</option>
+            <option value={2}>Mujeres</option>
+          </select>
         </div>
 
         {/* Fechas de inicio y fin */}
