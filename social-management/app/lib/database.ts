@@ -788,3 +788,30 @@ export async function update_social_account(social_account: SocialAccount) {
         WHERE red_social = ${social_account.red_social}
     `;
 }
+
+// COMENTARIOS RESPONDIDOS
+
+export async function isCommentResponded(commentId: string): Promise<boolean> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  const result = await client.sql`
+        SELECT * FROM comentarios_respondidos 
+        WHERE id = ${commentId} AND respondido = true
+    `;
+  return result.rows.length > 0;
+}
+
+export async function addRespondedComment(commentId: string): Promise<void> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  await client.sql`
+        INSERT INTO comentarios_respondidos (id, respondido)
+        VALUES (${commentId}, true)
+    `;
+}

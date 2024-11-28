@@ -148,7 +148,10 @@ export type ChatMessage = {
   formattedDate?: string;
   timestamp?: Date;
   attachment?: MessageAttachment | null; // Añade la propiedad de attachment opcional
+  respondido?: boolean | null; // Indica si el mensaje está respondido (sólo para comentarios)
+  crítico?: boolean | null;    // Indica si el mensaje es crítico (sólo para comentarios)
 };
+
 
 
 

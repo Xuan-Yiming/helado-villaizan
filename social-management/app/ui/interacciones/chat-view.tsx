@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ChatMessage } from '@/app/lib/types';
-import { useConfirmation} from "@/app/context/confirmationContext";
+import { useConfirmation } from "@/app/context/confirmationContext";
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
 
 interface ChatViewProps {
@@ -31,13 +31,30 @@ const ChatView: React.FC<ChatViewProps> = ({
     const { showConfirmation, showAlert } = useConfirmation();
     const handleSend = () => {
         if (!newMessage || newMessage.trim() === "") {
-            showAlert("Por favor escribe un mensaje para enviar.",() => {});
+            showAlert("Por favor escribe un mensaje para enviar.", () => {});
             return;
         }
-
+    
         onSendMessage(newMessage);
         setNewMessage('');
+    
+        // Marcar como respondido el comentario seleccionado después de un delay
+        if (selectedCommentId && chatType === 'comments') {
+            const selectedComment = chatContent.find(chat => chat.id === selectedCommentId);
+    
+            // Verificar si ya está respondido antes de programar el cambio
+            if (selectedComment && !selectedComment.respondido) {
+                setTimeout(() => {
+                    const updatedComments = chatContent.map((chat) =>
+                        chat.id === selectedCommentId ? { ...chat, respondido: true } : chat
+                    );
+                    chatContent.splice(0, chatContent.length, ...updatedComments); // Reemplaza los datos del array original
+                }, 2500); // Espera de 4 segundos
+            }
+        }
     };
+    
+    
 
     // Función para formatear la fecha y hora
     const formatDate = (timestamp: Date | string) => {
@@ -73,7 +90,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                                               : 'bg-gray-200 text-black self-start text-left mr-auto'
                                       }`
                                     : `p-2 rounded-lg bg-gray-100 cursor-pointer hover:bg-gray-200 ${
-                                          chat.id === selectedCommentId ? 'border border-blue-500' : ''
+                                          chat.id === selectedCommentId ? 'border border-blue-500' : '' // ACA SE VE EL COMENTARIO SELECCIONADO
                                       }`
                             }`}
                             onClick={() =>
@@ -81,7 +98,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                             }
                         >
                             {chatType === 'comments' && chat.userName && (
-                                <p className="font-semibold">{chat.userName}</p>
+                                <p className="font-semibold">{chat.userName}</p> // ACA SE VE EL USUARIO
                             )}
                             {chat.attachment?.type === 'image' ? (
                                 <img src={chat.attachment.url} alt="Imagen" className="max-w-xs mt-2 rounded-lg" />
@@ -95,6 +112,18 @@ const ChatView: React.FC<ChatViewProps> = ({
                                 <p className="text-xs mt-1 text-gray-500 text-right">
                                     {formatDate(chat.timestamp)}
                                 </p>
+                            )}
+
+                            {/* Mostrar atributos de comentarios */}
+                            {chatType === 'comments' && (
+                                <div className="mt-2">
+                                    {chat.respondido && (
+                                        <p className="text-xs text-green-600 font-semibold">Respondido</p>
+                                    )}
+                                    {!chat.crítico && (
+                                        <p className="text-xs text-red-600 font-semibold">Comentario crítico</p>
+                                    )}
+                                </div>
                             )}
                         </div>
                     ))
