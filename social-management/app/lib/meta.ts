@@ -6,8 +6,14 @@ const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export async function isCriticalComment(text: string): Promise<boolean> {
     try {
+        // Verificar si contiene signos de interrogación
+        if (text.includes("?") || text.includes("¿")) {
+            console.log(`El comentario contiene un signo de interrogación: "${text}"`);
+            return true; // Devuelve true directamente
+        }
+
         // Traducir el texto al inglés
-        const translation = await translate(text, { to: "en" }); // Corrige el error
+        const translation = await translate(text, { to: "en" });
         const translatedText = translation.text;
 
         console.log(`Texto original: ${text}`);
@@ -27,7 +33,7 @@ export async function isCriticalComment(text: string): Promise<boolean> {
 
         console.log(`Resultado del análisis: ${label}`);
 
-        // Clasificamos como crítico si el comentario es negativo (LABEL_0)
+        // Clasificamos como crítico si el comentario es negativo (LABEL_0) o neutral (LABEL_1)
         return label === "negative" || label === "neutral";
     } catch (error) {
         console.error("Error al analizar el comentario:", error);

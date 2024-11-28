@@ -40,11 +40,16 @@ export async function POST(request: Request) {
             commentsData.data.map(async (comment: any) => {
                 const isResponded = await isCommentResponded(comment.id); // Verifica si está respondido
                 const isCritical = await isCriticalComment(comment.message); // Analiza si es crítico
+
+                // Manejar casos donde 'from' o 'from.name' sean indefinidos
+                const userName = comment.from?.name || "Usuario anónimo";
+
                 console.log(comment.message);
-                console.log("Es critico?"+isCritical);
+                console.log("Es critico? " + isCritical);
+
                 return {
                     id: comment.id,
-                    userName: comment.from.name,
+                    userName: userName, // Usar el nombre o un valor por defecto
                     text: comment.message,
                     timestamp: comment.created_time,
                     respondido: isResponded,
