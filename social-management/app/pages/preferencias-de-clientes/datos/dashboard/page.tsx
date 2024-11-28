@@ -351,7 +351,7 @@ const Dashboard = () => {
         <div className="bg-red-100 rounded-lg p-4 text-center">
           <p className="text-red-500 font-bold text-2xl">
             {/* Aquí puedes agregar el dato correspondiente al quinto bloque */}
-            {typeof totalGanancia === "number" ? `S/ ${totalGanancia.toLocaleString()}` : "Cargando..."}
+            {typeof totalGanancia === "number" ? `${totalGanancia.toLocaleString()}` : "Cargando..."}
           </p>
           <p className="text-gray-600">Soles</p>
         </div>
@@ -405,41 +405,92 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
         <div className="bg-white rounded-lg p-6 shadow-md">
-        <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
-          <ResponsiveContainer width="100%" height={300}>
-          {promocionesData.length === 0 ? (
-            <p>Cargando datos...</p>
-          ) : (
-            <PieChart width={400} height={300}>
-                <Pie
-                  data={promocionesData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, value }) => `${value}%`}
-                >
-                {promocionesData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value, name, props) => [`${props.payload.total} ventas`, name]} />
-              <Legend
-                layout="vertical"
-                align="right"
-                verticalAlign="middle"
-                formatter={(value: string) =>
-                  `${value} (${promocionesData.find((d) => d.name === value)?.value}%)`
-                }
-              />
-            </PieChart>
-          )}
-        </ResponsiveContainer>
+          <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
+            <ResponsiveContainer width="100%" height={300}>
+            {promocionesData.length === 0 ? (
+              <p>Cargando datos...</p>
+            ) : (
+              <PieChart width={400} height={300}>
+                  <Pie
+                    data={promocionesData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => `${value}%`}
+                  >
+                  {promocionesData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value, name, props) => [`${props.payload.total} ventas`, name]} />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value: string) =>
+                    `${value} (${promocionesData.find((d) => d.name === value)?.value}%)`
+                  }
+                />
+              </PieChart>
+            )}
+            </ResponsiveContainer>
 
 
         </div>
       </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-6 gap-y-8 shadow-md mt-6">
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h3 className="font-bold text-lg mb-4">Frecuencia de edades</h3>
+            <ResponsiveContainer width="100%" height={300}>
+            {promocionesData.length === 0 ? (
+              <p>Cargando datos...</p>
+            ) : (
+              <PieChart width={400} height={300}>
+                  <Pie
+                    data={promocionesData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => `${value}%`}
+                  >
+                  {promocionesData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value, name, props) => [`${props.payload.total} ventas`, name]} />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value: string) =>
+                    `${value} (${promocionesData.find((d) => d.name === value)?.value}%)`
+                  }
+                />
+              </PieChart>
+            )}
+            </ResponsiveContainer>
+
+
+        </div>
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h3 className="font-bold text-lg mb-4">Clientes con mayor cantidad de pedidos</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={barData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="nombre" label={{ value: "Producto", position: "insideBottom", offset: -5 }} />
+              <YAxis dataKey="total_ventas" label={{ value: "Cantidad Total de Ventas", angle: -90, position: "insideCenter" }} />
+              <Tooltip />
+              <Bar dataKey="total_ventas" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       <div className="flex justify-center mt-8">
         <button 
           id="export-button" // ID para identificar el botón
@@ -448,6 +499,7 @@ const Dashboard = () => {
           Exportar a PDF
         </button>
       </div>
+
     </div>
   );
 };
