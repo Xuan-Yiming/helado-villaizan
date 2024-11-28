@@ -1,37 +1,24 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
-import DateRangePicker from '@/app/ui/dashboard-redes/date-range-picker';
-import FilterSelect from '@/app/ui/interacciones/filter-select';
-import { AdjustmentsHorizontalIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import FacebookLogo from '@/app/ui/icons/facebook';
-import InstagramLogo from '@/app/ui/icons/instagram';
-import CrecimientoSection from './crecimiento-section';
-import AudienceSection from './audience-section';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-
-const getSocialIcon = (socialNetwork?: string) => {
-    if (!socialNetwork) return null;
-    switch (socialNetwork.toLowerCase()) {
-        case 'facebook':
-            return <span className="w-5 h-5 mr-2"><FacebookLogo /></span>;
-        case 'instagram':
-            return <span className="w-5 h-5 mr-2"><InstagramLogo /></span>;
-        default:
-            return null;
-    }
-};
+import React, { useState, useEffect, useRef } from "react";
+import DateRangePicker from "@/app/ui/dashboard-redes/date-range-picker";
+import FilterSelect from "@/app/ui/interacciones/filter-select";
+import { AdjustmentsHorizontalIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import SelectedFiltersDisplay from "@/app/ui/dashboard-redes/selected-filters-display";
+import CrecimientoSection from "./crecimiento-section";
+import AudienceSection from "./audience-section";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const MetricsPage = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
-    const [network, setNetwork] = useState<'facebook' | 'instagram'>('facebook');
+    const [network, setNetwork] = useState<'facebook' | 'instagram'>("facebook");
+    const [appliedNetwork, setAppliedNetwork] = useState<'facebook' | 'instagram'>("facebook");
     const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null);
-    const [isClient, setIsClient] = useState(false);
     const [appliedDateRange, setAppliedDateRange] = useState<{ start: Date; end: Date } | null>(null);
     const reportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setIsClient(true);
+        setNetwork("facebook");
     }, []);
 
     const toggleFilters = () => {
@@ -39,9 +26,10 @@ const MetricsPage = () => {
     };
 
     const resetFilters = () => {
-        setNetwork('facebook');
+        setNetwork("facebook");
         setDateRange(null);
         setAppliedDateRange(null);
+        setAppliedNetwork("facebook");
     };
 
     const handleDateRangeChange = (startDate: Date, endDate: Date) => {
@@ -49,34 +37,55 @@ const MetricsPage = () => {
     };
 
     const handleNetworkChange = (value: string) => {
-        if (value === 'facebook' || value === 'instagram') {
+        if (value === "facebook" || value === "instagram") {
             setNetwork(value);
         }
     };
 
     const handleAplicarFiltro = () => {
         if (!dateRange) {
-            alert('Por favor selecciona un rango de fechas antes de aplicar el filtro.');
+            alert("Por favor selecciona un rango de fechas antes de aplicar el filtro.");
             return;
         }
         setAppliedDateRange(dateRange);
+        setAppliedNetwork(network);
     };
 
     const exportToPDF = async () => {
         if (reportRef.current) {
-            const canvas = await html2canvas(reportRef.current, { scale: 2 });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', [canvas.width * 0.264583, canvas.height * 0.264583]); // Ajusta el tamaño del PDF al contenido
+            // Establece un ancho fijo para asegurar que html2canvas renderice correctamente
+            const originalWidth = reportRef.current.style.width;
+            reportRef.current.style.width = "1200px"; // Ajusta según el ancho que necesitas
     
-            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width * 0.264583, canvas.height * 0.264583);
-            pdf.save(`Reporte_${network}_${new Date().toISOString().split('T')[0]}.pdf`);
+            // Genera el canvas con html2canvas
+            const canvas = await html2canvas(reportRef.current, {
+                scale: 3, // Mejora la calidad del renderizado
+                useCORS: true, // Habilita imágenes externas
+                allowTaint: true, // Permite el renderizado de contenido cruzado
+                windowWidth: 1200, // Simula el ancho del navegador
+            });
+    
+            // Restaura el ancho original después de generar el canvas
+            reportRef.current.style.width = originalWidth;
+    
+            // Obtén los datos de la imagen del canvas
+            const imgData = canvas.toDataURL("image/png");
+    
+            // Configura el PDF según el tamaño del canvas generado
+            const pdfWidth = 210; // Ancho A4 en mm
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Ajusta la altura proporcionalmente
+    
+            const pdf = new jsPDF("p", "mm", "a4");
+    
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    
+            // Guarda el archivo PDF
+            pdf.save(`Reporte_${appliedNetwork}_${new Date().toISOString().split("T")[0]}.pdf`);
+        } else {
+            alert("El contenido no está disponible para exportar.");
         }
     };
     
-
-    if (!isClient) return null;
-
-    const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
 
     return (
         <div className="container mx-auto p-4 text-black">
@@ -85,7 +94,7 @@ const MetricsPage = () => {
                 <h1 className="text-xl font-bold">Análisis de redes</h1>
                 <button
                     onClick={toggleFilters}
-                    className={`flex items-center ml-5 rounded px-4 py-2 ${filtersVisible ? 'bg-black text-white' : 'border border-black bg-transparent text-black'}`}
+                    className={`flex items-center ml-5 rounded px-4 py-2 ${filtersVisible ? "bg-black text-white" : "border border-black bg-transparent text-black"}`}
                 >
                     <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
                     <div>Filtros</div>
@@ -99,8 +108,8 @@ const MetricsPage = () => {
                         label="Red Social"
                         id="social-network-filter"
                         options={[
-                            { value: 'facebook', label: 'Facebook' },
-                            { value: 'instagram', label: 'Instagram' },
+                            { value: "facebook", label: "Facebook" },
+                            { value: "instagram", label: "Instagram" },
                         ]}
                         value={network}
                         onChange={handleNetworkChange}
@@ -127,6 +136,23 @@ const MetricsPage = () => {
                 </div>
             )}
 
+            {/* Report Section */}
+            {appliedDateRange && (
+                <div ref={reportRef}>
+                    {/* Selected Filters Display */}
+                    <SelectedFiltersDisplay appliedNetwork={appliedNetwork} appliedDateRange={appliedDateRange} />
+                    <div className="mt-8">
+                        <AudienceSection appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                    </div>
+                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <CrecimientoSection metric="alcance" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                        <CrecimientoSection metric="engagement" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                        <CrecimientoSection metric="seguidores" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                        <CrecimientoSection metric="visitas" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                    </div>
+                </div>
+            )}
+
             {/* Botón Exportar Reporte */}
             {appliedDateRange && (
                 <div className="flex justify-start mt-4">
@@ -136,35 +162,6 @@ const MetricsPage = () => {
                     >
                         Exportar Reporte
                     </button>
-                </div>
-            )}
-
-            {/* Report Section */}
-            {appliedDateRange && (
-                <div ref={reportRef}>
-                    {/* Filter Summary */}
-                    <div className="bg-gray-200 rounded-lg p-4 mb-6 mt-8">
-                        <div className="flex items-center">
-                            {getSocialIcon(network)}
-                            <h2 className="font-bold text-lg">Red Social Seleccionada: {capitalizedNetwork}</h2>
-                        </div>
-                        <p className="text-gray-600 mt-2">
-                            Rango de Fechas: {appliedDateRange ? `${appliedDateRange.start.toLocaleDateString()} - ${appliedDateRange.end.toLocaleDateString()}` : 'No aplicado'}
-                        </p>
-                    </div>
-
-                    {/* Audience Section */}
-                    <div className="mt-8">
-                        <AudienceSection appliedDateRange={appliedDateRange} network={network} />
-                    </div>
-
-                    {/* Crecimiento Section con las 4 métricas */}
-                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <CrecimientoSection metric="alcance" appliedDateRange={appliedDateRange} network={network} />
-                        <CrecimientoSection metric="engagement" appliedDateRange={appliedDateRange} network={network} />
-                        <CrecimientoSection metric="seguidores" appliedDateRange={appliedDateRange} network={network} />
-                        <CrecimientoSection metric="visitas" appliedDateRange={appliedDateRange} network={network} />
-                    </div>
                 </div>
             )}
         </div>
