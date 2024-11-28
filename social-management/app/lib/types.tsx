@@ -248,3 +248,13 @@ export interface PostOption {
   picture: string;   // URL de la imagen del post
   message: string;   // Mensaje del post
 }
+
+export interface Ad2 {
+  id: string;
+  name: string;
+  status: string;
+  adset_id: string;
+  creative: {
+    id: string;
+  };
+}
