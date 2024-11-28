@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { create_adcreative, load_page_posts } from '@/app/lib/data';
 
@@ -10,7 +10,7 @@ interface PostOption {
   message?: string;
 }
 
-export default function CreateAdCreativePage() {
+function CreateAdCreativeForm() {
   const [name, setName] = useState('');
   const [posts, setPosts] = useState<PostOption[]>([]);
   const [selectedPost, setSelectedPost] = useState<string | null>(null);
@@ -19,14 +19,13 @@ export default function CreateAdCreativePage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const adsetId = searchParams.get('adsetId'); // Obtener adsetId de la URL
-  const pageId = '443190078883565'; // Página fija
+  const adsetId = searchParams.get('adsetId'); // Obtener `adsetId` de la URL
+  const pageId = '443190078883565'; // ID fijo de la página
   const fixedLinkUrl = 'https://www.facebook.com/@VillaizanArtesanal/'; // Enlace fijo
 
   // Validar si `adsetId` está presente
   useEffect(() => {
     if (!adsetId) {
-      console.warn('adsetId es nulo. Asegúrate de que la URL contiene este parámetro.');
       setError('ID de AdSet no encontrado en la URL. Por favor, verifica e inténtalo de nuevo.');
     }
   }, [adsetId]);
@@ -89,6 +88,17 @@ export default function CreateAdCreativePage() {
       setIsLoading(false);
     }
   };
+
+  if (!adsetId) {
+    return (
+      <div className="p-4 mx-auto sm:w-full lg:w-1/2">
+        <h1 className="text-xl font-bold mb-4">Crear Nuevo AdCreative</h1>
+        <p className="text-red-500">
+          No se encontró el ID de AdSet en la URL. Por favor, regresa y selecciona un AdSet válido.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <main className="p-4 mx-auto sm:w-full lg:w-1/2">
@@ -155,5 +165,13 @@ export default function CreateAdCreativePage() {
         </button>
       </form>
     </main>
+  );
+}
+
+export default function CreateAdCreativePageWrapper() {
+  return (
+    <Suspense fallback={<div>Cargando formulario...</div>}>
+      <CreateAdCreativeForm />
+    </Suspense>
   );
 }
