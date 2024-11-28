@@ -200,10 +200,10 @@ export type Campaign = {
   start_time?: string; // Fecha de inicio de la campaña
   stop_time?: string; // Fecha de fin de la campaña
   spend_cap?: number; // Límite de gasto de la campaña
-  adset: Adset[];
+  adset: Ad[];
 }
 
-export type Adset = {
+export type Ad = {
   id: string;
   name: string; // Nombre del conjunto de anuncios
   campaign_id: string | number; // ID de la campaña a la que se asociará el conjunto de anuncios
@@ -222,14 +222,11 @@ export type Adset = {
   lifetime_spend_cap?: number; // Límite de gasto total
 };
 
-export type AdCreative = {
-  name: string;
-  object_story_spec: string[];
-};
 
-export type Ad = {
+
+// ANALISIS DE REDES types.tsx
+
+export type ChartData = {
   name: string;
-  adset_id: string;
-  creative: AdCreative[];
-  status: 'ACTIVE' | 'PAUSED';
+  value: number;
 };

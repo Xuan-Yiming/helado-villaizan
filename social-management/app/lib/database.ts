@@ -746,6 +746,7 @@ export async function add_social_account(
 }
 
 export async function logout_social_account(red_social: string): Promise<void> {
+  console.log("SE INTENTÓ BORRAR RED SOCIAL");
   // await connectToDatabase();
   // if (!client) {
   //   throw new Error("Database client is not initialized");
