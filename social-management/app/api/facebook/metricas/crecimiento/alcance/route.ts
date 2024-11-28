@@ -46,6 +46,10 @@ export async function GET(request: NextRequest) {
 
         //console.log("Datos formateados enviados al frontend:", formattedData);
 
+        if (formattedData.length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
+
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
         console.error("Error en el endpoint de alcance:", error instanceof Error ? error.message : "Error desconocido");

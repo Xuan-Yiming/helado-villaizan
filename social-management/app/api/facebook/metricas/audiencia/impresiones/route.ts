@@ -52,6 +52,10 @@ export async function GET(request: NextRequest) {
             })
             .sort((a: Impression, b: Impression) => b.value - a.value); // Ordena de mayor a menor por el valor
 
+            if (impressions.length === 0) {
+                return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+            }
+
         return NextResponse.json(impressions, { status: 200 });
     } catch (error) {
         return NextResponse.json(

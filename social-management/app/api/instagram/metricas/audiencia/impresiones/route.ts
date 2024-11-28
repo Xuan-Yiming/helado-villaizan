@@ -39,6 +39,10 @@ export async function GET(request: NextRequest) {
         // Log de los datos procesados que se envían al frontend
         console.log("Datos formateados para el frontend (Impresiones):", JSON.stringify(impressions, null, 2));
 
+        if (data.length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
+
         return NextResponse.json(impressions, { status: 200 });
     } catch (error) {
         console.error("Error en el endpoint impresiones:", error);

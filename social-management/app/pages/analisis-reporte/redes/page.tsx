@@ -16,6 +16,7 @@ const MetricsPage = () => {
     const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null);
     const [appliedDateRange, setAppliedDateRange] = useState<{ start: Date; end: Date } | null>(null);
     const reportRef = useRef<HTMLDivElement>(null);
+    const [loading, setLoading] = useState(false); // Añade el estado de loading
 
     useEffect(() => {
         setNetwork("facebook");
@@ -47,8 +48,12 @@ const MetricsPage = () => {
             alert("Por favor selecciona un rango de fechas antes de aplicar el filtro.");
             return;
         }
+        setLoading(true); // Activa el estado de carga
         setAppliedDateRange(dateRange);
         setAppliedNetwork(network);
+    
+        // Simula un breve retraso para reiniciar el estado de carga (puedes ajustarlo según la lógica de tu API)
+        setTimeout(() => setLoading(false), 500); // Cambia 500 por el tiempo estimado de carga
     };
 
     const exportToPDF = async () => {
@@ -141,17 +146,30 @@ const MetricsPage = () => {
                 <div ref={reportRef}>
                     {/* Selected Filters Display */}
                     <SelectedFiltersDisplay appliedNetwork={appliedNetwork} appliedDateRange={appliedDateRange} />
+
                     <div className="mt-8">
-                        <AudienceSection appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                        {loading ? (
+                            <div className="flex justify-center items-center h-48 text-gray-500">Cargando datos...</div>
+                        ) : (
+                            <AudienceSection appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                        )}
                     </div>
+
                     <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <CrecimientoSection metric="alcance" appliedDateRange={appliedDateRange} network={appliedNetwork} />
-                        <CrecimientoSection metric="engagement" appliedDateRange={appliedDateRange} network={appliedNetwork} />
-                        <CrecimientoSection metric="seguidores" appliedDateRange={appliedDateRange} network={appliedNetwork} />
-                        <CrecimientoSection metric="visitas" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                        {loading ? (
+                            <div className="flex justify-center items-center col-span-2 h-48 text-gray-500">Cargando gráficos...</div>
+                        ) : (
+                            <>
+                                <CrecimientoSection metric="alcance" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                                <CrecimientoSection metric="engagement" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                                <CrecimientoSection metric="seguidores" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                                <CrecimientoSection metric="visitas" appliedDateRange={appliedDateRange} network={appliedNetwork} />
+                            </>
+                        )}
                     </div>
                 </div>
             )}
+
 
             {/* Botón Exportar Reporte */}
             {appliedDateRange && (

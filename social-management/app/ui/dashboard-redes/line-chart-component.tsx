@@ -28,9 +28,16 @@ const LineChartComponent: React.FC<LineChartProps> = ({ data, metricLabel }) => 
     if (data.length === 0) {
         return (
             <div className="flex items-center justify-center h-48 text-gray-500 font-medium">
-                Datos no disponibles.
+                Cargando...
             </div>
         );
+    }
+    if(data[0].name==="Sin datos"){
+        return (
+            <div className="flex items-center justify-center h-48 text-gray-500 font-medium">
+                Datos no disponibles por políticas de Meta.
+            </div>
+        );   
     }
 
     const formatXAxis = (tickItem: string) => {

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
         const { token_autenticacion: accessToken, instagram_business_account: businessAccount } = account;
 
-        const url = `https://graph.facebook.com/v17.0/${businessAccount}/insights`;
+        const url = `https://graph.facebook.com/v20.0/${businessAccount}/insights`;
         const params = new URLSearchParams({
             metric: "follower_demographics",
             period: "lifetime",
@@ -37,6 +37,10 @@ export async function GET(request: NextRequest) {
         }));
 
         //console.log("Datos formateados para el frontend (Países):", JSON.stringify(formattedData, null, 2));
+
+        if (formattedData.length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
 
         // Ordenar y tomar los 3 principales
         const topCountries = formattedData.sort((a, b) => b.value - a.value).slice(0, 3);

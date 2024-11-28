@@ -30,12 +30,20 @@ export async function GET(request: NextRequest) {
             throw new Error(`Error al obtener datos de ciudades: ${data.error?.message}`);
         }
 
+        if (data.length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
+
         const citiesData = data.data[0]?.values[0]?.value || {};
         const formattedData = Object.entries(citiesData).map(([city, count]) => ({
             name: city,
             value: count as number,
         }));
 
+
+        if (formattedData.length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
         //console.log("Datos formateados para el frontend (Ciudades):", JSON.stringify(formattedData, null, 2));
 
         // Ordenar y tomar las 10 principales
