@@ -10,7 +10,7 @@ interface FormattedData {
 
 export async function GET(request: NextRequest) {
     try {
-        console.log("Endpoint Visitas al Perfil: Parámetros de entrada", request.url);
+        //console.log("Endpoint Visitas al Perfil: Parámetros de entrada", request.url);
 
         const account = await get_social_account("instagram");
         if (!account || !account.token_autenticacion || !account.instagram_business_account) {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         const response = await fetch(`${url}?${params.toString()}`);
         const data = await response.json();
 
-        console.log("Datos obtenidos de la API de Instagram (Visitas al Perfil):", JSON.stringify(data, null, 2));
+        //console.log("Datos obtenidos de la API de Instagram (Visitas al Perfil):", JSON.stringify(data, null, 2));
 
         if (!response.ok) {
             console.error(`Error al obtener las visitas al perfil de Instagram: ${data.error?.message}`);
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
             return existing || { name: date, value: 0 };
         });
 
-        console.log("Datos enviados al frontend (Visitas al Perfil):", JSON.stringify(completeData, null, 2));
+        //console.log("Datos enviados al frontend (Visitas al Perfil):", JSON.stringify(completeData, null, 2));
         return NextResponse.json(completeData, { status: 200 });
     } catch (error) {
         console.error("Error en el endpoint Visitas al Perfil:", error);

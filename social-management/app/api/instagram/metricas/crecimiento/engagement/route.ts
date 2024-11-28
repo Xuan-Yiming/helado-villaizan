@@ -3,7 +3,7 @@ import { get_social_account } from "@/app/lib/database";
 
 export async function GET(request: NextRequest) {
     try {
-        console.log("Endpoint Engagement: Parámetros de entrada", request.url);
+        //console.log("Endpoint Engagement: Parámetros de entrada", request.url);
 
         // Obtiene la cuenta de Instagram
         const account = await get_social_account("instagram");
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         const response = await fetch(`${url}?${params.toString()}`, { cache: "no-store" });
         const data = await response.json();
 
-        console.log("Datos obtenidos de la API de Instagram (Engagement):", JSON.stringify(data, null, 2));
+        //console.log("Datos obtenidos de la API de Instagram (Engagement):", JSON.stringify(data, null, 2));
 
         // Verifica si hay un error o datos vacíos en la respuesta
         if (!response.ok || !data?.data || !data.data[0]?.values) {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
         }
 
-        console.log("Datos enviados al frontend (Engagement):", JSON.stringify(formattedData, null, 2));
+        //console.log("Datos enviados al frontend (Engagement):", JSON.stringify(formattedData, null, 2));
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
         console.error("Error en el endpoint de engagement:", error);

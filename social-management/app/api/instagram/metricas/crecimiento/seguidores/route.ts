@@ -3,7 +3,7 @@ import { get_social_account } from "@/app/lib/database";
 
 export async function GET(request: NextRequest) {
     try {
-        console.log("Endpoint Seguidores: Parámetros de entrada", request.url);
+        //console.log("Endpoint Seguidores: Parámetros de entrada", request.url);
 
         // Obtiene la cuenta de Instagram
         const account = await get_social_account("instagram");
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         const response = await fetch(`${url}?${params.toString()}`, { cache: "no-store" });
         const data = await response.json();
 
-        console.log("Datos obtenidos de la API de Instagram (Seguidores):", JSON.stringify(data, null, 2));
+        //console.log("Datos obtenidos de la API de Instagram (Seguidores):", JSON.stringify(data, null, 2));
 
         // Verifica si hay un error o datos vacíos en la respuesta
         if (!response.ok || !data?.data || !data.data[0]?.values) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
             value: item.value || 0, // Asignar 0 si no hay valor
         }));
 
-        console.log("Datos enviados al frontend (Seguidores):", JSON.stringify(formattedData, null, 2));
+        //console.log("Datos enviados al frontend (Seguidores):", JSON.stringify(formattedData, null, 2));
 
         // Si el arreglo formateado está vacío, devuelve "Sin datos"
         if (formattedData.length === 0) {
