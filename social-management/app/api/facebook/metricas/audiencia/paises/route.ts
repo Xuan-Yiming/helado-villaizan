@@ -30,29 +30,32 @@ export async function GET(request: NextRequest) {
         );
 
         const data = await response.json();
+
         if (!response.ok) {
             throw new Error(`Error al obtener datos de países: ${data.error?.message}`);
         }
 
+        // Validación de datos existentes en los niveles anidados
+        const values = data.data?.[0]?.values?.[0]?.value;
+        if (!values || Object.keys(values).length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
+
         // Formateamos los datos y traducimos los nombres de los países
-        let formattedData = Object.entries(data.data[0].values[0].value || {}).map(
-            ([countryCode, count]) => ({
-                name: countries.getName(countryCode, "es") || countryCode,
-                value: count as number,
-            })
-        );
+        let formattedData = Object.entries(values).map(([countryCode, count]) => ({
+            name: countries.getName(countryCode, "es") || countryCode,
+            value: count as number,
+        }));
 
         // Ordenamos en orden descendente y seleccionamos solo el top 3
         formattedData = formattedData.sort((a, b) => b.value - a.value).slice(0, 3);
-
-        //console.log("Datos formateados (Países - Top 3):", formattedData);
 
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
         console.error("Error en el endpoint países:", error);
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Error desconocido" },
-            { status: 500 }
+            [{ name: "Sin datos", value: 0 }],
+            { status: 200 }
         );
     }
 }

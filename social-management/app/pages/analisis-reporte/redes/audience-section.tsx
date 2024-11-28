@@ -74,7 +74,7 @@ const AudienceSection: React.FC<AudienceSectionProps> = ({ appliedDateRange, net
         <div className="flex flex-col gap-8 mt-8">
             <div className="flex gap-8">
                 <div className="w-1/2 flex flex-col gap-8">
-                    <GraphContainer title="Países principales de seguidores" className="w-full h-1/2">
+                    <GraphContainer title="Países principales de seguidores (histórico)" className="w-full h-1/2">
                         <HorizontalBarChartComponent data={countryData} />
                     </GraphContainer>
                     <GraphContainer title="Fuentes de impresiones de publicaciones" className="w-full h-1/2">
@@ -88,7 +88,7 @@ const AudienceSection: React.FC<AudienceSectionProps> = ({ appliedDateRange, net
                         <HorizontalBarChartComponent data={filteredImpressionData} />
                     </GraphContainer>
                 </div>
-                <GraphContainer title="Ciudades principales de seguidores" className="w-1/2">
+                <GraphContainer title="Ciudades principales de seguidores (histórico)" className="w-1/2">
                     <HorizontalBarChartComponent data={cityData} />
                 </GraphContainer>
             </div>

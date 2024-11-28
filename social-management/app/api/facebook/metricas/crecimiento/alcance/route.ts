@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         );
 
         const data = await response.json();
-        console.log("Datos obtenidos de la API de Facebook:", data);
+        //console.log("Datos obtenidos de la API de Facebook:", data);
 
         if (!response.ok) {
             throw new Error(`Error al obtener el alcance de Facebook: ${data.error?.message}`);
@@ -44,7 +44,11 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        console.log("Datos formateados enviados al frontend:", formattedData);
+        //console.log("Datos formateados enviados al frontend:", formattedData);
+
+        if (formattedData.length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
 
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
