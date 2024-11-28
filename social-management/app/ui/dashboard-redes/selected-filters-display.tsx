@@ -1,11 +1,11 @@
-// app/ui/components/selected-filters-display.tsx
+// app/ui/dashboard-redes/selected-filters-display.tsx
 import React from 'react';
 import FacebookLogo from '@/app/ui/icons/facebook';
 import InstagramLogo from '@/app/ui/icons/instagram';
 
 interface SelectedFiltersDisplayProps {
-    network: 'facebook' | 'instagram';
-    dateRange: { start: Date; end: Date };
+    appliedNetwork: 'facebook' | 'instagram'; // Cambiado a "appliedNetwork" para mayor claridad
+    appliedDateRange: { start: Date; end: Date } | null; // Permitir null si no se ha aplicado el rango aún
 }
 
 const getSocialIcon = (network: string) => {
@@ -19,20 +19,24 @@ const getSocialIcon = (network: string) => {
     }
 };
 
-const SelectedFiltersDisplay: React.FC<SelectedFiltersDisplayProps> = ({ network, dateRange }) => {
-    const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
+const SelectedFiltersDisplay: React.FC<SelectedFiltersDisplayProps> = ({ appliedNetwork, appliedDateRange }) => {
+    const capitalizedNetwork = appliedNetwork.charAt(0).toUpperCase() + appliedNetwork.slice(1);
 
     return (
         <div className="bg-gray-200 rounded-lg p-4 mb-6 mt-8">
             <div className="flex items-center">
-                {getSocialIcon(network)}
+                {getSocialIcon(appliedNetwork)}
                 <h2 className="font-bold text-lg">
                     Red Social Seleccionada: {capitalizedNetwork}
                 </h2>
             </div>
-            <p className="text-gray-600 mt-2">
-                Rango de Fechas: {dateRange.start.toLocaleDateString()} - {dateRange.end.toLocaleDateString()}
-            </p>
+            {appliedDateRange ? (
+                <p className="text-gray-600 mt-2">
+                    Rango de Fechas: {appliedDateRange.start.toLocaleDateString()} - {appliedDateRange.end.toLocaleDateString()}
+                </p>
+            ) : (
+                <p className="text-gray-600 mt-2">Rango de Fechas: No seleccionado</p>
+            )}
         </div>
     );
 };

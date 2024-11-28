@@ -14,9 +14,6 @@ export async function GET(request: NextRequest) {
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
 
-        //console.log("Fecha de inicio:", startDate);
-        console.log("Fecha de fin:", endDate);
-
         if (!startDate || !endDate) {
             throw new Error("Faltan parámetros de rango de fechas.");
         }
@@ -29,29 +26,32 @@ export async function GET(request: NextRequest) {
         );
 
         const data = await response.json();
-        //console.log("Datos obtenidos de Facebook (Ciudades):", data);
 
         if (!response.ok) {
             throw new Error(`Error al obtener datos de ciudades: ${data.error?.message}`);
         }
 
-        let formattedData = Object.entries(data.data[0].values[0].value || {}).map(
-            ([city, count]) => ({
-                name: city,
-                value: count as number,
-            })
-        );
+        // Validación de datos anidados
+        const values = data.data?.[0]?.values?.[0]?.value;
+        if (!values || Object.keys(values).length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
+
+        // Formateamos los datos
+        let formattedData = Object.entries(values).map(([city, count]) => ({
+            name: city,
+            value: count as number,
+        }));
 
         // Ordenamos en orden descendente y seleccionamos solo el top 10
         formattedData = formattedData.sort((a, b) => b.value - a.value).slice(0, 10);
 
-        //console.log("Datos formateados (Ciudades):", formattedData);
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
         console.error("Error en el endpoint de ciudades:", error);
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Error desconocido" },
-            { status: 500 }
+            [{ name: "Sin datos", value: 0 }],
+            { status: 200 }
         );
     }
 }

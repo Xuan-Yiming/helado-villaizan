@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         );
 
         const data = await response.json();
-        console.log("Datos obtenidos de la API de Facebook (Engagement):", data);
+        //console.log("Datos obtenidos de la API de Facebook (Engagement):", data);
 
         if (!response.ok) {
             throw new Error(`Error al obtener el engagement de Facebook: ${data.error?.message}`);
@@ -47,7 +47,11 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        console.log("Datos formateados enviados al frontend (Engagement):", formattedData);
+        //console.log("Datos formateados enviados al frontend (Engagement):", formattedData);
+
+        if (formattedData.length === 0) {
+            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
+        }
 
         return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {

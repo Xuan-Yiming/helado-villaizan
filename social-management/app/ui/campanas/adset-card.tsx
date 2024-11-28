@@ -21,14 +21,13 @@ export default function AdsetCard({ adset, onActivate, onPause }: AdsetCardProps
           <span className="text-xs font-semibold text-gray-700 ml-2">{adset.status}</span>
           <div className="flex flex-col ml-4">
             <p className="font-bold">{adset.name}</p>
-            <p className="text-xs text-gray-700">{adset.daily_budget ? `PEN ${adset.daily_budget}` : 'Sin definir'}</p>
           </div>
         </div>
       </div>
 
       <div className="flex items-center">
         <Link
-          href={`/pages/publicaciones/campanas/addsets/creatives?adsetId=${adset.id}`}
+          href={`/pages/publicaciones/campanas/addsets/adcreative?adsetId=${adset.id}`}
           className="flex items-center text-black-500 hover:text-blue-700 ml-5"
         >
           <EyeIcon className="h-5 w-5 mr-2" />

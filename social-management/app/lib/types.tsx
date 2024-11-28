@@ -234,3 +234,27 @@ export interface Adset {
   status: string;
   // Agrega más propiedades según sea necesario
 }
+
+export interface AddCreative {
+  id: string;
+  name: string;
+  effective_object_story_id: string;
+  picture?: string; // Campo opcional para la URL de la imagen
+  message?: string; // Campo opcional para el mensaje del post
+}
+
+export interface PostOption {
+  id: string;        // ID del post
+  picture: string;   // URL de la imagen del post
+  message: string;   // Mensaje del post
+}
+
+export interface Ad2 {
+  id: string;
+  name: string;
+  status: string;
+  adset_id: string;
+  creative: {
+    id: string;
+  };
+}

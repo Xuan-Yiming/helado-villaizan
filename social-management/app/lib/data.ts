@@ -2,7 +2,7 @@
 
 const API_URL = process.env.API_URL || 'https://api.example.com';
 
-import { Campaign, Post, Adset } from "./types";
+import { Campaign, Post, Adset, AddCreative, PostOption, Ad2 } from "./types";
 import {Encuesta} from "./types";
 import { Response } from "./types";
 import { SocialAccount } from "./types";
@@ -299,30 +299,153 @@ export async function update_adset_status(adsetId: string, status: string): Prom
 }
 
 // Creación de Adsets
-export async function create_adset(campaignId: string): Promise<Adset> {
+export async function create_adset(newAdset: any) {
+  const API_URL = 'https://graph.facebook.com/v21.0/act_567132785808833/adsets';
+  const token = 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newAdset),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'Error al crear el Adset');
+  }
+
+  return await response.json();
+}
+
+// Carga de AdCreatives
+export async function load_addcreatives(accountId: string): Promise<AddCreative[]> {
+  const token = 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+  const url = `https://graph.facebook.com/v21.0/act_${accountId}/adcreatives?fields=id,name,object_story_id&access_token=${token}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message || 'Error al cargar los AdCreatives');
+    }
+
+    const data = await response.json();
+
+    // Mapear los datos obtenidos a un array de AddCreative
+    return data.data.map((creative: any) => ({
+      id: creative.id,
+      name: creative.name,
+      effective_object_story_id: creative.object_story_id || 'No especificado',
+      status: 'UNKNOWN', // El estado no se proporciona en la API de AdCreatives
+    }));
+  } catch (error) {
+    console.error('Error en load_addcreatives:', error);
+    throw error;
+  }
+}
+
+export async function create_adcreative(adCreativeData: any): Promise<void> {
+  const token =
+    'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf'; // Token actualizado
+  const adAccountId = '567132785808833'; // ID fijo de la cuenta
+
   const response = await fetch(
-    `https://graph.facebook.com/v21.0/act_{YOUR_ACCOUNT_ID}/adsets`,
+    `https://graph.facebook.com/v21.0/act_${adAccountId}/adcreatives`,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        name: 'Nuevo Adset',
-        campaign_id: campaignId,
-        daily_budget: 10000,
-        billing_event: 'IMPRESSIONS',
-        optimization_goal: 'REACH',
-        targeting: {
-          geo_locations: { countries: ['PE'] },
-        },
-        status: 'PAUSED',
-      }),
+      body: JSON.stringify(adCreativeData),
     }
   );
+
   if (!response.ok) {
-    throw new Error('Error al crear el Adset');
+    const errorData = await response.json();
+    console.error('Facebook API Error:', errorData); // Agregar este log para depurar la respuesta
+    throw new Error(errorData.error.message || 'Error al crear el AdCreative.');
   }
+}
+
+export async function load_page_posts(pageId: string): Promise<PostOption[]> {
+  const token =
+    'EAAQswZB4FZCyUBO3BUUnUWTlUIIzlUYQdvrIgEejcTeNZBsQINEAPQ59V6Wa6jb3FQTEZBpyMSjESZAqZBfR7VdNNXmh4MhlHoIeVUSFLMNB9sXFlMzU7ZCVdtPGirlHKWYC51PicZCYLZA9VNSZBa9mEkKGOZAiVRYhIYLFJz7aqPkHfRLqX5jitynLpS4zxfZB8RkiwV7ZBhDcD'; // Token actualizado
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/${pageId}/posts?fields=id,picture,message&access_token=${token}`
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error.message || 'Error al cargar los posts de la página.');
+  }
+
   const data = await response.json();
-  return data as Adset;
+  return data.data.map((post: any) => ({
+    id: post.id,
+    picture: post.picture || '',
+    message: post.message || 'Sin mensaje', // Valor por defecto si no hay mensaje
+  }));
+}
+
+export async function load_ads(): Promise<Ad2[]> {
+  const token = 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+  const adAccountId = '567132785808833';
+
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/act_${adAccountId}/ads?fields=id,name,adset_id,status,creative&access_token=${token}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error.message || 'Error al cargar los anuncios.');
+  }
+
+  const data = await response.json();
+  return data.data as Ad2[]; // Garantiza el tipo de datos esperado
+}
+
+export async function create_ad(adData: {
+  name: string;
+  adset_id: string;
+  creative: { creative_id: string };
+  status: string;
+}): Promise<void> {
+  const token =
+    'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+  const adAccountId = '567132785808833'; // ID fijo de la cuenta de anuncios
+
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v21.0/act_${adAccountId}/ads`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(adData),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error?.message || 'Error al crear el anuncio.'
+      );
+    }
+
+    console.log('Ad created successfully.');
+  } catch (error) {
+    console.error('Error al crear el anuncio:', error);
+    throw error;
+  }
 }
