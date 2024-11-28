@@ -113,7 +113,8 @@ export default function Page() {
               filtersVisible
                 ? 'bg-[#BD181E] text-white'
                 : 'border border-black bg-transparent text-black'
-            }`}
+            }`
+          }
           >
             <PlusCircleIcon className="h-5 w-5 mr-2" />
             <div>Nuevo</div>

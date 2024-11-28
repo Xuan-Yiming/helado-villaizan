@@ -27,7 +27,7 @@ export default function AdsetCard({ adset, onActivate, onPause }: AdsetCardProps
 
       <div className="flex items-center">
         <Link
-          href={`/pages/publicaciones/campanas/addsets/creatives?adsetId=${adset.id}`}
+          href={`/pages/publicaciones/campanas/addsets/adcreative?adsetId=${adset.id}`}
           className="flex items-center text-black-500 hover:text-blue-700 ml-5"
         >
           <EyeIcon className="h-5 w-5 mr-2" />
