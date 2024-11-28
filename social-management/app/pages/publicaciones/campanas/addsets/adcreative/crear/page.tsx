@@ -21,7 +21,6 @@ export default function CreateAdCreativePage() {
   const pageId = '443190078883565'; // Página fija
   const fixedLinkUrl = 'https://www.facebook.com/@VillaizanArtesanal/'; // Enlace fijo
 
-  // Cargar posts desde la API
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -37,7 +36,6 @@ export default function CreateAdCreativePage() {
     fetchPosts();
   }, []);
 
-  // Manejo del envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !selectedPost) {
@@ -49,7 +47,7 @@ export default function CreateAdCreativePage() {
     setError('');
 
     try {
-      const objectStoryId = `${pageId}_${selectedPost}`; // ID compuesto con el formato correcto
+      const objectStoryId = selectedPost; // Usar directamente el ID completo del post
       const newAdCreative = {
         name,
         object_story_id: objectStoryId,
@@ -62,8 +60,12 @@ export default function CreateAdCreativePage() {
         },
       };
 
+      console.log('Creating AdCreative with:', newAdCreative);
+
       await create_adcreative(newAdCreative);
-      router.push('/pages/publicaciones/campanas/addsets/adcreative');
+
+      // Redirigir y refrescar la página de AdCreatives
+      router.replace('/pages/publicaciones/campanas/addsets/adcreative');
     } catch (error: any) {
       console.error('Error creando el AdCreative:', error);
       setError(error.message || 'Hubo un error al crear el AdCreative.');
@@ -119,12 +121,16 @@ export default function CreateAdCreativePage() {
               alt="Vista previa del post"
               className="w-full h-auto mt-2 border rounded"
             />
+            {/* Mostrar ID del post debajo de la imagen */}
+            <p className="text-sm text-gray-600 mt-2">
+              <strong>ID del Post:</strong> {selectedPost}
+            </p>
           </div>
         )}
 
         {/* Mostrar errores */}
         {error && <p className="text-red-500">{error}</p>}
-        
+
         {/* Botón de enviar */}
         <button
           type="submit"

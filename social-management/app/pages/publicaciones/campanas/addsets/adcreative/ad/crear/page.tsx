@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { create_ad } from '@/app/lib/data';
 
-export default function CreateAdPage() {
+function CreateAdContent() {
   const [name, setName] = useState('');
   const [status, setStatus] = useState('PAUSED');
   const [error, setError] = useState('');
@@ -12,7 +12,7 @@ export default function CreateAdPage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const addSetId = searchParams.get('addsetId');
+  const addSetId = searchParams.get('adsetId');
   const adCreativeId = searchParams.get('adcreativeId');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +34,7 @@ export default function CreateAdPage() {
       };
 
       await create_ad(newAd);
-      router.push(`/pages/publicaciones/campanas/addsets/adcreative/ads?adcreativeId=${adCreativeId}`);
+      router.push(`/pages/publicaciones/campanas/addsets/adcreative/ad?adcreativeId=${adCreativeId}&adsetId=${addSetId}`);
     } catch (error: any) {
       console.error('Error creando el anuncio:', error);
       setError(error.message || 'Hubo un error al crear el anuncio.');
@@ -77,6 +77,7 @@ export default function CreateAdPage() {
         </div>
 
         {error && <p className="text-red-500">{error}</p>}
+
         <button
           type="submit"
           disabled={isLoading}
@@ -85,6 +86,26 @@ export default function CreateAdPage() {
           {isLoading ? 'Creando...' : 'Crear Anuncio'}
         </button>
       </form>
+
+      {/* Mostrar parámetros como texto informativo */}
+      {addSetId && adCreativeId && (
+        <div className="mt-4 p-4 bg-gray-100 border rounded">
+          <p className="text-sm text-gray-700">
+            <strong>AdSet ID:</strong> {addSetId}
+          </p>
+          <p className="text-sm text-gray-700">
+            <strong>AdCreative ID:</strong> {adCreativeId}
+          </p>
+        </div>
+      )}
     </main>
+  );
+}
+
+export default function CreateAdPage() {
+  return (
+    <Suspense fallback={<div>Cargando formulario...</div>}>
+      <CreateAdContent />
+    </Suspense>
   );
 }
