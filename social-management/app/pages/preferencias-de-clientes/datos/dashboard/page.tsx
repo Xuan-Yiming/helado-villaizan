@@ -6,8 +6,13 @@ import {
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-// import jsPDF from 'jspdf';
-// import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+const dataPie = [
+  { name: 'EcoGreen', value: 38.6 },
+  { name: 'Canada', value: 22.5 },
+];
 
 interface CompraSemana {
   dia: string;
@@ -31,22 +36,20 @@ interface CiudadVentas {
   ventas: ProductoVenta[];
 }
 
-const dataPie = [
-  { name: 'Promocion 1', value: 38.6 },
-  { name: 'Promocion 2', value: 22.5 },
-];
-
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
 
   // Estado para almacenar los datos del gráfico de barras
   const searchParams = useSearchParams();
+  const [promocionesData, setPromocionesData] = useState<{ name: string; value: string; total: number }[]>([]);
+  const [loading, setLoading] = useState(true);
   const [ciudadesData, setCiudadesData] = useState<{ ciudad: string; total_vendido: number }[]>([]);
   const [cityNameMap, setCityNameMap] = useState<{ [key: string]: string }>({});
   const [barData, setBarData] = useState<ProductoData[]>([]);
   const [dataLine, setDataLine] = useState([]);
-
+  
+  const [totalGanancia, setTotalGanancia] = useState<number | null>(null);
   const [totalVentas, setTotalVentas] = useState<number | null>(null); // Estado para cantidad de ventas
   const [totalProductos, setTotalProductos] = useState<number | null>(null);
   const [totalCiudades, setTotalCiudades] = useState<number | null>(null);
@@ -105,6 +108,22 @@ const Dashboard = () => {
         setTotalClientes(0);
       }
     };
+
+      // Función para obtener la cantidad total de ganancia en soles desde la API
+  const fetchTotalGanancia = async () => {
+    try {
+      if (startDate && endDate) {
+        const response = await axios.get(
+          /* CAMBIAR LA API POR LA QUE SIOUXIE DE */
+          `https://villaizan-social.onrender.com/ganancia-en-soles/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+        );
+        setTotalGanancia(response.data.total_ganancia || 0); // Suponiendo que la API devuelve { total_ganancia: <número> }
+      }
+    } catch (error) {
+      console.error("Error fetching total ganancia:", error);
+      setTotalGanancia(0); // Valor predeterminado en caso de error
+    }
+  };
 
   const fetchFrecuenciaCompras = async () => {
     try {
@@ -187,8 +206,52 @@ const Dashboard = () => {
     }
   };
 
+  // Función para obtener los datos de la API
+  const fetchPromocionesData = async () => {
+    try {
+      if (startDate && endDate) {
+        const response = await axios.get(
+          `https://villaizan-social.onrender.com/ventas-por-promocion/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+        );
+
+        console.log("Raw API Response:", response.data);
+
+        const totalVentas = response.data.reduce(
+          (acc: number, promo: { id_promocion: string; total_ventas: number }) => acc + promo.total_ventas,
+          0
+        );
+
+        console.log("Total Ventas:", totalVentas);
+  
+        const formattedData = response.data.map((promo: { id_promocion: string; total_ventas: number }) => ({
+          name: `Promoción ${promo.id_promocion}`,
+          value: parseFloat(((promo.total_ventas / totalVentas) * 100).toFixed(2)), // Convertir a número
+          total: promo.total_ventas,
+        }));
+
+        console.log("Formatted Data:", formattedData);
+  
+        setPromocionesData(formattedData);
+        setLoading(false);
+
+      }
+    } catch (error) {
+      console.error('Error fetching promociones data:', error);
+      setPromocionesData([]);
+      setLoading(false);
+    }
+  };
+
+
     // Función para exportar a PDF
-/*  const exportToPDF = async () => {
+    const exportToPDF = async () => {
+    const dashboardElement = document.getElementById('dashboard-content'); // Selecciona todo el contenido del dashboard
+    const exportButton = document.getElementById('export-button'); // Selecciona el botón
+  
+    // Oculta el botón antes de exportar
+    if (exportButton) {
+      exportButton.style.display = 'none';
+    }  
     const input = document.getElementById('dashboard-content'); // Selecciona el elemento del dashboard
     if (input) {
       const canvas = await html2canvas(input);
@@ -211,10 +274,18 @@ const Dashboard = () => {
       }
 
       pdf.save('dashboard_report.pdf'); // Guarda el archivo PDF con el nombre indicado
+      if (exportButton) {
+        exportButton.style.display = 'block';
+      }
     }
   };
-  */
+  useEffect(() => {
+    fetchPromocionesData();
+  }, [startDate, endDate]);
 
+  useEffect(() => {
+    console.log("Updated Promociones Data:", promocionesData);
+  }, [promocionesData]);
   // useEffect para obtener los datos de la API cuando el componente se monta
   useEffect(() => {
     const fetchData = async () => {
@@ -227,6 +298,7 @@ const Dashboard = () => {
     fetchTotalProductos();
     fetchTotalCiudades();
     fetchTotalClientes();
+    fetchTotalGanancia();
     fetchFrecuenciaCompras();
     fetchBarData();
   }, [startDate, endDate]);
@@ -241,42 +313,50 @@ const Dashboard = () => {
   }, [cityNameMap, startDate, endDate]);
 
   return (
-    <div className="container mx-auto p-4">
+    <div id="dashboard-content" className="container mx-auto p-4">
       <div className="bg-gray-200 rounded-lg p-4 mb-6">
         <div className="flex items-center">
           <div className="bg-gray-500 rounded-full h-4 w-4 mr-2"></div>
           <h2 className="font-bold text-xl">Procesamiento de Datos de Ventas
-             ({startDate ? startDate : "Fecha de inicio no disponible"} - {endDate ? endDate : "Fecha de fin no disponible"})</h2>
+             ({startDate ? startDate : "Fecha de inicio no disponible"} / {endDate ? endDate : "Fecha de fin no disponible"})</h2>
         </div>
         <p className="text-gray-600">Data procesada</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-5 gap-4 mb-6">
         <div className="bg-red-100 rounded-lg p-4 text-center">
-        <p className="text-red-500 font-bold text-2xl">
-        {typeof totalVentas === "number" ? totalVentas.toLocaleString() : "Cargando..."}
+          <p className="text-red-500 font-bold text-2xl">
+            {typeof totalVentas === "number" ? totalVentas.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Cantidad de ventas</p>
         </div>
         <div className="bg-blue-100 rounded-lg p-4 text-center">
           <p className="text-blue-500 font-bold text-2xl">
-          {typeof totalProductos === "number" ? totalProductos.toLocaleString() : "Cargando..."}
+            {typeof totalProductos === "number" ? totalProductos.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Productos vendidos</p>
         </div>
         <div className="bg-red-100 rounded-lg p-4 text-center">
           <p className="text-red-500 font-bold text-2xl">
-          {typeof totalCiudades === "number" ? totalCiudades.toLocaleString() : "Cargando..."}
+            {typeof totalCiudades === "number" ? totalCiudades.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Ubicaciones</p>
         </div>
         <div className="bg-blue-100 rounded-lg p-4 text-center">
           <p className="text-blue-500 font-bold text-2xl">
-          {typeof totalClientes === "number" ? totalClientes.toLocaleString() : "Cargando..."}
+            {typeof totalClientes === "number" ? totalClientes.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Clientes</p>
         </div>
+        <div className="bg-red-100 rounded-lg p-4 text-center">
+          <p className="text-red-500 font-bold text-2xl">
+            {/* Aquí puedes agregar el dato correspondiente al quinto bloque */}
+            {typeof totalGanancia === "number" ? `S/ ${totalGanancia.toLocaleString()}` : "Cargando..."}
+          </p>
+          <p className="text-gray-600">Soles</p>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-lg p-6 shadow-md col-span-2">
@@ -325,29 +405,45 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
         <div className="bg-white rounded-lg p-6 shadow-md">
-          <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
+        <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={dataPie}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label
-              >
-                {dataPie.map((entry, index) => (
+          {promocionesData.length === 0 ? (
+            <p>Cargando datos...</p>
+          ) : (
+            <PieChart width={400} height={300}>
+                <Pie
+                  data={promocionesData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, value }) => `${value}%`}
+                >
+                {promocionesData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
+              <Tooltip formatter={(value, name, props) => [`${props.payload.total} ventas`, name]} />
+              <Legend
+                layout="vertical"
+                align="right"
+                verticalAlign="middle"
+                formatter={(value: string) =>
+                  `${value} (${promocionesData.find((d) => d.name === value)?.value}%)`
+                }
+              />
             </PieChart>
-          </ResponsiveContainer>
+          )}
+        </ResponsiveContainer>
+
+
         </div>
       </div>
       <div className="flex justify-center mt-8">
         <button 
-          /* onClick={exportToPDF} */ 
+          id="export-button" // ID para identificar el botón
+          onClick={exportToPDF}
           className="bg-blue-500 text-white font-bold py-2 px-4 rounded">
           Exportar a PDF
         </button>
