@@ -120,7 +120,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                                     {chat.respondido && (
                                         <p className="text-xs text-green-600 font-semibold">Respondido</p>
                                     )}
-                                    {!chat.crítico && (
+                                    {chat.crítico && (
                                         <p className="text-xs text-red-600 font-semibold">Comentario crítico</p>
                                     )}
                                 </div>
