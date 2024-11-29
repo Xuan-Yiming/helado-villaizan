@@ -105,7 +105,7 @@ export type Response = {
 export type Answer = {
   question_id: string;
   answer: string;
-  sentimiento: string;
+  sentimiento?: string;
 }
 
 /* INTERACCIONES */
