@@ -36,8 +36,8 @@ interface CiudadVentas {
   ventas: ProductoVenta[];
 }
 
-const COLORS = [  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6384', '#36A2EB', '#FFCE56',
-  '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FF6F91', '#845EC2'];
+const COLORS = [  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#D50230', '#36A2EB', '#FFCE56',
+  '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FF6F91', '#845EC2', '#FCE2E2'];
 
 const Dashboard = () => {
 
@@ -120,9 +120,10 @@ const Dashboard = () => {
       if (startDate && endDate) {
         const response = await axios.get(
           /* CAMBIAR LA API POR LA QUE SIOUXIE DE */
-          `https://villaizan-social.onrender.com/ganancia-en-soles/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+          `https://villaizan-social.onrender.com/ventas-totales-monto/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
         );
-        setTotalGanancia(response.data.total_ganancia || 0); // Suponiendo que la API devuelve { total_ganancia: <número> }
+        setTotalGanancia(response.data.monto_total || 0); // Suponiendo que la API devuelve { total_ganancia: <número> }
+        console.log("ganancia",response.data);
       }
     } catch (error) {
       console.error("Error fetching total ganancia:", error);
@@ -404,11 +405,11 @@ const Dashboard = () => {
         </div>
         <div className="bg-red-100 rounded-lg p-4 text-center">
           <p className="text-red-500 font-bold text-2xl">
-            {/* Aquí puedes agregar el dato correspondiente al quinto bloque */}
             {typeof totalGanancia === "number" ? `${totalGanancia.toLocaleString()}` : "Cargando..."}
           </p>
-          <p className="text-gray-600">Soles</p>
+          <p className="text-gray-600">Soles en ventas</p>
         </div>
+
       </div>
 
 
@@ -462,7 +463,7 @@ const Dashboard = () => {
           <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
             <ResponsiveContainer width="100%" height={300}>
             {promocionesData.length === 0 ? (
-              <p>Cargando datos...</p>
+              <p>No hay ventas con promociones...</p>
             ) : (
               <PieChart width={400} height={300}>
                   <Pie

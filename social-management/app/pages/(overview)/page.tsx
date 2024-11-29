@@ -45,8 +45,8 @@ export default function Page() {
   }, []);
 
   return (
-    <main className='bg-white'>
-      <h1 className="font-bold text-4xl">Bienvenido a Social Hub</h1>
+    <main className=''>
+      <h1 className="font-bold text-4xl ml-2"> Bienvenidos a Social Hub</h1>
       {/* <button onClick={handleClick}>Trigger Error</button>
       <button onClick={handleDelete}>Trigger Confirmation</button>
       <button onClick={handleAlert}>Trigger Alert</button> */}
