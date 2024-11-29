@@ -315,10 +315,12 @@ function PublicarPage() {
         showSuccess(
           `La publicación se ha realizado correctamente en: ${successNetworks.join(' - ')}`
         );
-      } else if (currentStatus !== "borrador") {
+      } else if (currentStatus !== "borrador" && currentStatus !== "programado") {
         showAlert('No se pudo realizar la publicación en ninguna red social.',() => {});
-      } else {
+      } else if(currentStatus =="borrador"){
         showSuccess('El borrador se ha guardado correctamente.');
+      } else if(currentStatus =="programado"){
+        showSuccess('Se ha programado correctamente.');  
       }
     } catch (error) {
       console.error('Error al intentar realizar la publicación:', error);
