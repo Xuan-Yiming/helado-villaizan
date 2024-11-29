@@ -122,6 +122,9 @@ importers:
       request-ip:
         specifier: ^3.3.0
         version: 3.3.0
+      social-management:
+        specifier: 'file:'
+        version: 'file:'
       tailwindcss:
         specifier: ^3.4.13
         version: 3.4.13
@@ -1349,6 +1352,9 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
+
+  'social-management@file:':
+    resolution: {directory: '', type: directory}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -2658,6 +2664,61 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
+
+  'social-management@file:':
+    dependencies:
+      '@ffmpeg/ffmpeg': 0.12.10
+      '@ffmpeg/util': 0.12.1
+      '@fullcalendar/core': 6.1.15
+      '@fullcalendar/daygrid': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/interaction': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/list': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/multimonth': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/react': 6.1.15(@fullcalendar/core@6.1.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@fullcalendar/timegrid': 6.1.15(@fullcalendar/core@6.1.15)
+      '@heroicons/react': 2.1.5(react@18.3.1)
+      '@types/bcrypt': 5.0.2
+      '@types/jsonwebtoken': 9.0.7
+      '@types/react-dom': 18.3.1
+      '@types/request-ip': 0.0.41
+      '@vercel/blob': 0.25.1
+      '@vercel/postgres': 0.10.0
+      axios: 1.7.7
+      bcrypt: 5.1.1
+      chart.js: 4.4.5
+      date-fns: 4.1.0
+      dayjs: 1.11.13
+      framer-motion: 11.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      fullcalendar: 6.1.15
+      html2canvas: 1.4.1
+      i18n-iso-countries: 7.13.0
+      js-cookie: 3.0.5
+      jsonwebtoken: 9.0.2
+      jspdf: 2.5.2
+      next: 14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      pnpm: 9.12.3
+      qs: 6.13.0
+      react: 18.3.1
+      react-chartjs-2: 5.2.0(chart.js@4.4.5)(react@18.3.1)
+      react-datepicker: 7.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-dom: 18.3.1(react@18.3.1)
+      react-intersection-observer: 9.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      recharts: 2.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      request-ip: 3.3.0
+      tailwindcss: 3.4.13
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@emotion/is-prop-valid'
+      - '@opentelemetry/api'
+      - '@playwright/test'
+      - babel-plugin-macros
+      - debug
+      - encoding
+      - sass
+      - supports-color
+      - ts-node
+      - utf-8-validate
 
   source-map-js@1.2.1: {}
 
