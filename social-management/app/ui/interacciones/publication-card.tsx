@@ -8,6 +8,15 @@ interface PublicationCardProps extends InteractionPublication {
     isSelected: boolean; // Nueva prop para determinar si está seleccionado
 }
 
+// Función para recortar el texto
+const truncateText = (text: string, wordLimit: number): string => {
+    const words = text.split(" ");
+    if (words.length > wordLimit) {
+        return words.slice(0, wordLimit).join(" ") + "...";
+    }
+    return text;
+};
+
 const PublicationCard: React.FC<PublicationCardProps> = ({ socialNetwork, caption, commentsCount, thumbnail, onClick, isSelected }) => (
     <div 
         onClick={onClick} 
@@ -26,7 +35,8 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ socialNetwork, captio
         )}
         <div>
             <h3 className="font-semibold">{socialNetwork}</h3>
-            <p className="text-gray-700">{caption}</p>
+            {/* Aplicar truncamiento al caption */}
+            <p className="text-gray-700">{truncateText(caption, 15)}</p>
             <p className="text-gray-500 text-sm">{commentsCount} comentarios</p>
         </div>
     </div>

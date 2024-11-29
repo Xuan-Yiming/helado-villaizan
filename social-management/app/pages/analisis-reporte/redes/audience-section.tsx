@@ -77,7 +77,10 @@ const AudienceSection: React.FC<AudienceSectionProps> = ({ appliedDateRange, net
                     <GraphContainer title="Países principales de seguidores (histórico)" className="w-full h-1/2">
                         <HorizontalBarChartComponent data={countryData} />
                     </GraphContainer>
-                    <GraphContainer title="Fuentes de impresiones de publicaciones" className="w-full h-1/2">
+                    <GraphContainer
+                        title={network === "instagram" ? "Interacciones en la página (máximo los últimos 30 días)" : "Fuentes de impresiones de publicaciones"}
+                        className="w-full h-1/2"
+                    >
                         {/* Muestra el subtítulo para "Veces en que las publicaciones aparecieron en pantalla" */}
                         {screenAppearanceData && (
                             <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>

@@ -40,6 +40,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, data: responseData }, { status: 200 });
     } catch (error) {
         console.error('Error en Facebook Enviar Mensaje API:', error);
-        return NextResponse.json({ error: 'Error al enviar el mensaje' }, { status: 500 });
+        return NextResponse.json({ error: 'Mensaje enviado fuera del período permitido por Meta.' }, { status: 500 });
     }
 }

@@ -42,6 +42,15 @@ const formatDate = (dateString: string) => {
     }
 };
 
+// Función para truncar el texto
+const truncateText = (text: string, wordLimit: number): string => {
+    const words = text.split(" ");
+    if (words.length > wordLimit) {
+        return words.slice(0, wordLimit).join(" ") + "...";
+    }
+    return text;
+};
+
 const InteractionList: React.FC<InteractionListProps> = ({ items, selectedInteractionId, onSelectInteraction }) => (
     <ul>
         {items.map((interaction) => {
@@ -70,7 +79,8 @@ const InteractionList: React.FC<InteractionListProps> = ({ items, selectedIntera
                                 </>
                             ) : (
                                 <>
-                                    <p className="font-semibold">{interaction.caption}</p>
+                                    {/* Aplicar truncamiento al caption */}
+                                    <p className="font-semibold">{truncateText(interaction.caption, 15)}</p>
                                     <p className="text-sm text-gray-500">
                                         Publicado el {interaction.publishDate ? formatDate(interaction.publishDate) : 'Fecha no disponible'}
                                     </p>
