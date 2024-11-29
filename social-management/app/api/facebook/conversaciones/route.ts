@@ -1,4 +1,3 @@
-// facebook/conversaciones.ts
 'use server';
 import { NextResponse } from 'next/server';
 import { get_social_account } from "@/app/lib/database";
@@ -12,31 +11,42 @@ export async function GET() {
 
         const { token_autenticacion: accessToken, page_id: pageId } = account;
 
-        // Obtener la lista de conversaciones con el snippet del último mensaje y el conteo de mensajes no leídos
-        const conversationsResponse = await fetch(`https://graph.facebook.com/v20.0/${pageId}/conversations?fields=senders,message_count,updated_time,snippet,unread_count&access_token=${accessToken}`, { cache: "no-store" });
+        console.log("Obteniendo conversaciones para la página:", pageId);
+
+        // Obtener la lista de conversaciones
+        const conversationsResponse = await fetch(
+            `https://graph.facebook.com/v20.0/${pageId}/conversations?fields=senders,message_count,updated_time,snippet,unread_count&access_token=${accessToken}`,
+            { cache: "no-store" }
+        );
         const conversationsData = await conversationsResponse.json();
 
-        if (!conversationsResponse.ok || !conversationsData.data) {
-            throw new Error(`Error al obtener conversaciones de Facebook: ${conversationsData.error ? conversationsData.error.message : 'No se encontraron datos'}`);
+        console.log("Estado de la respuesta de Facebook:", conversationsResponse.status);
+        console.log("Datos recibidos de Facebook:", conversationsData);
+
+        if (!conversationsResponse.ok || !Array.isArray(conversationsData.data) || conversationsData.data.length === 0) {
+            console.log("No se encontraron conversaciones activas.");
+            return NextResponse.json([], { status: 200 }); // Devuelve un array vacío si no hay datos
         }
 
         const formattedConversations = conversationsData.data.map((conversation: any) => {
             // Obtener el ID y nombre del usuario que no es la página
-            const participant = conversation.senders.data.find((sender: any) => sender.id !== pageId);
+            const participant = conversation?.senders?.data?.find((sender: any) => sender.id !== pageId);
             const userId = participant ? participant.id : null;
             const userName = participant ? participant.name : "Usuario desconocido";
 
             return {
-                id: conversation.id,
-                userId,  // Agregar el userId aquí
+                id: conversation.id || "Sin ID",
+                userId: userId || "Desconocido",
                 userName,
                 lastMessage: conversation.snippet || "No hay mensaje",
-                messageCount: conversation.message_count,
+                messageCount: conversation.message_count || 0,
                 unreadCount: conversation.unread_count || 0,
                 socialNetwork: 'facebook',
-                updatedTime: conversation.updated_time
+                updatedTime: conversation.updated_time || null,
             };
         });
+
+        //console.log("Conversaciones formateadas:", formattedConversations);
 
         return NextResponse.json(formattedConversations, { status: 200 });
     } catch (error) {
