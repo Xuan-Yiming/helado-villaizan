@@ -11,7 +11,7 @@ export async function GET() {
 
         const { token_autenticacion: accessToken, page_id: pageId } = account;
 
-        console.log("Obteniendo conversaciones para la página:", pageId);
+        //console.log("Obteniendo conversaciones para la página:", pageId);
 
         // Obtener la lista de conversaciones
         const conversationsResponse = await fetch(
@@ -20,11 +20,11 @@ export async function GET() {
         );
         const conversationsData = await conversationsResponse.json();
 
-        console.log("Estado de la respuesta de Facebook:", conversationsResponse.status);
-        console.log("Datos recibidos de Facebook:", conversationsData);
+        //console.log("Estado de la respuesta de Facebook:", conversationsResponse.status);
+        //console.log("Datos recibidos de Facebook:", conversationsData);
 
         if (!conversationsResponse.ok || !Array.isArray(conversationsData.data) || conversationsData.data.length === 0) {
-            console.log("No se encontraron conversaciones activas.");
+            //console.log("No se encontraron conversaciones activas.");
             return NextResponse.json([], { status: 200 }); // Devuelve un array vacío si no hay datos
         }
 

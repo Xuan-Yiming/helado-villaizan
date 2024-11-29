@@ -31,23 +31,28 @@ export async function POST(request: Request) {
         const formattedComments: MetaComment[] = await Promise.all(
             commentsData.data.map(async (comment: any) => {
                 const isResponded = await isCommentResponded(comment.id); // Verifica si el comentario está respondido
-                const isCritical = await isCriticalComment(comment.message); // Analiza si es crítico
-
+        
+                // Asegúrate de obtener el texto del comentario desde la propiedad correcta
+                const commentText = comment.message || comment.text || ""; // Usar un string vacío como fallback
+                const isCritical = await isCriticalComment(commentText); // Analiza si es crítico
+        
                 // Manejar casos donde 'from' o 'from.name' sean indefinidos
-                const userName = comment.from?.name || "Usuario anónimo";
-
-                //console.log(comment.message);
-                //console.log("Es critico? " + isCritical);
+                const userName = comment.from?.username || "Usuario desconocido";
+        
+                //console.log(commentText); // Log para verificar el texto del comentario
+                //console.log("¿Es crítico? " + isCritical);
+        
                 return {
                     id: comment.id,
-                    userName: comment.from?.username || "Usuario desconocido",
-                    text: comment.message || comment.text || "", // Asegurarse de obtener el texto
+                    userName: userName,
+                    text: commentText, // Asegúrate de usar la propiedad correcta
                     timestamp: comment.created_time || comment.timestamp, // Verificar cuál es el correcto
                     respondido: isResponded, // Agrega el estado de respondido al comentario
                     crítico: isCritical, // Indica si es crítico
                 };
             })
         );
+        
 
         // Ordenar comentarios por timestamp
         formattedComments.sort((a: MetaComment, b: MetaComment) => 
