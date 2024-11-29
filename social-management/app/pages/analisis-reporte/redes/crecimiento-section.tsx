@@ -22,7 +22,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ metric, applied
             // Si ya tenemos los datos en caché, no hacemos la llamada a la API
             if (cachedData[cacheKey]) {
                 setChartData(cachedData[cacheKey]);
-                setTitle(`${capitalizeMetric(metric)} de la página`);
+                setTitle(getDynamicTitle(metric, network));
             } else {
                 fetchChartData(metric, cacheKey);
             }
@@ -48,10 +48,21 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ metric, applied
             // Guardamos los datos en el estado de caché
             setCachedData(prevCache => ({ ...prevCache, [cacheKey]: formattedData }));
             setChartData(formattedData);
-            setTitle(`${capitalizeMetric(metric)} de la página`);
+            setTitle(getDynamicTitle(metric, network));
         } catch (error) {
             console.error("Error fetching data:", error);
         }
+    };
+
+    const getDynamicTitle = (metric: string, network: string) => {
+        if (network === 'instagram') {
+            if (metric === 'engagement') {
+                return 'Impresiones de la página'; // Cambio para engagement en Instagram
+            } else if (metric === 'seguidores') {
+                return 'Seguidores de la página (máximo los últimos 30 días)'; // Cambio para seguidores en Instagram
+            }
+        }
+        return `${capitalizeMetric(metric)} de la página`; // Título genérico
     };
 
     const capitalizeMetric = (metric: string) => {

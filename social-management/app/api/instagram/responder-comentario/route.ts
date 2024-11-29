@@ -1,7 +1,6 @@
-// instagram/responderComentario/route.ts
 'use server';
 import { NextResponse } from 'next/server';
-import { get_social_account } from "@/app/lib/database";
+import { get_social_account, addRespondedComment, isCommentResponded } from "@/app/lib/database";
 
 export async function POST(request: Request) {
     const { commentId, message } = await request.json();
@@ -27,6 +26,14 @@ export async function POST(request: Request) {
 
         if (!response.ok) {
             throw new Error(`Error al responder comentario: ${data.error.message}`);
+        }
+
+        // Verificar si el comentario ya está marcado como respondido
+        const alreadyResponded = await isCommentResponded(commentId);
+
+        if (!alreadyResponded) {
+            // Marcar comentario como respondido en la base de datos si aún no lo está
+            await addRespondedComment(commentId);
         }
 
         return NextResponse.json({ success: true, data }, { status: 200 });

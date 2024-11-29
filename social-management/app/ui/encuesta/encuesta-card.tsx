@@ -24,15 +24,15 @@ export default function EncuestaCard( {encuesta}: EncuestaCardProps){
 
     const handleToggle = async () => {
       showConfirmation(
-        `Are you sure you want to ${isActive ? "disable" : "activate"} this survey?`,
+        `¿Está seguro que desea ${isActive ? "desactivar" : "activar"} esta encuesta?`,
         async () => {
           try {
             if (isActive) {
               await disable_survey(encuesta.id);
-              showSuccess("Survey disabled successfully!");
+              showSuccess("Encuesta desactivada exitosamente!");
             } else {
               await activate_survey(encuesta.id);
-              showSuccess("Survey activated successfully!");
+              showSuccess("Encuesta activada exitosamente!");
             }
             setIsActive(!isActive);
           } catch (error) {
@@ -46,12 +46,12 @@ export default function EncuestaCard( {encuesta}: EncuestaCardProps){
 
     const handleDelete = async () => {
       showConfirmation(
-        "Are you sure you want to delete this survey?",
+        "¿Está seguro que desea eliminar esta encuesta?",
         async () => {
           setIsLoading(true);
           try {
             await delete_survey(encuesta.id);
-            showSuccess("Survey deleted successfully!");
+            showSuccess("Encuesta eliminada exitosamente!");
             window.location.reload();
           } catch (error) {
             showError("Error deleting survey: " + error);

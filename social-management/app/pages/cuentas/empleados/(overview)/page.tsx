@@ -117,7 +117,7 @@ export default function Page(){
                         options={[
                             { value: 'all', label: 'Ver todo' },
                             { value: 'activo', label: 'Activo' },
-                            { value: 'desactivo', label: 'Desactivo' },
+                            { value: 'inactivo', label: 'Inactivo' },
                         ]}
                         value={estadoFilter}
                         onChange={setEstadoFilter}
@@ -127,9 +127,9 @@ export default function Page(){
                         id="response-filter"
                         options={[
                             { value: 'all', label: 'Ver todo' },
-                            { value: 'admin', label: 'Admin' },
-                            { value: 'user', label: 'Usurio Normal' },
-                            { value: 'survy_creator', label: 'Creator De Encuestas' },
+                            { value: 'admin', label: 'Administrador' },
+                            { value: 'user', label: 'Usuario' },
+                            { value: 'survy_creator', label: 'Creador De Encuestas' },
                             { value: 'moderator', label: 'Analista' },
                         ]}
                         value={rolFilter}

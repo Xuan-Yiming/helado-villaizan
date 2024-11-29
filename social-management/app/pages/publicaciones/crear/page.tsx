@@ -429,7 +429,7 @@ function PublicarPage() {
           {/* Selección de usuario */}
           <div className="bg-white p-4 rounded border">
             <h2 className="text-xl font-semibold text-black">
-              Seleccionar cuentas
+              Selecciona las cuentas:
             </h2>
             <ul className="mt-4 space-y-2">
               {socialAccounts.map((account) => (
@@ -460,7 +460,7 @@ function PublicarPage() {
           {/* Área de texto y multimedia */}
           <div className="p-4 border rounded bg-white ">
             <h2 className="text-xl font-semibold text-black mb-4">
-              Contenido de la publicación
+              Ingresa el contenido de la publicación:
             </h2>
             {/* Contenido */}
             <textarea
@@ -540,7 +540,7 @@ function PublicarPage() {
           {/* Seleccionar cuándo publicar */}
           <div className="p-4 border rounded bg-white">
             <h2 className="text-xl font-semibold text-black">
-              Seleccionar cuándo publicar
+              Realiza la publicación:
             </h2>
             <div className="mt-4 flex space-x-4">
               <button

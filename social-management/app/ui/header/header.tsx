@@ -83,7 +83,7 @@ const Header = () => {
             <button
               className="flex text-white px-4 py-2 rounded-mdfont-bold"
               onClick={handleLogout}
-              title="Logout"
+              title="Cerrar sesión"
             >
               <ArrowRightEndOnRectangleIcon className="h-10 w-10 mr-2" />
             </button>

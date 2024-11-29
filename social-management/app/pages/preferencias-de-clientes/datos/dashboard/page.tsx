@@ -36,7 +36,8 @@ interface CiudadVentas {
   ventas: ProductoVenta[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = [  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#D50230', '#36A2EB', '#FFCE56',
+  '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FF6F91', '#845EC2', '#FCE2E2'];
 
 const Dashboard = () => {
 
@@ -54,6 +55,10 @@ const Dashboard = () => {
   const [totalProductos, setTotalProductos] = useState<number | null>(null);
   const [totalCiudades, setTotalCiudades] = useState<number | null>(null);
   const [totalClientes, setTotalClientes] = useState<number | null>(null);
+  const [agesData, setAgesData] = useState<{ age: string; Clientes: number }[]>([]);
+  const [loadingAges, setLoadingAges] = useState(true);
+  const [clientesData, setClientesData] = useState<{ name: string; value: number; total: number }[]>([]);
+
 
   // Obtener las fechas de los parámetros de consulta
   const startDate = searchParams.get('startDate');
@@ -115,9 +120,10 @@ const Dashboard = () => {
       if (startDate && endDate) {
         const response = await axios.get(
           /* CAMBIAR LA API POR LA QUE SIOUXIE DE */
-          `https://villaizan-social.onrender.com/ganancia-en-soles/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+          `https://villaizan-social.onrender.com/ventas-totales-monto/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
         );
-        setTotalGanancia(response.data.total_ganancia || 0); // Suponiendo que la API devuelve { total_ganancia: <número> }
+        setTotalGanancia(response.data.monto_total || 0); // Suponiendo que la API devuelve { total_ganancia: <número> }
+        console.log("ganancia",response.data);
       }
     } catch (error) {
       console.error("Error fetching total ganancia:", error);
@@ -242,6 +248,53 @@ const Dashboard = () => {
     }
   };
 
+  const fetchAgesData = async () => {
+    try {
+      setLoadingAges(true);
+      const response = await axios.get(
+        `https://villaizan-social.onrender.com/edades-frecuentes-clientes/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+      );
+      
+      const formattedData = response.data.map((item: { edad: string | null; cantidad: number }) => ({
+        age: item.edad ? item.edad : "Edad desconocida", // Si `edad` es null, usa "Edad desconocida"
+        Clientes: item.cantidad, // Frecuencia de la edad
+      }));
+
+      setAgesData(formattedData);
+      setLoadingAges(false);
+    } catch (error) {
+      console.error("Error fetching ages data:", error);
+      setAgesData([]);
+      setLoadingAges(false);
+    }
+  };
+
+  const fetchClientesData = async () => {
+    try {
+      if (startDate && endDate) {
+        const response = await axios.get(
+          `https://villaizan-social.onrender.com/top-clientes-por-pedidos/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+        );
+  
+        const totalPedidos = response.data.reduce(
+          (acc: number, cliente: { total_pedidos: number }) => acc + cliente.total_pedidos,
+          0
+        );
+  
+        const formattedData = response.data.map((cliente: { nombre: string; apellido: string; total_pedidos: number }) => ({
+          name: `${cliente.nombre} ${cliente.apellido}`.trim(), // Combina nombre y apellido
+          value: parseFloat(((cliente.total_pedidos / totalPedidos) * 100).toFixed(2)), // Calcula el porcentaje
+          total: cliente.total_pedidos, // Total absoluto de pedidos
+        }));
+  
+        setClientesData(formattedData);
+      }
+    } catch (error) {
+      console.error("Error fetching clientes data:", error);
+      setClientesData([]);
+    }
+  };
+
 
     // Función para exportar a PDF
     const exportToPDF = async () => {
@@ -301,6 +354,8 @@ const Dashboard = () => {
     fetchTotalGanancia();
     fetchFrecuenciaCompras();
     fetchBarData();
+    fetchAgesData();
+    fetchClientesData();
   }, [startDate, endDate]);
 
   useEffect(() => {
@@ -350,11 +405,11 @@ const Dashboard = () => {
         </div>
         <div className="bg-red-100 rounded-lg p-4 text-center">
           <p className="text-red-500 font-bold text-2xl">
-            {/* Aquí puedes agregar el dato correspondiente al quinto bloque */}
             {typeof totalGanancia === "number" ? `${totalGanancia.toLocaleString()}` : "Cargando..."}
           </p>
-          <p className="text-gray-600">Soles</p>
+          <p className="text-gray-600">Soles en ventas</p>
         </div>
+
       </div>
 
 
@@ -408,7 +463,7 @@ const Dashboard = () => {
           <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
             <ResponsiveContainer width="100%" height={300}>
             {promocionesData.length === 0 ? (
-              <p>Cargando datos...</p>
+              <p>No hay ventas con promociones...</p>
             ) : (
               <PieChart width={400} height={300}>
                   <Pie
@@ -443,50 +498,54 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-2 gap-4 mb-6 gap-y-8 shadow-md mt-6">
         <div className="bg-white rounded-lg p-6 shadow-md">
-          <h3 className="font-bold text-lg mb-4">Frecuencia de edades</h3>
-            <ResponsiveContainer width="100%" height={300}>
-            {promocionesData.length === 0 ? (
+          <h3 className="font-bold text-lg mb-4">Clientes con mayor cantidad de pedidos</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            {clientesData.length === 0 ? (
               <p>Cargando datos...</p>
             ) : (
-              <PieChart width={400} height={300}>
-                  <Pie
-                    data={promocionesData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, value }) => `${value}%`}
-                  >
-                  {promocionesData.map((entry, index) => (
+              <PieChart>
+                <Pie
+                  data={clientesData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, value }) => `${value}%`}
+                >
+                  {clientesData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value, name, props) => [`${props.payload.total} ventas`, name]} />
+                <Tooltip formatter={(value, name, props) => [`${props.payload.total} pedidos`, name]} />
                 <Legend
                   layout="vertical"
                   align="right"
                   verticalAlign="middle"
                   formatter={(value: string) =>
-                    `${value} (${promocionesData.find((d) => d.name === value)?.value}%)`
+                    `${value} (${clientesData.find((d) => d.name === value)?.value}%)`
                   }
                 />
               </PieChart>
             )}
-            </ResponsiveContainer>
+          </ResponsiveContainer>
 
 
         </div>
         <div className="bg-white rounded-lg p-6 shadow-md">
-          <h3 className="font-bold text-lg mb-4">Clientes con mayor cantidad de pedidos</h3>
+          <h3 className="font-bold text-lg mb-4">Frecuencia de edades</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={barData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="nombre" label={{ value: "Producto", position: "insideBottom", offset: -5 }} />
-              <YAxis dataKey="total_ventas" label={{ value: "Cantidad Total de Ventas", angle: -90, position: "insideCenter" }} />
-              <Tooltip />
-              <Bar dataKey="total_ventas" fill="#82ca9d" />
-            </BarChart>
+            {loadingAges ? (
+              <p>Cargando datos...</p>
+            ) : (
+              <BarChart data={agesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="age" label={{ value: "Edad", position: "insideBottom", offset: -5 }} />
+                <YAxis label={{ value: "Cantidad", angle: -90, position: "insideLeft" }} />
+                <Tooltip />
+                <Bar dataKey="Clientes" fill="#82ca9d" />
+              </BarChart>
+            )}
           </ResponsiveContainer>
         </div>
       </div>
@@ -495,8 +554,8 @@ const Dashboard = () => {
         <button 
           id="export-button" // ID para identificar el botón
           onClick={exportToPDF}
-          className="bg-blue-500 text-white font-bold py-2 px-4 rounded">
-          Exportar a PDF
+          className="bg-red-500 text-white font-bold py-2 px-4 rounded">
+          Exportar reporte
         </button>
       </div>
 
