@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React from "react";
 import {
     LineChart,
     Line,
@@ -8,15 +8,15 @@ import {
     YAxis,
     Tooltip,
     ResponsiveContainer,
-} from 'recharts';
-import dayjs from 'dayjs';
-import 'dayjs/locale/es'; // Importa el idioma español
-import utc from 'dayjs/plugin/utc';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
+} from "recharts";
+import dayjs from "dayjs";
+import "dayjs/locale/es"; // Importa el idioma español
+import utc from "dayjs/plugin/utc";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
-dayjs.locale('es'); // Configura dayjs para que use español
+dayjs.locale("es"); // Configura dayjs para que use español
 
 interface LineChartProps {
     data: { name: string; value: number }[];
@@ -24,20 +24,42 @@ interface LineChartProps {
 }
 
 const LineChartComponent: React.FC<LineChartProps> = ({ data, metricLabel }) => {
+    // Verifica si no hay datos disponibles
+    if (data.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-48 text-gray-500 font-medium">
+                Cargando...
+            </div>
+        );
+    }
+    if(data[0].name==="Sin datos"){
+        return (
+            <div className="flex items-center justify-center h-48 text-gray-500 font-medium">
+                Datos no disponibles por políticas de Meta.
+            </div>
+        );   
+    }
+
     const formatXAxis = (tickItem: string) => {
         const date = dayjs(tickItem); // Parseamos en formato ISO
-        return date.isValid() ? date.format('D MMM') : '';
+        return date.isValid() ? date.format("D MMM") : "";
     };
 
     const formatTooltipLabel = (label: string) => {
         const date = dayjs(label);
-        return date.isValid() ? date.format('dddd, D MMM YYYY') : '';
+        return date.isValid() ? date.format("dddd, D MMM YYYY") : "";
     };
 
     return (
         <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
-                <Line type="linear" dataKey="value" stroke="#8884d8" strokeWidth={2} dot={false} />
+                <Line
+                    type="linear"
+                    dataKey="value"
+                    stroke="#8884d8"
+                    strokeWidth={2}
+                    dot={false}
+                />
                 <CartesianGrid stroke="#ccc" strokeDasharray="3 3" />
                 <XAxis
                     dataKey="name"
@@ -48,7 +70,10 @@ const LineChartComponent: React.FC<LineChartProps> = ({ data, metricLabel }) => 
                 <YAxis allowDecimals={false} />
                 <Tooltip
                     labelFormatter={formatTooltipLabel}
-                    formatter={(value: number) => [`${value.toFixed(0)}`, metricLabel]} // Muestra la métrica
+                    formatter={(value: number) => [
+                        `${value.toFixed(0)}`,
+                        metricLabel,
+                    ]} // Muestra la métrica
                 />
             </LineChart>
         </ResponsiveContainer>

@@ -2,14 +2,25 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation'; // Importar el hook para obtener parámetros de la URL
 import { load_addcreatives, load_page_posts } from '@/app/lib/data';
-import { AddCreative, PostOption } from '@/app/lib/types';
+import { AddCreative } from '@/app/lib/types';
 
 function AddCreativePageContent() {
   const [addCreatives, setAddCreatives] = useState<AddCreative[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams(); // Hook para obtener los parámetros de la URL
   const accountId = '567132785808833'; // ID fijo para la cuenta de anuncios
   const pageId = '443190078883565'; // ID fijo de la página
+
+  // Obtener el adsetId de la URL
+  const adsetId = searchParams.get('adsetId'); // Obtener adsetId desde los parámetros
+
+  useEffect(() => {
+    if (!adsetId) {
+      console.warn('No se proporcionó adsetId. Asegúrate de que la URL incluye este parámetro.');
+    }
+  }, [adsetId]);
 
   const loadAddCreatives = async () => {
     setIsLoading(true);
@@ -50,7 +61,11 @@ function AddCreativePageContent() {
         <div className="flex items-center">
           {/* Botón Crear AddCreative */}
           <Link
-            href="/pages/publicaciones/campanas/addsets/adcreative/crear"
+            href={
+              adsetId
+                ? `/pages/publicaciones/campanas/addsets/adcreative/crear?adsetId=${adsetId}`
+                : '/pages/publicaciones/campanas/addsets/adcreative/crear'
+            }
             className="flex items-center ml-5 rounded px-4 py-2 bg-[#BD181E] text-white"
           >
             <div>Nuevo</div>
@@ -86,13 +101,13 @@ function AddCreativePageContent() {
               </div>
             </div>
 
-            {/* Botón Crear Anuncio */}
+            {/* Botón Ver Anuncios */}
             <div className="flex items-center">
               <Link
-                href={`/pages/publicaciones/campanas/addsets/adcreative/add?adcreativeId=${creative.id}`}
-                className="flex items-center text-blue-500 hover:text-blue-700 ml-5"
+                href={`/pages/publicaciones/campanas/addsets/adcreative/ad?adcreativeId=${creative.id}&adsetId=${adsetId}`}
+                className="flex items-center text-gray-500 hover:text-gray-700"
               >
-                Crear Anuncio
+                Ver Anuncios
               </Link>
             </div>
           </li>

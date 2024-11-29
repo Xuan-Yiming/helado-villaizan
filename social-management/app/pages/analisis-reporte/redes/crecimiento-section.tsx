@@ -17,7 +17,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ metric, applied
 
     useEffect(() => {
         if (appliedDateRange) {
-            const cacheKey = `${metric}-${appliedDateRange.start.toISOString()}-${appliedDateRange.end.toISOString()}`;
+            const cacheKey = `${network}-${metric}-${appliedDateRange.start.toISOString()}-${appliedDateRange.end.toISOString()}`;
             
             // Si ya tenemos los datos en caché, no hacemos la llamada a la API
             if (cachedData[cacheKey]) {
@@ -27,7 +27,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ metric, applied
                 fetchChartData(metric, cacheKey);
             }
         }
-    }, [metric, appliedDateRange]);
+    }, [metric, appliedDateRange, network]);
 
     const fetchChartData = async (metric: 'alcance' | 'engagement' | 'seguidores' | 'visitas', cacheKey: string) => {
         if (!appliedDateRange) return;
@@ -36,7 +36,8 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ metric, applied
         const endDate = appliedDateRange.end.toISOString();
 
         try {
-            const response = await fetch(`/api/facebook/metricas/crecimiento/${metric}?startDate=${startDate}&endDate=${endDate}`);
+            // Usa `network` dinámicamente para construir el endpoint
+            const response = await fetch(`/api/${network}/metricas/crecimiento/${metric}?startDate=${startDate}&endDate=${endDate}`);
             const data = await response.json();
 
             const formattedData = data.map((item: any) => ({

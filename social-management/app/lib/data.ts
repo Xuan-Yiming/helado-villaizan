@@ -2,7 +2,7 @@
 
 const API_URL = process.env.API_URL || 'https://api.example.com';
 
-import { Campaign, Post, Adset, AddCreative, PostOption } from "./types";
+import { Campaign, Post, Adset, AddCreative, PostOption, Ad2 } from "./types";
 import {Encuesta} from "./types";
 import { Response } from "./types";
 import { SocialAccount } from "./types";
@@ -350,8 +350,8 @@ export async function load_addcreatives(accountId: string): Promise<AddCreative[
 
 export async function create_adcreative(adCreativeData: any): Promise<void> {
   const token =
-    'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
-  const adAccountId = '567132785808833'; // ID de la cuenta fija
+    'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf'; // Token actualizado
+  const adAccountId = '567132785808833'; // ID fijo de la cuenta
 
   const response = await fetch(
     `https://graph.facebook.com/v21.0/act_${adAccountId}/adcreatives`,
@@ -367,26 +367,85 @@ export async function create_adcreative(adCreativeData: any): Promise<void> {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error.message || 'Error al crear el AdCreative');
+    console.error('Facebook API Error:', errorData); // Agregar este log para depurar la respuesta
+    throw new Error(errorData.error.message || 'Error al crear el AdCreative.');
   }
 }
 
-
 export async function load_page_posts(pageId: string): Promise<PostOption[]> {
   const token =
-    'EAAQswZB4FZCyUBO5fPEWRnzhzbWMAC2OwANKzOGchVIrUj03TrZBJybZBkjLq7FZAibGmhqdZCzZBNBtm2KGxfzoeZBT7VfOfsl48GwVc6mEVgv1lmkf57kqbGUuEX3RVJlmIjZC8OfLQ2W6qNWS71rFz2I6qaMWYnwooL13yYpFC8N73TWSPZCqKUMNKpvfYJp5uFWNn8vMTu';
+    'EAAQswZB4FZCyUBO3BUUnUWTlUIIzlUYQdvrIgEejcTeNZBsQINEAPQ59V6Wa6jb3FQTEZBpyMSjESZAqZBfR7VdNNXmh4MhlHoIeVUSFLMNB9sXFlMzU7ZCVdtPGirlHKWYC51PicZCYLZA9VNSZBa9mEkKGOZAiVRYhIYLFJz7aqPkHfRLqX5jitynLpS4zxfZB8RkiwV7ZBhDcD'; // Token actualizado
   const response = await fetch(
-    `https://graph.facebook.com/v21.0/${pageId}/posts?fields=id,picture&access_token=${token}`
+    `https://graph.facebook.com/v21.0/${pageId}/posts?fields=id,picture,message&access_token=${token}`
   );
 
   if (!response.ok) {
-    throw new Error('Error al cargar los posts de la página.');
+    const errorData = await response.json();
+    throw new Error(errorData.error.message || 'Error al cargar los posts de la página.');
   }
 
   const data = await response.json();
   return data.data.map((post: any) => ({
     id: post.id,
     picture: post.picture || '',
-    message: post.message || 'Sin mensaje', // Fallback si no hay mensaje
+    message: post.message || 'Sin mensaje', // Valor por defecto si no hay mensaje
   }));
+}
+
+export async function load_ads(): Promise<Ad2[]> {
+  const token = 'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+  const adAccountId = '567132785808833';
+
+  const response = await fetch(
+    `https://graph.facebook.com/v21.0/act_${adAccountId}/ads?fields=id,name,adset_id,status,creative&access_token=${token}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error.message || 'Error al cargar los anuncios.');
+  }
+
+  const data = await response.json();
+  return data.data as Ad2[]; // Garantiza el tipo de datos esperado
+}
+
+export async function create_ad(adData: {
+  name: string;
+  adset_id: string;
+  creative: { creative_id: string };
+  status: string;
+}): Promise<void> {
+  const token =
+    'EAAQswZB4FZCyUBOZBcP6RRZB6AxZB5F3ZC5V1OxmMaLdmDxFNaO3Gf6hOZB6PtqP9ZBjaS3DsWeY4tHLJ17Lacmc0lGN1J5HlqC8SblTUStw4GUrOEZCYO4RZAY6Hduoh8akz6kJSPYj8fdXt6M2POkMLs3DsAW5Luyzb4gLzZA7iZBsapXMHKdZAKZAX3XL99ewZBlBNSf';
+  const adAccountId = '567132785808833'; // ID fijo de la cuenta de anuncios
+
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v21.0/act_${adAccountId}/ads`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(adData),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error?.message || 'Error al crear el anuncio.'
+      );
+    }
+
+    console.log('Ad created successfully.');
+  } catch (error) {
+    console.error('Error al crear el anuncio:', error);
+    throw error;
+  }
 }

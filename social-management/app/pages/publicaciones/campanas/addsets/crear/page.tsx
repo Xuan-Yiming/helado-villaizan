@@ -10,9 +10,9 @@ function CreateAdsetForm() {
   const [ageMax, setAgeMax] = useState(65);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['facebook', 'instagram']);
   const [selectedDevices, setSelectedDevices] = useState<string[]>(['mobile', 'desktop']);
+  const [selectedGender, setSelectedGender] = useState(0); // Género inicial: Ambos sexos
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [status, setStatus] = useState('PAUSED');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,8 +32,19 @@ function CreateAdsetForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (ageMin < 18 || ageMin > ageMax) {
       setError('La edad mínima debe ser mayor o igual a 18 y menor o igual a la edad máxima.');
+      return;
+    }
+
+    if (selectedPlatforms.length === 0 || selectedDevices.length === 0) {
+      setError('Debes seleccionar al menos una plataforma y un dispositivo.');
+      return;
+    }
+
+    if (!startTime || !endTime || new Date(startTime) >= new Date(endTime)) {
+      setError('Debes seleccionar un rango de tiempo válido (endTime debe ser después de startTime).');
       return;
     }
 
@@ -50,13 +61,13 @@ function CreateAdsetForm() {
         targeting: {
           facebook_positions: ['feed'],
           geo_locations: { countries: ['PE'] }, // Valor fijo
-          genders: [0],
+          genders: [selectedGender], // Género seleccionado
           age_max: ageMax,
           age_min: ageMin,
           publisher_platforms: selectedPlatforms,
           device_platforms: selectedDevices,
         },
-        status,
+        status: 'PAUSED', // Estado fijo
         start_time: startTime,
         end_time: endTime,
       };
@@ -87,7 +98,7 @@ function CreateAdsetForm() {
     <main className="p-4 mx-auto sm:w-full lg:w-1/2">
       <h1 className="text-xl font-bold mb-4">Crear Nuevo Adset</h1>
       <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-        {/* Input fields */}
+        {/* Nombre del Adset */}
         <div>
           <label htmlFor="name" className="block font-medium">
             Nombre del Adset
@@ -102,7 +113,7 @@ function CreateAdsetForm() {
           />
         </div>
 
-        {/* Age range inputs */}
+        {/* Rango de edades */}
         <div className="flex space-x-4">
           <div>
             <label htmlFor="ageMin" className="block font-medium">
@@ -136,9 +147,88 @@ function CreateAdsetForm() {
           </div>
         </div>
 
-        {/* Platform and device selectors */}
-        {/* Add more fields as needed */}
+        {/* Selección de género */}
+        <div>
+          <label htmlFor="genders" className="block font-medium">
+            Género
+          </label>
+          <select
+            id="genders"
+            value={selectedGender}
+            onChange={(e) => setSelectedGender(Number(e.target.value))}
+            className="w-full px-3 py-2 border rounded"
+          >
+            <option value={0}>Ambos sexos</option>
+            <option value={1}>Hombres</option>
+            <option value={2}>Mujeres</option>
+          </select>
+        </div>
 
+        {/* Fechas de inicio y fin */}
+        <div>
+          <label htmlFor="startTime" className="block font-medium">
+            Fecha de inicio
+          </label>
+          <input
+            type="datetime-local"
+            id="startTime"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            required
+            className="w-full px-3 py-2 border rounded"
+          />
+        </div>
+        <div>
+          <label htmlFor="endTime" className="block font-medium">
+            Fecha de fin
+          </label>
+          <input
+            type="datetime-local"
+            id="endTime"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            required
+            className="w-full px-3 py-2 border rounded"
+          />
+        </div>
+
+        {/* Selección de plataformas */}
+        <div>
+          <label className="block font-medium">Plataformas</label>
+          <div className="flex items-center space-x-4">
+            {['facebook', 'instagram'].map((platform) => (
+              <label key={platform} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  value={platform}
+                  checked={selectedPlatforms.includes(platform)}
+                  onChange={() => handlePlatformChange(platform)}
+                />
+                <span>{platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Selección de dispositivos */}
+        <div>
+          <label className="block font-medium">Dispositivos</label>
+          <div className="flex items-center space-x-4">
+            {['mobile', 'desktop'].map((device) => (
+              <label key={device} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  value={device}
+                  checked={selectedDevices.includes(device)}
+                  onChange={() => handleDeviceChange(device)}
+                />
+                <span>{device.charAt(0).toUpperCase() + device.slice(1)}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Botón de envío */}
         {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"

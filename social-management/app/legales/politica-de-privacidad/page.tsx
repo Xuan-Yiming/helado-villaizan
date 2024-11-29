@@ -39,9 +39,9 @@ export default async function Page(){
 <p>Nos reservamos el derecho de modificar esta Política de Privacidad en cualquier momento. Cualquier cambio será comunicado a los usuarios internamente y se les pedirá su aceptación continua del uso de la plataforma conforme a las nuevas políticas.</p>
 
 <h2>8. Contacto</h2>
-<p>Para cualquier duda o consulta relacionada con esta Política de Privacidad, por favor contacta con el departamento de IT en <strong>[correo electrónico de contacto]</strong>.</p>
+<p>Para cualquier duda o consulta relacionada con esta Política de Privacidad, contactar con el departamento de IT en <strong>yxuan@pucp.edu.pe</strong>.</p>
 
-<p><strong>Última actualización:</strong> 06 de COtubre 2024</p>
+<p><strong>Última actualización:</strong> 06 de Octubre 2024</p>
         </main>
     )
 }

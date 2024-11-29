@@ -11,8 +11,24 @@ const HorizontalBarChartComponent: React.FC<HorizontalBarChartComponentProps> = 
     const barGap = 20; // Espacio fijo entre cada barra
     const chartHeight = data.length * (barHeight + barGap) + 40; // Altura calculada dinámicamente
 
+    // Verifica si no hay datos disponibles
+    if (data.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-48 text-gray-500 font-medium">
+                Cargando...
+            </div>
+        );
+    }
+    if(data[0].name==="Sin datos"){
+        return (
+            <div className="flex items-center justify-center h-48 text-gray-500 font-medium">
+                Datos no disponibles por políticas de Meta.
+            </div>
+        );   
+    }
+
     return (
-        <div style={{ width: '100%', height: chartHeight}}>
+        <div style={{ width: '100%', height: chartHeight }}>
             <ResponsiveContainer>
                 <BarChart
                     data={data}
@@ -29,7 +45,7 @@ const HorizontalBarChartComponent: React.FC<HorizontalBarChartComponentProps> = 
                             content={({ x = 0, y = 0, value }) => (
                                 <text
                                     x={Number(x)} // Posicionar a la izquierda de la barra
-                                    y={Number(y) - 4}  // Posicionar encima de la barra
+                                    y={Number(y) - 4} // Posicionar encima de la barra
                                     textAnchor="start" // Alinear al inicio (izquierda)
                                     fill="#555"
                                     fontSize={12}

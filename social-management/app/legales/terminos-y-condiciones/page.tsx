@@ -32,9 +32,9 @@ export default async function Page(){
                 <p><strong>Helados Peruanos Sociedad Anonima Cerrada | Villaizan</strong> no se hace responsable de cualquier daño, pérdida o inconveniente causado por el uso de esta plataforma, incluyendo pero no limitándose a errores en la gestión de cuentas de redes sociales o fallas en el sistema.</p>
 
                 <h2>8. Contacto</h2>
-                <p>Para cualquier duda o consulta sobre estos términos, por favor contacta con el departamento de IT en <strong>[correo electrónico de contacto]</strong>.</p>
+                <p>Para cualquier duda o consulta sobre estos términos, contactar con el departamento de IT en <strong>yxuan@pucp.edu.pe</strong>.</p>
 
-                <p><strong>Última actualización:</strong> 06 de COtubre 2024</p>
+                <p><strong>Última actualización:</strong> 06 de Octubre 2024</p>
         </main>
     )
 }
