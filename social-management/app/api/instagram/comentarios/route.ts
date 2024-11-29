@@ -1,6 +1,7 @@
 'use server';
 import { NextResponse } from 'next/server';
 import { get_social_account, isCommentResponded } from "@/app/lib/database";
+import { isCriticalComment } from "@/app/lib/meta"; // Importa la función de Hugging Face
 import { MetaComment } from "@/app/lib/types"; // Importa MetaComment
 
 export async function POST(request: Request) {
@@ -30,12 +31,20 @@ export async function POST(request: Request) {
         const formattedComments: MetaComment[] = await Promise.all(
             commentsData.data.map(async (comment: any) => {
                 const isResponded = await isCommentResponded(comment.id); // Verifica si el comentario está respondido
+                const isCritical = await isCriticalComment(comment.message); // Analiza si es crítico
+
+                // Manejar casos donde 'from' o 'from.name' sean indefinidos
+                const userName = comment.from?.name || "Usuario anónimo";
+
+                //console.log(comment.message);
+                //console.log("Es critico? " + isCritical);
                 return {
                     id: comment.id,
                     userName: comment.from?.username || "Usuario desconocido",
                     text: comment.message || comment.text || "", // Asegurarse de obtener el texto
                     timestamp: comment.created_time || comment.timestamp, // Verificar cuál es el correcto
-                    respondido: isResponded // Agrega el estado de respondido al comentario
+                    respondido: isResponded, // Agrega el estado de respondido al comentario
+                    crítico: isCritical, // Indica si es crítico
                 };
             })
         );
