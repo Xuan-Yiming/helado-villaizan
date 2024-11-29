@@ -41,7 +41,7 @@ export async function authenticate_user(
   }
 
   const result = await client.query(
-    `SELECT id, username, role, active FROM user_accounts WHERE username = $1 AND password = $2 AND active = true`,
+    `SELECT * FROM user_accounts WHERE username = $1 AND password = $2 AND active = true`,
     [username, password]
   );
 
@@ -55,6 +55,9 @@ export async function authenticate_user(
       role: user.role,
       token: auth.token,
       token_expiration: auth.expirationDate,
+      nombre: user.nombre,
+      apellido: user.apellido,
+      photo: user.photo
     };
   } else {
     throw new Error("User not found or inactive");

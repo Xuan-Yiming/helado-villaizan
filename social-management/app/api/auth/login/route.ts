@@ -24,6 +24,9 @@ export async function POST(request: Request) {
         role: user.role,
         token: user.token,
         token_expiration: user.token_expiration,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        photo: user.photo,
       },
     });
 

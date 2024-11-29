@@ -269,4 +269,7 @@ export interface AuthenticatedUser {
   role: string;
   token: string;
   token_expiration: Date;
+  nombre?: string;
+  apellido?: string;
+  photo?:string;
 }
