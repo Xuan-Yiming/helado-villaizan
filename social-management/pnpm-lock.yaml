@@ -398,12 +398,12 @@ packages:
   '@types/d3-timer@3.0.2':
     resolution: {integrity: sha512-Ps3T8E8dZDam6fUyNiMkekK3XUsaUEik+idO9/YjPtfj2qruF8tFBXS7XhtE4iIXBLxhmLjP3SXpLhVf21I9Lw==}
 
-  '@types/http-errors@1.8.2':
-    resolution: {integrity: sha512-EqX+YQxINb+MeXaIqYDASb6U6FCHbWjkj4a1CKDBks3d/QiB2+PqBLyO72vLDgAO1wUI4O+9gweRcQK11bTL/w==}
-
   '@types/html2canvas@1.0.0':
     resolution: {integrity: sha512-BJpVf+FIN9UERmzhbtUgpXj6XBZpG67FMgBLLoj9HZKd9XifcCpSV+UnFcwTZfEyun4U/KmCrrVOG7829L589w==}
     deprecated: This is a stub types definition. html2canvas provides its own type definitions, so you do not need this installed.
+
+  '@types/http-errors@1.8.2':
+    resolution: {integrity: sha512-EqX+YQxINb+MeXaIqYDASb6U6FCHbWjkj4a1CKDBks3d/QiB2+PqBLyO72vLDgAO1wUI4O+9gweRcQK11bTL/w==}
 
   '@types/jsonwebtoken@9.0.7':
     resolution: {integrity: sha512-ugo316mmTYBl2g81zDFnZ7cfxlut3o+/EQdaP7J8QN2kY6lJ22hmQYCK5EHcJHbrW+dkCGSCPgbG8JtYj6qSrg==}
@@ -1787,12 +1787,12 @@ snapshots:
 
   '@types/d3-timer@3.0.2': {}
 
-  '@types/http-errors@1.8.2': {}
-
   '@types/html2canvas@1.0.0':
     dependencies:
       html2canvas: 1.4.1
-      
+
+  '@types/http-errors@1.8.2': {}
+
   '@types/jsonwebtoken@9.0.7':
     dependencies:
       '@types/node': 22.7.4
@@ -2766,12 +2766,14 @@ snapshots:
       '@fullcalendar/react': 6.1.15(@fullcalendar/core@6.1.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@fullcalendar/timegrid': 6.1.15(@fullcalendar/core@6.1.15)
       '@heroicons/react': 2.1.5(react@18.3.1)
+      '@huggingface/inference': 2.8.1
       '@types/bcrypt': 5.0.2
       '@types/jsonwebtoken': 9.0.7
       '@types/react-dom': 18.3.1
       '@types/request-ip': 0.0.41
       '@vercel/blob': 0.25.1
       '@vercel/postgres': 0.10.0
+      '@vitalets/google-translate-api': 9.2.0
       axios: 1.7.7
       bcrypt: 5.1.1
       chart.js: 4.4.5
