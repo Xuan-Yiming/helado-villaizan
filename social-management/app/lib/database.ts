@@ -888,6 +888,12 @@ export async function get_surveys_between_dates(startDate: string, endDate: stri
 }
 
 export async function getSurveyById(surveyId: string): Promise<any> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  const result = await client.sql`
     SELECT 
       e.id AS encuesta_id,
       e.title AS encuesta_title,
