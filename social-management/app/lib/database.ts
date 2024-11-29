@@ -671,7 +671,7 @@ export async function submit_survey_response(
     }
 
     const sentimentData = await sentimentResponse.json();
-    const sentimiento = sentimentData.sentiment || "Neutral";
+    const sentimiento = sentimentData.sentiment || "Neutro";
     console.log("Sentimiento:", sentimentData);
     await client.sql`
             INSERT INTO answers (response_id, question_id, answer, sentimiento)
