@@ -44,8 +44,8 @@ export async function POST(request: Request) {
                 // Manejar casos donde 'from' o 'from.name' sean indefinidos
                 const userName = comment.from?.name || "Usuario anónimo";
 
-                console.log(comment.message);
-                console.log("Es critico? " + isCritical);
+                //console.log(comment.message);
+                //console.log("Es critico? " + isCritical);
 
                 return {
                     id: comment.id,

@@ -11,16 +11,16 @@ export async function GET() {
 
         const { token_autenticacion: accessToken, page_id: pageId } = account;
 
-        console.log(`Obteniendo conversaciones para la página de Instagram con ID: ${pageId}`);
+        //console.log(`Obteniendo conversaciones para la página de Instagram con ID: ${pageId}`);
 
         // Llamar al endpoint de Graph API para obtener conversaciones de Instagram
         const url = `https://graph.facebook.com/v20.0/${pageId}/conversations?platform=instagram&fields=senders,updated_time,snippet,unread_count&access_token=${accessToken}`;
-        console.log(`URL de solicitud: ${url}`);
+        //console.log(`URL de solicitud: ${url}`);
 
         const conversationsResponse = await fetch(url, { cache: 'no-store' });
         const conversationsData = await conversationsResponse.json();
 
-        console.log('Respuesta completa de la API:', conversationsData);
+        //console.log('Respuesta completa de la API:', conversationsData);
 
         if (!conversationsResponse.ok || !conversationsData.data) {
             throw new Error(
@@ -30,7 +30,7 @@ export async function GET() {
 
         // Validar si hay datos
         if (conversationsData.data.length === 0) {
-            console.log('No se encontraron conversaciones en la cuenta de Instagram.');
+            //console.log('No se encontraron conversaciones en la cuenta de Instagram.');
             return NextResponse.json([], { status: 200 });
         }
 
@@ -43,7 +43,7 @@ export async function GET() {
             updatedTime: conversation.updated_time,
         }));
 
-        console.log('Datos formateados para el frontend:', formattedConversations);
+        //console.log('Datos formateados para el frontend:', formattedConversations);
 
         return NextResponse.json(formattedConversations, { status: 200 });
     } catch (error) {
