@@ -152,43 +152,72 @@ export async function POST(req: Request) {
   }
 }
 
-async function publishMedia(creationId: string, accessToken: string, post: Post, instagramBusinessId: string) {
+async function publishMedia(
+  creationId: string,
+  accessToken: string,
+  post: Post,
+  instagramBusinessId: string
+) {
   const publishBody: any = {
     creation_id: creationId,
     access_token: accessToken,
   };
 
-  const publishResponse = await fetch(
-    `https://graph.facebook.com/v20.0/${instagramBusinessId}/media_publish`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(publishBody),
+  console.log('Intentando publicar en Instagram...');
+
+  const maxRetries = 5; // Número máximo de intentos
+  const delayBetweenRetries = 5000; // Tiempo en milisegundos entre intentos (5 segundos)
+  let attempt = 0;
+  let publishData: any;
+
+  while (attempt < maxRetries) {
+    const publishResponse = await fetch(
+      `https://graph.facebook.com/v20.0/${instagramBusinessId}/media_publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(publishBody),
+      }
+    );
+
+    publishData = await publishResponse.json();
+
+    if (publishData.id) {
+      console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
+      return new Response(
+        JSON.stringify({ success: true, postId: publishData.id }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    } else if (publishData.error && publishData.error.code === 4 && publishData.error.error_subcode === 2207051) {
+      // Ignorar este error específico de límite de solicitud y devolver éxito si es necesario
+      console.warn('Advertencia: Límite de solicitud alcanzado, pero la publicación fue exitosa.');
+      return new Response(
+        JSON.stringify({ success: true, warning: 'Rate limit reached, but the post was successful.' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    } else if (publishData.error && publishData.error.error_subcode === 2207027) {
+      // Error específico indicando que el contenido aún no está listo
+      console.warn(
+        'El archivo multimedia no está listo para publicar; esperando antes de reintentar...'
+      );
+      attempt += 1;
+      await new Promise((resolve) => setTimeout(resolve, delayBetweenRetries)); // Espera antes de reintentar
+    } else {
+      console.error('Error al intentar publicar en Instagram:', publishData);
+      return new Response(
+        JSON.stringify({ success: false, error: publishData }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
     }
-  );
-
-  const publishData = await publishResponse.json();
-
-  if (publishData.id) {
-    // Publicación exitosa
-    // console.log(`Publicación realizada con éxito. ID: ${publishData.id}`);
-    return new Response(
-      JSON.stringify({ success: true, postId: publishData.id }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  } else if (publishData.error && publishData.error.code === 4 && publishData.error.error_subcode === 2207051) {
-    // Ignorar este error específico de límite de solicitud y devolver éxito si es necesario
-    console.warn("Advertencia: Límite de solicitud alcanzado, pero la publicación fue exitosa.");
-    return new Response(
-      JSON.stringify({ success: true, warning: 'Rate limit reached, but the post was successful.' }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  } else {
-    // Otros errores
-    console.error("Error en la publicación de Instagram:", publishData);
-    return new Response(
-      JSON.stringify({ success: false, error: publishData }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
   }
+
+  // Si se agotaron los intentos y aún no está listo
+  console.error('El archivo multimedia no se pudo publicar después de varios intentos.');
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: 'El archivo multimedia no se pudo publicar después de varios intentos.',
+    }),
+    { status: 500, headers: { 'Content-Type': 'application/json' } }
+  );
 }
