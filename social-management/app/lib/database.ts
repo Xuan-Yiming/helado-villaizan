@@ -10,6 +10,7 @@ import {
   Answer,
   SocialAccount,
   UserAccount,
+  AuthenticatedUser
 } from "./types";
 import jwt from "jsonwebtoken";
 
@@ -30,30 +31,33 @@ async function connectToDatabase() {
 }
 
 // user account
-
 export async function authenticate_user(
   username: string,
   password: string
-): Promise<UserAccount> {
+): Promise<AuthenticatedUser> {
   await connectToDatabase();
   if (!client) {
     throw new Error("Database client is not initialized");
   }
-  const sql = `SELECT * FROM user_accounts WHERE username = ${username} AND password = ${password}`;
-  //console.log(sql);
-const result = await client.query(
-    "SELECT * FROM user_accounts WHERE username = $1 AND password = $2 AND active = true",
+
+  const result = await client.query(
+    `SELECT id, username, role, active FROM user_accounts WHERE username = $1 AND password = $2 AND active = true`,
     [username, password]
-);
+  );
+
   if (result.rows.length > 0) {
-    const auth = await generateToken(result.rows[0].id);
-    result.rows[0].token = auth.token;
-    result.rows[0].token_expiration = auth.expirationDate;
-    result.rows[0].password = "";
-    //console.log(result.rows[0]);
-    return result.rows[0] as UserAccount;
+    const user = result.rows[0];
+    const auth = await generateToken(user.id);
+
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      token: auth.token,
+      token_expiration: auth.expirationDate,
+    };
   } else {
-    throw new Error("User not found");
+    throw new Error("User not found or inactive");
   }
 }
 

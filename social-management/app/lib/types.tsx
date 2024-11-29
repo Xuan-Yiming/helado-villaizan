@@ -258,3 +258,11 @@ export interface Ad2 {
     id: string;
   };
 }
+
+export interface AuthenticatedUser {
+  id: string;
+  username: string;
+  role: string;
+  token: string;
+  token_expiration: Date;
+}
