@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { get_social_account } from "@/app/lib/database";
 
+type CityData = {
+    name: string; // Nombre de la ciudad
+    value: number; // Valor correspondiente a la ciudad
+};
+
 export async function GET(request: NextRequest) {
     try {
         const account = await get_social_account("instagram");
@@ -10,7 +15,7 @@ export async function GET(request: NextRequest) {
 
         const { token_autenticacion: accessToken, instagram_business_account: businessAccount } = account;
 
-        const url = `https://graph.facebook.com/v17.0/${businessAccount}/insights`;
+        const url = `https://graph.facebook.com/v21.0/${businessAccount}/insights`;
         const params = new URLSearchParams({
             metric: "follower_demographics",
             period: "lifetime",
@@ -30,31 +35,33 @@ export async function GET(request: NextRequest) {
             throw new Error(`Error al obtener datos de ciudades: ${data.error?.message}`);
         }
 
-        if (data.length === 0) {
+        // Validar datos anidados
+        const citiesData = data.data?.[0]?.total_value?.breakdowns?.[0]?.results || [];
+        if (!citiesData.length) {
             return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
         }
 
-        const citiesData = data.data[0]?.values[0]?.value || {};
-        const formattedData = Object.entries(citiesData).map(([city, count]) => ({
-            name: city,
-            value: count as number,
+        // Formatear los datos
+        let formattedData: CityData[] = citiesData.map((cityData: any) => ({
+            name: cityData.dimension_values[0], // Nombre de la ciudad
+            value: cityData.value, // Valor correspondiente a la ciudad
         }));
 
+        
 
-        if (formattedData.length === 0) {
-            return NextResponse.json([{ name: "Sin datos", value: 0 }], { status: 200 });
-        }
+        // Ordenar en orden descendente y seleccionar el top 10
+        formattedData = formattedData
+            .sort((a: CityData, b: CityData) => b.value - a.value)
+            .slice(0, 10);
+
         //console.log("Datos formateados para el frontend (Ciudades):", JSON.stringify(formattedData, null, 2));
 
-        // Ordenar y tomar las 10 principales
-        const topCities = formattedData.sort((a, b) => b.value - a.value).slice(0, 10);
-
-        return NextResponse.json(topCities, { status: 200 });
+        return NextResponse.json(formattedData, { status: 200 });
     } catch (error) {
-        console.error("Error en el endpoint ciudades:", error);
+        console.error("Error en el endpoint ciudades de Instagram:", error);
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Error desconocido" },
-            { status: 500 }
+            [{ name: "Sin datos", value: 0 }],
+            { status: 200 }
         );
     }
 }
