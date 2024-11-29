@@ -47,7 +47,7 @@ const Page = () => {
             const fbConversations = await fetch('/api/facebook/conversaciones').then(res => res.json());
             const igPublications = await fetch('/api/instagram/publicaciones?includeCommentsOnly=true').then(res => res.json());
             const fbPublications = await fetch('/api/facebook/publicaciones?includeCommentsOnly=true').then(res => res.json());
-    
+            //const igConversations = await fetch('/api/instagram/conversaciones').then(res => res.json());
             const combinedInteractions = [
                 ...fbPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
                 ...igPublications.map((pub: InteractionPublication) => ({ ...pub, type: 'publication' })),
@@ -56,6 +56,11 @@ const Page = () => {
                     type: 'message',
                     userId: msg.userId  // Asegúrate de que `userId` esté aquí
                 })),
+                /*...igConversations.map((msg: InteractionMessage) => ({
+                    ...msg,
+                    type: 'message',
+                    userId: msg.userId  // Asegúrate de que `userId` esté aquí
+                })),*/
             ];
     
             setAllConversations(combinedInteractions);
