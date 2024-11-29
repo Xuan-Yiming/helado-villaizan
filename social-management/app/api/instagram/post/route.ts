@@ -165,7 +165,7 @@ async function publishMedia(
 
   console.log('Intentando publicar en Instagram...');
 
-  const maxRetries = 5; // Número máximo de intentos
+  const maxRetries = 10; // Número máximo de intentos
   const delayBetweenRetries = 5000; // Tiempo en milisegundos entre intentos (5 segundos)
   let attempt = 0;
   let publishData: any;
