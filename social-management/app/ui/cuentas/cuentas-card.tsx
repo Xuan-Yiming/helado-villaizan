@@ -37,15 +37,15 @@ export default function CuentasCard({ user }: CuentasCardProps) {
 
   
     showConfirmation(
-      `Are you sure you want to ${isActive ? "deactivate" : "activate"} this user?`,
+      `¿Está seguro que desea ${isActive ? "desactivar" : "activar"} este usuario?`,
       async () => {
         try {
           if (isActive) {
             await deactivate_user(user.id);
-            showSuccess("User deactivated successfully!");
+            showSuccess("Usuario desactivado exitosamente!");
           } else {
             await activate_user(user.id);
-            showSuccess("User activated successfully!");
+            showSuccess("Usuario activado exitosamente!");
           }
           setIsActive(!isActive);
         } catch (error) {
@@ -60,12 +60,12 @@ export default function CuentasCard({ user }: CuentasCardProps) {
   const handleDelete = async () => {
 
     showConfirmation(
-      "Are you sure you want to delete this user?",
+      "¿Está seguro que desea eliminar este usuario?",
       async () => {
         setIsLoading(true);
         try {
           await delete_user(user.id);
-          showSuccess("User deleted successfully!");
+          showSuccess("Usuario eliminado exitosamente!");
           window.location.reload();
         } catch (error) {
           showError("Error deleting user: " + error);

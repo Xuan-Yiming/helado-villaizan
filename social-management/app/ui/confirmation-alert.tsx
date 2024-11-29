@@ -25,11 +25,11 @@ const ConfirmationAlert: React.FC = () => {
         <div className="mt-4 flex justify-end space-x-2">
           {onCancel && (
             <button onClick={handleCancel} className="p-2 bg-gray-500 text-white rounded">
-              Cancel
+              Cancelar
             </button>
           )}
           <button onClick={handleConfirm} className="p-2 bg-red-500 text-white rounded">
-            Confirm
+            Confirmar
           </button>
         </div>
       </div>

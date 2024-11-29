@@ -33,20 +33,14 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     icon: <UserGroupIcon className='w-6' />,
     submenu: true,
     subMenuItems: [
-      { title: 'Datos', path: '/pages/preferencias-de-clientes/datos' },
+      { title: 'Datos de ventas', path: '/pages/preferencias-de-clientes/datos' },
       { title: 'Encuestas', path: '/pages/preferencias-de-clientes/encuestas' },
     ],
   },
   {
     title: 'Análisis',
-    path: '/pages/analisis-reporte',
-    icon: <PresentationChartLineIcon className='w-6' />,
-    submenu: true,
-    subMenuItems: [
-      { title: 'Principal', path: '/pages/analisis-reporte' },
-      { title: 'Redes', path: '/pages/analisis-reporte/redes' },
-      { title: 'Ventas', path: '/pages/analisis-reporte/ventas' },
-    ],
+    path: '/pages/analisis-reporte/redes',
+    icon: <PresentationChartLineIcon className='w-6' />,    
   },
   {
     title: 'Cuentas',
@@ -54,8 +48,8 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     icon: <UserIcon className='w-6' />,
     submenu: true,
     subMenuItems: [
-      { title: 'Redes', path: '/pages/cuentas/redes' },
-      { title: 'Empleados', path: '/pages/cuentas/empleados' },
+      { title: 'Redes sociales', path: '/pages/cuentas/redes' },
+      { title: 'Usuarios', path: '/pages/cuentas/empleados' },
     ],
   },
   {

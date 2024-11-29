@@ -25,7 +25,7 @@ const initialAccounts: Account[] = [
     { name: 'Facebook', socialAccount: undefined, linked: false },
     { name: 'Instagram', socialAccount: undefined, linked: false },
     { name: 'TikTok', socialAccount: undefined, linked: false },
-    { name: 'Google', socialAccount: undefined, linked: false },
+    //{ name: 'Google', socialAccount: undefined, linked: false },
 ];
 
 export default function Page() {
@@ -63,9 +63,9 @@ const handleLink = async (name: string, linked: boolean) => {
             case 'TikTok':
                 router.push('/api/tiktok/logout');
                 break;
-            case 'Google':
-                router.push('/api/google/logout');
-                break;
+            //case 'Google':
+                //router.push('/api/google/logout');
+                //break;
             default:
                 showError('Plataforma desconocida para logout');
         }
@@ -85,9 +85,9 @@ const handleLink = async (name: string, linked: boolean) => {
                 //console.log('Entra a TikTok');
                 router.push('/api/tiktok/login');
                 break;
-            case 'Google':
-                router.push('/api/google/login');
-                break;
+            //case 'Google':
+                //router.push('/api/google/login');
+                //break;
             default:
                 showError('Plataforma desconocida para login');
         }
@@ -103,8 +103,8 @@ const handleLink = async (name: string, linked: boolean) => {
                 return <InstagramLogo />;
             case 'TikTok':
                 return <TiktokLogo />;
-            case 'Google':
-                return <GoogleLogo />;
+            //case 'Google':
+                //return <GoogleLogo />;
             default:
                 return null;
         }
