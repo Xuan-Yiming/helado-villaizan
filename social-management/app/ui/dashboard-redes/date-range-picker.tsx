@@ -5,6 +5,9 @@ import dayjs from 'dayjs';
 import "react-datepicker/dist/react-datepicker.css";
 import './date-range-picker.css';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import { useSuccess } from "@/app/context/successContext";
+import { useError } from "@/app/context/errorContext";
+import { useConfirmation} from "@/app/context/confirmationContext";
 
 interface DateRangePickerProps {
     onDateRangeChange: (startDate: Date, endDate: Date) => void;
@@ -29,6 +32,10 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
     const [quickSelect, setQuickSelect] = useState<string>('Definir rango de fechas');
     const [tempQuickSelect, setTempQuickSelect] = useState<string>('Definir rango de fechas');
     const [isCustomDate, setIsCustomDate] = useState(false);
+
+    const { showError } = useError(); // Para mensajes de error
+    const { showSuccess } = useSuccess(); // Para mensajes de éxito
+    const { showConfirmation, showAlert } = useConfirmation();
 
     useEffect(() => {
         if (selectedRange) {
@@ -110,22 +117,22 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
             const today = dayjs().startOf('day');
     
             if (!startDate.isValid() || !endDate.isValid()) {
-                alert("Por favor ingresa fechas válidas.");
+                showAlert("Por favor ingresa fechas válidas.",() => {});
                 return;
             }
     
             if (startDate > endDate) {
-                alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+                showAlert("La fecha de inicio no puede ser posterior a la fecha de fin.",() => {});
                 return;
             }
     
-            if (parseInt(tempStartYear) < 2020 || parseInt(tempEndYear) < 2020) {
-                alert("No se permiten años menores a 2020.");
+            if (parseInt(tempStartYear) < 2021 || parseInt(tempEndYear) < 2021) {
+                showAlert("No se permiten años menores a 2021.",() => {});
                 return;
             }
     
             if (endDate.isAfter(today) || startDate.isAfter(today)) {
-                alert("Las fechas no pueden ser futuras.");
+                showAlert("Las fechas no pueden ser futuras.",() => {});
                 return;
             }
     
@@ -138,7 +145,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onDateRangeChange, se
             onDateRangeChange(startDate.toDate(), endDate.toDate());
             setShowPicker(false);
         } else {
-            alert("Por favor completa todos los campos de fecha.");
+            showAlert("Por favor completa todos los campos de fecha.",() => {});
         }
     };
     

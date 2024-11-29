@@ -8,6 +8,9 @@ import CrecimientoSection from "./crecimiento-section";
 import AudienceSection from "./audience-section";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useSuccess } from "@/app/context/successContext";
+import { useError } from "@/app/context/errorContext";
+import { useConfirmation} from "@/app/context/confirmationContext";
 
 const MetricsPage = () => {
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -17,6 +20,9 @@ const MetricsPage = () => {
     const [appliedDateRange, setAppliedDateRange] = useState<{ start: Date; end: Date } | null>(null);
     const reportRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(false); // Añade el estado de loading
+    const { showError } = useError(); // Para mensajes de error
+    const { showSuccess } = useSuccess(); // Para mensajes de éxito
+    const { showConfirmation, showAlert } = useConfirmation();
 
     useEffect(() => {
         setNetwork("facebook");
@@ -45,7 +51,7 @@ const MetricsPage = () => {
 
     const handleAplicarFiltro = () => {
         if (!dateRange) {
-            alert("Por favor selecciona un rango de fechas antes de aplicar el filtro.");
+            showAlert("Por favor selecciona un rango de fechas antes de aplicar el filtro.",() => {});
             return;
         }
         setLoading(true); // Activa el estado de carga
@@ -87,7 +93,7 @@ const MetricsPage = () => {
             // Guarda el archivo PDF
             pdf.save(`Reporte_${appliedNetwork}_${new Date().toISOString().split("T")[0]}.pdf`);
         } else {
-            alert("El contenido no está disponible para exportar.");
+            showAlert("El contenido no está disponible para exportar.",() => {});
         }
     };
     
