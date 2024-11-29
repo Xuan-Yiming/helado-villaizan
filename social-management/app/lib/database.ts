@@ -944,3 +944,22 @@ export async function getSurveyById(surveyId: string): Promise<any> {
 
   return survey;
 }
+
+export async function update_answer_sentiment(id: string, sentimiento: string): Promise<void> {
+    await connectToDatabase();
+    if (!client) {
+        throw new Error("Database client is not initialized");
+    }
+
+    try {
+        // Consulta SQL para actualizar el sentimiento
+        await client.sql`
+            UPDATE answers
+            SET sentimiento = ${sentimiento}
+            WHERE id = ${id}
+        `;
+    } catch (error) {
+        console.error("Error actualizando el sentimiento en la base de datos:", error);
+        throw new Error("No se pudo actualizar el sentimiento");
+    }
+}
