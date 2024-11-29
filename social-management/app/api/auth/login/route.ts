@@ -4,34 +4,42 @@ import { NextResponse } from "next/server";
 import { authenticate_user } from "@/app/lib/database";
 
 export async function POST(request: Request) {
-  const { email, password } = await request.json();
-  // para pruebas
-  // Replace with your external API URL for authentication
-
   try {
+    const { email, password } = await request.json();
+
     if (!email || !password) {
       return NextResponse.json(
         { success: false, error: "Email and password are required" },
         { status: 400 }
       );
     }
-    const data = await authenticate_user(email, password);
-    // Successful authentication, return the token or set a cookie
 
-    if (!data) {
-      return NextResponse.json(
-        { success: false, error: "Authentication failed" },
-        { status: 401 }
-      );
-    }
-    // You can set a cookie or send the token to the client
-    const res = NextResponse.json({ success: true, data });
+    const user = await authenticate_user(email, password);
 
-    return res;
+    const response = NextResponse.json({
+      success: true,
+      data: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        token: user.token,
+        token_expiration: user.token_expiration,
+      },
+    });
+
+    // Establecer la cookie `user_id`
+    response.cookies.set("user_id", user.id, {
+      httpOnly: false, // Cambiar a true en producción
+      path: "/",
+      maxAge: 3600, // 1 hora
+    });
+
+    return response;
   } catch (error) {
+    console.error("Authentication error:", error);
     return NextResponse.json(
       { success: false, error: "Authentication failed" },
-      { status: 500 }
+      { status: 401 }
     );
   }
 }

@@ -105,6 +105,7 @@ export type Response = {
 export type Answer = {
   question_id: string;
   answer: string;
+  sentimiento?: string;
 }
 
 /* INTERACCIONES */
@@ -257,4 +258,12 @@ export interface Ad2 {
   creative: {
     id: string;
   };
+}
+
+export interface AuthenticatedUser {
+  id: string;
+  username: string;
+  role: string;
+  token: string;
+  token_expiration: Date;
 }

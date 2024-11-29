@@ -106,6 +106,7 @@ async function seedDatabase() {
       response_id UUID REFERENCES responses(id),
       question_id UUID REFERENCES questions(id),
       answer TEXT NOT NULL
+      sentimiento TEXT NOT NULL
     );
   `;
 

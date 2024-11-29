@@ -10,6 +10,7 @@ import {
   Answer,
   SocialAccount,
   UserAccount,
+  AuthenticatedUser
 } from "./types";
 import jwt from "jsonwebtoken";
 
@@ -30,30 +31,33 @@ async function connectToDatabase() {
 }
 
 // user account
-
 export async function authenticate_user(
   username: string,
   password: string
-): Promise<UserAccount> {
+): Promise<AuthenticatedUser> {
   await connectToDatabase();
   if (!client) {
     throw new Error("Database client is not initialized");
   }
-  const sql = `SELECT * FROM user_accounts WHERE username = ${username} AND password = ${password}`;
-  //console.log(sql);
-const result = await client.query(
-    "SELECT * FROM user_accounts WHERE username = $1 AND password = $2 AND active = true",
+
+  const result = await client.query(
+    `SELECT id, username, role, active FROM user_accounts WHERE username = $1 AND password = $2 AND active = true`,
     [username, password]
-);
+  );
+
   if (result.rows.length > 0) {
-    const auth = await generateToken(result.rows[0].id);
-    result.rows[0].token = auth.token;
-    result.rows[0].token_expiration = auth.expirationDate;
-    result.rows[0].password = "";
-    //console.log(result.rows[0]);
-    return result.rows[0] as UserAccount;
+    const user = result.rows[0];
+    const auth = await generateToken(user.id);
+
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      token: auth.token,
+      token_expiration: auth.expirationDate,
+    };
   } else {
-    throw new Error("User not found");
+    throw new Error("User not found or inactive");
   }
 }
 
@@ -651,9 +655,27 @@ export async function submit_survey_response(
 
   // Insert each answer into the answers table
   for (const answer of responseQ.answers) {
+    const sentimentResponse = await fetch(
+      "http://flask.heladosvillaizan.tech/clasificar-sentimiento",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ comentario: answer.answer }),
+      }
+    );
+
+    if (!sentimentResponse.ok) {
+      throw new Error("Error fetching sentiment from the API");
+    }
+
+    const sentimentData = await sentimentResponse.json();
+    const sentimiento = sentimentData.sentiment || "Neutro";
+    console.log("Sentimiento:", sentimentData);
     await client.sql`
-            INSERT INTO answers (response_id, question_id, answer)
-            VALUES (${responseId}, ${answer.question_id}, ${answer.answer})
+            INSERT INTO answers (response_id, question_id, answer, sentimiento)
+            VALUES (${responseId}, ${answer.question_id}, ${answer.answer}, ${sentimiento})
         `;
   }
 }
@@ -835,4 +857,90 @@ export async function get_surveys_between_dates(startDate: string, endDate: stri
     console.error("Error querying surveys between dates:", error);
     throw new Error("Database query failed");
   }
+}
+
+export async function getSurveyById(surveyId: string): Promise<any> {
+  await connectToDatabase();
+  if (!client) {
+    throw new Error("Database client is not initialized");
+  }
+
+  const result = await client.sql`
+    SELECT 
+      e.id AS encuesta_id,
+      e.title AS encuesta_title,
+      e.description AS encuesta_description,
+      e.status AS encuesta_status,
+      e.start_date AS encuesta_start_date,
+      e.end_date AS encuesta_end_date,
+      q.id AS question_id,
+      q.title AS question_title,
+      q.type AS question_type,
+      q.required AS question_required,
+      q.options AS question_options,
+      r.id AS response_id,
+      r.date AS response_date,
+      r.ip AS response_ip,
+      a.id AS answer_id,
+      a.answer AS answer_text,
+      a.sentimiento AS answer_sentiment -- Incluye el campo sentimiento
+    FROM encuestas e
+    LEFT JOIN questions q ON e.id = q.encuesta_id
+    LEFT JOIN responses r ON e.id = r.encuesta_id
+    LEFT JOIN answers a ON q.id = a.question_id AND r.id = a.response_id
+    WHERE e.id = ${surveyId} -- Filtra solo la encuesta con el ID proporcionado
+    ORDER BY e.id, q.id, r.id;
+  `;
+
+  if (result.rows.length === 0) {
+    throw new Error(`Survey with ID ${surveyId} not found`);
+  }
+
+  // Transformación a estructura jerárquica
+  const survey = result.rows.reduce(
+    (acc: any, row: any) => {
+      if (!acc.id) {
+        acc = {
+          id: row.encuesta_id,
+          title: row.encuesta_title,
+          description: row.encuesta_description,
+          status: row.encuesta_status,
+          start_date: row.encuesta_start_date,
+          end_date: row.encuesta_end_date,
+          questions: [],
+        };
+      }
+
+      let question = acc.questions.find((q: any) => q.id === row.question_id);
+      if (!question) {
+        question = {
+          id: row.question_id,
+          title: row.question_title,
+          type: row.question_type,
+          required: row.question_required,
+          options: row.question_options,
+          answers: [],
+        };
+        acc.questions.push(question);
+      }
+
+      if (row.answer_id) {
+        question.answers.push({
+          id: row.answer_id,
+          text: row.answer_text,
+          sentiment: row.answer_sentiment, // Incluye el sentimiento en la respuesta
+          response: {
+            id: row.response_id,
+            date: row.response_date,
+            ip: row.response_ip,
+          },
+        });
+      }
+
+      return acc;
+    },
+    { id: null }
+  );
+
+  return survey;
 }
