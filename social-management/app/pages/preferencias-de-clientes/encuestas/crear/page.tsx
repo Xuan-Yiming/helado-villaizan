@@ -8,18 +8,22 @@ import EncuestaHeader from '@/app/ui/encuesta/encuesta-header';
 import EncuestaNode from '@/app/ui/encuesta/encuesta-node';
 
 import { Encuesta, Question } from '@/app/lib/types';
-import { load_survey_by_id } from '@/app/lib/database';
-import { upload_survey } from '@/app/lib/database';
+import { load_survey_by_id, upload_survey } from '@/app/lib/database';
+import { getUserIdFromCookies } from '@/app/lib/auth'; // Importa la función para obtener el user_id
 
 function EncuestaPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
     const router = useRouter();
-    
+
     const [encuesta, setEncuesta] = useState<Encuesta | null>(null);
+    const [userId, setUserId] = useState<string | null>(null); // Nuevo estado para el User ID
 
     useEffect(() => {
         const fetchEncuesta = async () => {
+            const userIdFromCookies = getUserIdFromCookies(); // Obtiene el ID dinámico desde las cookies
+            setUserId(userIdFromCookies); // Guarda el ID en el estado para mostrarlo en pantalla
+
             if (!id) {
                 setEncuesta({
                     id: '',
@@ -27,16 +31,16 @@ function EncuestaPage() {
                     status: 'activo',
                     start_date: '',
                     end_date: '',
-                    questions: []
+                    creator_id: userIdFromCookies || '', // Asigna el ID dinámico
+                    questions: [],
                 });
                 return;
             }
             try {
-                const data = await load_survey_by_id(id,false);
-                //console.log('Encuesta:', data);
+                const data = await load_survey_by_id(id, false);
                 setEncuesta(data);
             } catch (error) {
-                throw new Error('Error fetching encuesta:');
+                console.error('Error fetching encuesta:', error);
             }
         };
 
@@ -44,7 +48,7 @@ function EncuestaPage() {
     }, [id]);
 
     function handleSave() {
-        //console.log('Guardando encuesta...');
+        console.log('Guardando encuesta...');
     }
 
     function handleAddQuestion() {
@@ -52,7 +56,7 @@ function EncuestaPage() {
             const updatedQuestions = [
                 ...(encuesta.questions || []),
                 {
-                    id: `${Date.now()}`, // Generate a unique ID for the new question
+                    id: `${Date.now()}`, // Genera un ID único para la nueva pregunta
                     title: '',
                     type: 'open_text',
                 },
@@ -84,24 +88,26 @@ function EncuestaPage() {
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         try {
-            //console.log('Submitting encuesta:', JSON.stringify(encuesta));
-            
             if (encuesta) {
                 await upload_survey(encuesta);
-                
                 router.push('/pages/preferencias-de-clientes/encuestas');
             }
-            // Perform any necessary actions, such as sending data to an API
         } catch (error) {
-            throw new Error('Error guardando la encuesta');
+            console.error('Error guardando la encuesta:', error);
         }
     }
 
     return (
-        <main>            
+        <main>
             <div className="flex justify-between items-center">
                 <h1 className="text-xl font-bold">Detalle de la Encuesta</h1>
+            </div>
 
+            {/* Muestra el User ID en pantalla */}
+            <div className="p-4">
+                <p className="text-gray-600">
+                    <strong>User ID obtenido de cookies:</strong> {userId || 'No disponible'}
+                </p>
             </div>
 
             <form className="p-4 mx-auto sm:w-full lg:w-1/2" onSubmit={handleSubmit}>
@@ -121,7 +127,7 @@ function EncuestaPage() {
 
                 <div className="flex justify-center mt-4">
                     <button
-                        type="button" // Prevent form validation
+                        type="button"
                         className="flex items-center ml-5 rounded px-4 py-2 bg-black text-white"
                         onClick={handleAddQuestion}
                     >

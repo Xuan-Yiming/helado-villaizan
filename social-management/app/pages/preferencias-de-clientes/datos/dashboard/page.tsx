@@ -6,6 +6,13 @@ import {
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+const dataPie = [
+  { name: 'EcoGreen', value: 38.6 },
+  { name: 'Canada', value: 22.5 },
+];
 
 interface CompraSemana {
   dia: string;
@@ -29,22 +36,20 @@ interface CiudadVentas {
   ventas: ProductoVenta[];
 }
 
-const dataPie = [
-  { name: 'Promocion 1', value: 38.6 },
-  { name: 'Promocion 2', value: 22.5 },
-];
-
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const Dashboard = () => {
 
   // Estado para almacenar los datos del gráfico de barras
   const searchParams = useSearchParams();
-  const [ciudadesData, setCiudadesData] = useState([]);
+  const [promocionesData, setPromocionesData] = useState<{ name: string; value: string; total: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ciudadesData, setCiudadesData] = useState<{ ciudad: string; total_vendido: number }[]>([]);
   const [cityNameMap, setCityNameMap] = useState<{ [key: string]: string }>({});
   const [barData, setBarData] = useState<ProductoData[]>([]);
   const [dataLine, setDataLine] = useState([]);
-
+  
+  const [totalGanancia, setTotalGanancia] = useState<number | null>(null);
   const [totalVentas, setTotalVentas] = useState<number | null>(null); // Estado para cantidad de ventas
   const [totalProductos, setTotalProductos] = useState<number | null>(null);
   const [totalCiudades, setTotalCiudades] = useState<number | null>(null);
@@ -104,6 +109,22 @@ const Dashboard = () => {
       }
     };
 
+      // Función para obtener la cantidad total de ganancia en soles desde la API
+  const fetchTotalGanancia = async () => {
+    try {
+      if (startDate && endDate) {
+        const response = await axios.get(
+          /* CAMBIAR LA API POR LA QUE SIOUXIE DE */
+          `https://villaizan-social.onrender.com/ganancia-en-soles/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+        );
+        setTotalGanancia(response.data.total_ganancia || 0); // Suponiendo que la API devuelve { total_ganancia: <número> }
+      }
+    } catch (error) {
+      console.error("Error fetching total ganancia:", error);
+      setTotalGanancia(0); // Valor predeterminado en caso de error
+    }
+  };
+
   const fetchFrecuenciaCompras = async () => {
     try {
       const response = await axios.get(`https://villaizan-social.onrender.com/frecuencia-compras-dia-semana/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
@@ -119,13 +140,14 @@ const Dashboard = () => {
     }
   };
 
+
   // Función para obtener el mapeo de nombres de ciudades
   const fetchCityNames = async () => {
     try {
       const response = await axios.get("https://villaizan-social.onrender.com/ciudades/");
       const cityMap: { [key: string]: string } = {};
       response.data.forEach((city: { id: string; nombre: string }) => {
-        cityMap[city.id] = city.nombre; // Asegúrate de que los nombres de los campos coincidan
+        cityMap[city.id] = city.nombre;
       });
       setCityNameMap(cityMap);
       console.log("cityNameMap cargado:", cityMap); // Verifica el contenido del mapeo
@@ -134,25 +156,25 @@ const Dashboard = () => {
     }
   };
 
-// Función para obtener la cantidad de ventas por ciudad desde la API
-const fetchCiudadesData = async () => {
-  try {
-    if (startDate && endDate && Object.keys(cityNameMap).length > 0) { // Asegurarse de que cityNameMap esté cargado
-      const response = await axios.get(`https://villaizan-social.onrender.com/ventas-por-producto-ciudad/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
-      console.log("cityNameMap antes de formatear:", cityNameMap); // Verifica si el mapeo está disponible
-
-      const formattedData = response.data.map((ciudad: CiudadVentas) => ({
-        ciudad: cityNameMap[ciudad.ciudad_id] || "Ciudad desconocida",
-        total_vendido: ciudad.ventas.reduce((sum, producto: ProductoVenta) => sum + (producto.total_vendido || 0), 0),
-      }));
-
-      setCiudadesData(formattedData);
+  const fetchCiudadesData = async () => {
+    try {
+      if (startDate && endDate && Object.keys(cityNameMap).length > 0) {
+        const response = await axios.get(`https://villaizan-social.onrender.com/ventas-por-producto-ciudad/?fecha_inicio=${startDate}&fecha_fin=${endDate}`);
+        console.log("Usando cityNameMap en fetchCiudadesData:", cityNameMap);
+  
+        const formattedData = response.data.map((ciudad: CiudadVentas) => ({
+          ciudad: cityNameMap[ciudad.ciudad_id] || "Ciudad desconocida",
+          total_vendido: ciudad.ventas.reduce((sum, producto: ProductoVenta) => sum + (producto.total_vendido || 0), 0),
+        }));
+  
+        console.log("Datos formateados de ciudades:", formattedData);
+        setCiudadesData(formattedData);
+      }
+    } catch (error) {
+      console.error("Error fetching ciudades data:", error);
+      setCiudadesData([]);
     }
-  } catch (error) {
-    console.error("Error fetching ciudades data:", error);
-    setCiudadesData([]);
-  }
-};
+  };
 
   // Función para obtener datos de la API
   const fetchBarData = async () => {
@@ -184,59 +206,157 @@ const fetchCiudadesData = async () => {
     }
   };
 
+  // Función para obtener los datos de la API
+  const fetchPromocionesData = async () => {
+    try {
+      if (startDate && endDate) {
+        const response = await axios.get(
+          `https://villaizan-social.onrender.com/ventas-por-promocion/?fecha_inicio=${startDate}&fecha_fin=${endDate}`
+        );
+
+        console.log("Raw API Response:", response.data);
+
+        const totalVentas = response.data.reduce(
+          (acc: number, promo: { id_promocion: string; total_ventas: number }) => acc + promo.total_ventas,
+          0
+        );
+
+        console.log("Total Ventas:", totalVentas);
+  
+        const formattedData = response.data.map((promo: { id_promocion: string; total_ventas: number }) => ({
+          name: `Promoción ${promo.id_promocion}`,
+          value: parseFloat(((promo.total_ventas / totalVentas) * 100).toFixed(2)), // Convertir a número
+          total: promo.total_ventas,
+        }));
+
+        console.log("Formatted Data:", formattedData);
+  
+        setPromocionesData(formattedData);
+        setLoading(false);
+
+      }
+    } catch (error) {
+      console.error('Error fetching promociones data:', error);
+      setPromocionesData([]);
+      setLoading(false);
+    }
+  };
+
+
+    // Función para exportar a PDF
+    const exportToPDF = async () => {
+    const dashboardElement = document.getElementById('dashboard-content'); // Selecciona todo el contenido del dashboard
+    const exportButton = document.getElementById('export-button'); // Selecciona el botón
+  
+    // Oculta el botón antes de exportar
+    if (exportButton) {
+      exportButton.style.display = 'none';
+    }  
+    const input = document.getElementById('dashboard-content'); // Selecciona el elemento del dashboard
+    if (input) {
+      const canvas = await html2canvas(input);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 190; // Ancho de la imagen en el PDF
+      const pageHeight = 295; // Alto de la página en el PDF
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 10;
+
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save('dashboard_report.pdf'); // Guarda el archivo PDF con el nombre indicado
+      if (exportButton) {
+        exportButton.style.display = 'block';
+      }
+    }
+  };
+  useEffect(() => {
+    fetchPromocionesData();
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    console.log("Updated Promociones Data:", promocionesData);
+  }, [promocionesData]);
   // useEffect para obtener los datos de la API cuando el componente se monta
   useEffect(() => {
     const fetchData = async () => {
-      await fetchCityNames(); // Carga el mapa de nombres de ciudades primero
-      await fetchCiudadesData(); // Luego, llama a fetchCiudadesData para utilizar el mapa de nombres
+      await fetchCityNames();
     };
-  
-    fetchData(); // Ejecuta el fetchData para asegurar la sincronización.
+    fetchData();
+
+    fetchData();
     fetchTotalVentas();
     fetchTotalProductos();
     fetchTotalCiudades();
     fetchTotalClientes();
+    fetchTotalGanancia();
     fetchFrecuenciaCompras();
     fetchBarData();
-  }, [startDate, endDate]); 
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    const fetchDataForCiudades = async () => {
+      if (Object.keys(cityNameMap).length > 0) {
+        await fetchCiudadesData();
+      }
+    };
+    fetchDataForCiudades();
+  }, [cityNameMap, startDate, endDate]);
 
   return (
-    <div className="container mx-auto p-4">
+    <div id="dashboard-content" className="container mx-auto p-4">
       <div className="bg-gray-200 rounded-lg p-4 mb-6">
         <div className="flex items-center">
           <div className="bg-gray-500 rounded-full h-4 w-4 mr-2"></div>
           <h2 className="font-bold text-xl">Procesamiento de Datos de Ventas
-             ({startDate ? startDate : "Fecha de inicio no disponible"} - {endDate ? endDate : "Fecha de fin no disponible"})</h2>
+             ({startDate ? startDate : "Fecha de inicio no disponible"} / {endDate ? endDate : "Fecha de fin no disponible"})</h2>
         </div>
         <p className="text-gray-600">Data procesada</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-5 gap-4 mb-6">
         <div className="bg-red-100 rounded-lg p-4 text-center">
-        <p className="text-red-500 font-bold text-2xl">
-        {typeof totalVentas === "number" ? totalVentas.toLocaleString() : "Cargando..."}
+          <p className="text-red-500 font-bold text-2xl">
+            {typeof totalVentas === "number" ? totalVentas.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Cantidad de ventas</p>
         </div>
         <div className="bg-blue-100 rounded-lg p-4 text-center">
           <p className="text-blue-500 font-bold text-2xl">
-          {typeof totalProductos === "number" ? totalProductos.toLocaleString() : "Cargando..."}
+            {typeof totalProductos === "number" ? totalProductos.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Productos vendidos</p>
         </div>
         <div className="bg-red-100 rounded-lg p-4 text-center">
           <p className="text-red-500 font-bold text-2xl">
-          {typeof totalCiudades === "number" ? totalCiudades.toLocaleString() : "Cargando..."}
+            {typeof totalCiudades === "number" ? totalCiudades.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Ubicaciones</p>
         </div>
         <div className="bg-blue-100 rounded-lg p-4 text-center">
           <p className="text-blue-500 font-bold text-2xl">
-          {typeof totalClientes === "number" ? totalClientes.toLocaleString() : "Cargando..."}
+            {typeof totalClientes === "number" ? totalClientes.toLocaleString() : "Cargando..."}
           </p>
           <p className="text-gray-600">Clientes</p>
         </div>
+        <div className="bg-red-100 rounded-lg p-4 text-center">
+          <p className="text-red-500 font-bold text-2xl">
+            {/* Aquí puedes agregar el dato correspondiente al quinto bloque */}
+            {typeof totalGanancia === "number" ? `${totalGanancia.toLocaleString()}` : "Cargando..."}
+          </p>
+          <p className="text-gray-600">Soles</p>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-lg p-6 shadow-md col-span-2">
@@ -256,13 +376,17 @@ const fetchCiudadesData = async () => {
         <div className="bg-white rounded-lg p-6 shadow-md">
           <h3 className="font-bold text-lg mb-4">Zonas y demanda</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={ciudadesData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ciudad" label={{ value: "Ciudad", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Total Vendido", angle: -90, position: "insideLeft" }} />
-              <Tooltip />
-              <Bar dataKey="total_vendido" fill="#82ca9d" />
-            </BarChart>
+            {ciudadesData.length > 0 ? (
+              <BarChart data={ciudadesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="ciudad" label={{ value: "Ciudad", position: "insideBottom", offset: -5 }} />
+                <YAxis label={{ value: "Total Vendido", angle: -90, position: "insideLeft" }} />
+                <Tooltip />
+                <Bar dataKey="total_vendido" fill="#82ca9d" />
+              </BarChart>
+            ) : (
+              <p>Cargando datos...</p>
+            )}
           </ResponsiveContainer>
         </div>
       </div>
@@ -282,25 +406,100 @@ const fetchCiudadesData = async () => {
         </div>
         <div className="bg-white rounded-lg p-6 shadow-md">
           <h3 className="font-bold text-lg mb-4">Promociones con mayor alcance</h3>
+            <ResponsiveContainer width="100%" height={300}>
+            {promocionesData.length === 0 ? (
+              <p>Cargando datos...</p>
+            ) : (
+              <PieChart width={400} height={300}>
+                  <Pie
+                    data={promocionesData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => `${value}%`}
+                  >
+                  {promocionesData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value, name, props) => [`${props.payload.total} ventas`, name]} />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value: string) =>
+                    `${value} (${promocionesData.find((d) => d.name === value)?.value}%)`
+                  }
+                />
+              </PieChart>
+            )}
+            </ResponsiveContainer>
+
+
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-6 gap-y-8 shadow-md mt-6">
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h3 className="font-bold text-lg mb-4">Frecuencia de edades</h3>
+            <ResponsiveContainer width="100%" height={300}>
+            {promocionesData.length === 0 ? (
+              <p>Cargando datos...</p>
+            ) : (
+              <PieChart width={400} height={300}>
+                  <Pie
+                    data={promocionesData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => `${value}%`}
+                  >
+                  {promocionesData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value, name, props) => [`${props.payload.total} ventas`, name]} />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value: string) =>
+                    `${value} (${promocionesData.find((d) => d.name === value)?.value}%)`
+                  }
+                />
+              </PieChart>
+            )}
+            </ResponsiveContainer>
+
+
+        </div>
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h3 className="font-bold text-lg mb-4">Clientes con mayor cantidad de pedidos</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={dataPie}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label
-              >
-                {dataPie.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-            </PieChart>
+            <BarChart data={barData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="nombre" label={{ value: "Producto", position: "insideBottom", offset: -5 }} />
+              <YAxis dataKey="total_ventas" label={{ value: "Cantidad Total de Ventas", angle: -90, position: "insideCenter" }} />
+              <Tooltip />
+              <Bar dataKey="total_ventas" fill="#82ca9d" />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
+
+      <div className="flex justify-center mt-8">
+        <button 
+          id="export-button" // ID para identificar el botón
+          onClick={exportToPDF}
+          className="bg-blue-500 text-white font-bold py-2 px-4 rounded">
+          Exportar a PDF
+        </button>
+      </div>
+
     </div>
   );
 };

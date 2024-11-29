@@ -128,6 +128,9 @@ importers:
       request-ip:
         specifier: ^3.3.0
         version: 3.3.0
+      social-management:
+        specifier: 'file:'
+        version: 'file:'
       tailwindcss:
         specifier: ^3.4.13
         version: 3.4.13
@@ -135,6 +138,12 @@ importers:
         specifier: ^5.6.2
         version: 5.6.2
     devDependencies:
+      '@types/html2canvas':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@types/jspdf':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@types/node':
         specifier: ^22.7.4
         version: 22.7.4
@@ -392,8 +401,16 @@ packages:
   '@types/http-errors@1.8.2':
     resolution: {integrity: sha512-EqX+YQxINb+MeXaIqYDASb6U6FCHbWjkj4a1CKDBks3d/QiB2+PqBLyO72vLDgAO1wUI4O+9gweRcQK11bTL/w==}
 
+  '@types/html2canvas@1.0.0':
+    resolution: {integrity: sha512-BJpVf+FIN9UERmzhbtUgpXj6XBZpG67FMgBLLoj9HZKd9XifcCpSV+UnFcwTZfEyun4U/KmCrrVOG7829L589w==}
+    deprecated: This is a stub types definition. html2canvas provides its own type definitions, so you do not need this installed.
+
   '@types/jsonwebtoken@9.0.7':
     resolution: {integrity: sha512-ugo316mmTYBl2g81zDFnZ7cfxlut3o+/EQdaP7J8QN2kY6lJ22hmQYCK5EHcJHbrW+dkCGSCPgbG8JtYj6qSrg==}
+
+  '@types/jspdf@2.0.0':
+    resolution: {integrity: sha512-oonYDXI4GegGaG7FFVtriJ+Yqlh4YR3L3NVDiwCEBVG7sbya19SoGx4MW4kg1MCMRPgkbbFTck8YKJL8PrkDfA==}
+    deprecated: This is a stub types definition. jspdf provides its own type definitions, so you do not need this installed.
 
   '@types/node@22.7.4':
     resolution: {integrity: sha512-y+NPi1rFzDs1NdQHHToqeiX2TIS79SWEAw9GYhkkx8bD0ChpfqC+n2j5OXOCpzfojBEBt6DnEnnG9MY0zk1XLg==}
@@ -1381,6 +1398,9 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
+  'social-management@file:':
+    resolution: {directory: '', type: directory}
+
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -1769,9 +1789,17 @@ snapshots:
 
   '@types/http-errors@1.8.2': {}
 
+  '@types/html2canvas@1.0.0':
+    dependencies:
+      html2canvas: 1.4.1
+      
   '@types/jsonwebtoken@9.0.7':
     dependencies:
       '@types/node': 22.7.4
+
+  '@types/jspdf@2.0.0':
+    dependencies:
+      jspdf: 2.5.2
 
   '@types/node@22.7.4':
     dependencies:
@@ -2725,6 +2753,61 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
+
+  'social-management@file:':
+    dependencies:
+      '@ffmpeg/ffmpeg': 0.12.10
+      '@ffmpeg/util': 0.12.1
+      '@fullcalendar/core': 6.1.15
+      '@fullcalendar/daygrid': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/interaction': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/list': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/multimonth': 6.1.15(@fullcalendar/core@6.1.15)
+      '@fullcalendar/react': 6.1.15(@fullcalendar/core@6.1.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@fullcalendar/timegrid': 6.1.15(@fullcalendar/core@6.1.15)
+      '@heroicons/react': 2.1.5(react@18.3.1)
+      '@types/bcrypt': 5.0.2
+      '@types/jsonwebtoken': 9.0.7
+      '@types/react-dom': 18.3.1
+      '@types/request-ip': 0.0.41
+      '@vercel/blob': 0.25.1
+      '@vercel/postgres': 0.10.0
+      axios: 1.7.7
+      bcrypt: 5.1.1
+      chart.js: 4.4.5
+      date-fns: 4.1.0
+      dayjs: 1.11.13
+      framer-motion: 11.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      fullcalendar: 6.1.15
+      html2canvas: 1.4.1
+      i18n-iso-countries: 7.13.0
+      js-cookie: 3.0.5
+      jsonwebtoken: 9.0.2
+      jspdf: 2.5.2
+      next: 14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      pnpm: 9.12.3
+      qs: 6.13.0
+      react: 18.3.1
+      react-chartjs-2: 5.2.0(chart.js@4.4.5)(react@18.3.1)
+      react-datepicker: 7.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-dom: 18.3.1(react@18.3.1)
+      react-intersection-observer: 9.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      recharts: 2.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      request-ip: 3.3.0
+      tailwindcss: 3.4.13
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@emotion/is-prop-valid'
+      - '@opentelemetry/api'
+      - '@playwright/test'
+      - babel-plugin-macros
+      - debug
+      - encoding
+      - sass
+      - supports-color
+      - ts-node
+      - utf-8-validate
 
   source-map-js@1.2.1: {}
 
