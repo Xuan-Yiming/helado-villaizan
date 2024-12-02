@@ -59,7 +59,7 @@ const CrecimientoSection: React.FC<CrecimientoSectionProps> = ({ metric, applied
             if (metric === 'engagement') {
                 return 'Impresiones de la página'; // Cambio para engagement en Instagram
             } else if (metric === 'seguidores') {
-                return 'Seguidores de la página (máximo los últimos 30 días)'; // Cambio para seguidores en Instagram
+                return 'Nuevos seguidores de la página (máximo los últimos 30 días)'; // Cambio para seguidores en Instagram
             }
         }
         return `${capitalizeMetric(metric)} de la página`; // Título genérico
